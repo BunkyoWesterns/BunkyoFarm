@@ -78,7 +78,7 @@ This command will create a new exploit folder with the necessary files and direc
 
 **Syntax:**
 ```bash
-xFarm init [OPTIONS]
+xFarm exploit init [OPTIONS]
 ```
 
 **Options:**
@@ -126,7 +126,7 @@ Reset client settings.
 
 **Syntax:**
 ```bash
-xFarm reset
+xFarm config reset
 ```
 
 **Description:**
@@ -139,7 +139,7 @@ Log in to the server.
 
 **Syntax:**
 ```bash
-xFarm login [OPTIONS]
+xFarm config login [OPTIONS]
 ```
 
 The login will be always required if needed automatically in every command.
@@ -154,7 +154,7 @@ Log out from the server.
 
 **Syntax:**
 ```bash
-xFarm logout
+xFarm config logout
 ```
 
 **Description:**
