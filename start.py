@@ -69,10 +69,12 @@ def puts(text, *args, color=colors.white, is_bold=False, **kwargs):
 
 def sep(): puts("-----------------------------------", is_bold=True)
 
-def cmd_check(program, get_output=False):
+def cmd_check(program, get_output=False, print_output=False, no_stderr=False):
     if get_output:
         return subprocess.getoutput(program)
-    return subprocess.call(program, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True) == 0
+    if print_output:
+        return subprocess.call(program, shell=True) == 0
+    return subprocess.call(program, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL if no_stderr else subprocess.STDOUT, shell=True) == 0
 
 def composecmd(cmd, composefile=None):
     if composefile:
