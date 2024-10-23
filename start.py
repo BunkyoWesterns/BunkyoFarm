@@ -10,13 +10,15 @@ class g:
     composefile = "exploitfarm-compose-tmp-file.yml"
     container_name = "exploitfarm"
     compose_project_name = "exploitfarm"
-    compose_volume_name = "exploitfarm_data"
+    compose_volume_database = "exploitfarm_data"
+    compose_volume_sources = "exploitfarm_exploit_sources"
     container_repo = "ghcr.io/pwnzer0tt1/exploitfarm"
     name = "ExploitFarm"
     build = False
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-volume_name = f"{g.container_name}_{g.compose_volume_name}"
+db_volume_name = f"{g.container_name}_{g.compose_volume_database}"
+sources_volume_name = f"{g.container_name}_{g.compose_volume_sources}"
 
 if os.path.isfile("./Dockerfile"):
     with open("./Dockerfile", "rt") as dockerfile:
@@ -146,7 +148,7 @@ def write_compose():
                     ],
                     "extra_hosts": ["host.docker.internal:host-gateway"],
                     "ports": [f"{args.port}:5050"],
-                    "volumes": [f"{g.compose_volume_name}:/execute/db-data/"],
+                    "volumes": [f"{g.compose_volume_sources}:/execute/exploit-sources/"],
                     "depends_on": ["database"]
                 },
                 "database": {
@@ -159,17 +161,20 @@ def write_compose():
                         f"POSTGRES_PASSWORD={g.container_name}",
                         f"POSTGRES_DB={g.container_name}"
                     ],
-                    "volumes": [f"{g.compose_volume_name}:/var/lib/postgresql/data"]
+                    "volumes": [f"{g.compose_volume_database}:/var/lib/postgresql/data"]
                 }
             },
-            "volumes": {g.compose_volume_name:""}
+            "volumes": {
+                g.compose_volume_database:"",
+                g.compose_volume_sources:""
+            }
         }))
 
 def volume_exists():
-    return volume_name in cmd_check(f'docker volume ls --filter "name=^{volume_name}$"', get_output=True)
+    return db_volume_name in cmd_check(f'docker volume ls --filter "name=^{db_volume_name}$"', get_output=True) or sources_volume_name in cmd_check(f'docker volume ls --filter "name=^{sources_volume_name}$"', get_output=True)
 
 def delete_volume():
-    return cmd_check(f"docker volume rm {volume_name}")
+    return cmd_check(f"docker volume rm {db_volume_name} {sources_volume_name}")
 
 def main():    
     if not cmd_check("docker --version"):
@@ -185,18 +190,15 @@ def main():
     if args.command:
         match args.command:
             case "start":
-                if check_already_running():
-                    puts(f"{g.name} is already running! use --help to see options useful to manage {g.name} execution", color=colors.yellow)
-                else:
-                    puts(f"{g.name}", color=colors.yellow, end="")
-                    puts(" will start on port ", end="")
-                    puts(f"{args.port}", color=colors.cyan)
-                    write_compose()
-                    if not g.build:
-                        puts(f"Downloading docker image from github packages 'docker pull {g.container_repo}'", color=colors.green)
-                        cmd_check(f"docker pull {g.container_repo}", print_output=True)
-                    puts("Running 'docker compose up -d --build'\n", color=colors.green)
-                    composecmd("up -d --build", g.composefile)
+                puts(f"{g.name}", color=colors.yellow, end="")
+                puts(" will start on port ", end="")
+                puts(f"{args.port}", color=colors.cyan)
+                write_compose()
+                if not g.build:
+                    puts(f"Downloading docker image from github packages 'docker pull {g.container_repo}'", color=colors.green)
+                    cmd_check(f"docker pull {g.container_repo}", print_output=True)
+                puts("Running 'docker compose up -d --build'\n", color=colors.green)
+                composecmd("up -d --build", g.composefile)
             case "compose":
                 write_compose()
                 compose_cmd = " ".join(args.compose_args)

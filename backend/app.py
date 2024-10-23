@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 import uvicorn
 import os, asyncio, env
 from asyncpg import UniqueViolationError, ForeignKeyViolationError

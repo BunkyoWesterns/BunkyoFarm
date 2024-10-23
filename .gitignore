@@ -1,5 +1,6 @@
 **/*.pyc
 db-data
+exploit-sources
 .venv/
 backend/.locks/**
 **/__pycache__/
@@ -20,3 +21,7 @@ Pipfile
 Pipfile.lock
 tests/xploit_test/.flag_queue.json
 *.lock
+!uv.lock
+/backend/backend.egg-info
+/backend/build
+exploitfarm-compose-tmp-file.yml

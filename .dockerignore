@@ -1,5 +1,6 @@
 **/*.pyc
-db-data/
+db-data
+exploit-sources
 clinet/**
 .github/**
 .git/**
@@ -7,3 +8,6 @@ clinet/node_modules/**
 .venv/**
 backend/.locks/**
 .venv
+/backend/backend.egg-info
+/backend/build
+exploitfarm-compose-tmp-file.yml
