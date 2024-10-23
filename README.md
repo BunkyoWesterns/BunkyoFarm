@@ -114,7 +114,7 @@ The flags has to be printed on the stdout, and xfarm will extract the flags usin
 Before writing your exploit, init your project with the following command:
 
 ```bash
-xfarm init
+xfarm exploit init
 ```
 
 Here will be required if not already set the server host, port, your nickname (that will be used for stats), and the password if the server is authenticated.

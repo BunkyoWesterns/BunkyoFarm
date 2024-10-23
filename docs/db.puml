@@ -75,7 +75,9 @@ entity "**Exploit-Source**" as exploit_source{
     hash: string
     --
     pushed_at: date
-    data: bytes
+    os: string
+    distro: string
+    arch: string
 }
 
 entity "**Attack-Group**" as attack_group{
@@ -97,5 +99,7 @@ exploit ||--o{ exploit_source
 attack_group ||--o{ attack
 exploit ||--o{ attack_group
 client }|--o{ attack_group
+attack }o--o| exploit_source
+exploit_source }o--o| client
 
 @enduml

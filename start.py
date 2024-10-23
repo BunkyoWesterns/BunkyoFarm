@@ -10,13 +10,15 @@ class g:
     composefile = "exploitfarm-compose-tmp-file.yml"
     container_name = "exploitfarm"
     compose_project_name = "exploitfarm"
-    compose_volume_name = "exploitfarm_data"
+    compose_volume_database = "exploitfarm_data"
+    compose_volume_sources = "exploitfarm_exploit_sources"
     container_repo = "ghcr.io/pwnzer0tt1/exploitfarm"
     name = "ExploitFarm"
     build = False
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-volume_name = f"{g.container_name}_{g.compose_volume_name}"
+db_volume_name = f"{g.container_name}_{g.compose_volume_database}"
+sources_volume_name = f"{g.container_name}_{g.compose_volume_sources}"
 
 if os.path.isfile("./Dockerfile"):
     with open("./Dockerfile", "rt") as dockerfile:
@@ -67,7 +69,7 @@ def puts(text, *args, color=colors.white, is_bold=False, **kwargs):
 
 def sep(): puts("-----------------------------------", is_bold=True)
 
-def check_if_exists(program, get_output=False):
+def cmd_check(program, get_output=False):
     if get_output:
         return subprocess.getoutput(program)
     return subprocess.call(program, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, shell=True) == 0
@@ -75,25 +77,15 @@ def check_if_exists(program, get_output=False):
 def composecmd(cmd, composefile=None):
     if composefile:
         cmd = f"-f {composefile} {cmd}"
-    if not check_if_exists("docker ps"):
-        return puts("Cannot use docker, the user hasn't the permission or docker isn't running", color=colors.red)
-    elif check_if_exists("docker compose"):
+    if cmd_check("docker compose --version"):
         return os.system(f"docker compose -p {g.compose_project_name} {cmd}")
-    elif check_if_exists("docker-compose"):
+    elif cmd_check("docker-compose --version"):
         return os.system(f"docker-compose -p {g.compose_project_name} {cmd}")
     else:
         puts("Docker compose not found! please install docker compose!", color=colors.red)
 
-def dockercmd(cmd):
-    if check_if_exists("docker"):
-        return os.system(f"docker {cmd}")
-    elif not check_if_exists("docker ps"):
-        puts("Cannot use docker, the user hasn't the permission or docker isn't running", color=colors.red)
-    else:
-        puts("Docker not found! please install docker!", color=colors.red)
-
 def check_already_running():
-    return g.container_name in check_if_exists(f'docker ps --filter "name=^{g.container_name}$"', get_output=True)
+    return g.container_name in cmd_check(f'docker ps --filter "name=^{g.container_name}$"', get_output=True)
 
 def gen_args(args_to_parse: list[str]|None = None):                     
     
@@ -156,6 +148,7 @@ def write_compose():
                     ],
                     "extra_hosts": ["host.docker.internal:host-gateway"],
                     "ports": [f"{args.port}:5050"],
+                    "volumes": [f"{g.compose_volume_sources}:/execute/exploit-sources/"],
                     "depends_on": ["database"]
                 },
                 "database": {
@@ -168,44 +161,44 @@ def write_compose():
                         f"POSTGRES_PASSWORD={g.container_name}",
                         f"POSTGRES_DB={g.container_name}"
                     ],
-                    "volumes": [f"{g.compose_volume_name}:/var/lib/postgresql/data"]
+                    "volumes": [f"{g.compose_volume_database}:/var/lib/postgresql/data"]
                 }
             },
-            "volumes": {g.compose_volume_name:""}
+            "volumes": {
+                g.compose_volume_database:"",
+                g.compose_volume_sources:""
+            }
         }))
 
 def volume_exists():
-    return volume_name in check_if_exists(f'docker volume ls --filter "name=^{volume_name}$"', get_output=True)
+    return db_volume_name in cmd_check(f'docker volume ls --filter "name=^{db_volume_name}$"', get_output=True) or sources_volume_name in cmd_check(f'docker volume ls --filter "name=^{sources_volume_name}$"', get_output=True)
 
 def delete_volume():
-    return dockercmd(f"volume rm {volume_name}")
+    return cmd_check(f"docker volume rm {db_volume_name} {sources_volume_name}")
 
 def main():    
-    if not check_if_exists("docker"):
+    if not cmd_check("docker --version"):
         puts("Docker not found! please install docker and docker compose!", color=colors.red)
         exit()
-    elif not check_if_exists("docker-compose") and not check_if_exists("docker compose"):
+    elif not cmd_check("docker-compose --version") and not cmd_check("docker compose --version"):
         puts("Docker compose not found! please install docker compose!", color=colors.red)
         exit()
-    if not check_if_exists("docker ps"):
+    if not cmd_check("docker ps"):
         puts("Cannot use docker, the user hasn't the permission or docker isn't running", color=colors.red)
         exit()    
     
     if args.command:
         match args.command:
             case "start":
-                if check_already_running():
-                    puts(f"{g.name} is already running! use --help to see options useful to manage {g.name} execution", color=colors.yellow)
-                else:
-                    puts(f"{g.name}", color=colors.yellow, end="")
-                    puts(" will start on port ", end="")
-                    puts(f"{args.port}", color=colors.cyan)
-                    write_compose()
-                    if not g.build:
-                        puts(f"Downloading docker image from github packages 'docker pull {g.container_repo}'", color=colors.green)
-                        dockercmd(f"pull {g.container_repo}")
-                    puts("Running 'docker compose up -d --build'\n", color=colors.green)
-                    composecmd("up -d --build", g.composefile)
+                puts(f"{g.name}", color=colors.yellow, end="")
+                puts(" will start on port ", end="")
+                puts(f"{args.port}", color=colors.cyan)
+                write_compose()
+                if not g.build:
+                    puts(f"Downloading docker image from github packages 'docker pull {g.container_repo}'", color=colors.green)
+                    cmd_check(f"docker pull {g.container_repo}", print_output=True)
+                puts("Running 'docker compose up -d --build'\n", color=colors.green)
+                composecmd("up -d --build", g.composefile)
             case "compose":
                 write_compose()
                 compose_cmd = " ".join(args.compose_args)

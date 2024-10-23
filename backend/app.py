@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
 import uvicorn
 import os, asyncio, env
 from asyncpg import UniqueViolationError, ForeignKeyViolationError
@@ -14,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from submitter import run_submitter_daemon
 from stats import run_stats_daemon
 from utils import *
-from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM
+from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
 from fastapi.responses import FileResponse
 from db import *
 from models.all import *
@@ -23,6 +20,9 @@ from typing import Dict
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -112,12 +112,20 @@ async def unique_violation_error_handler(request, exc: ForeignKeyViolationError)
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc:StarletteHTTPException):
     return JSONResponse(json_like(
-        MessageResponse[Any](
+        MessageResponse(
             status=ResponseStatus.ERROR,
             message=exc.detail,
             response=exc.status_code
         )
     ), status_code=exc.status_code)
+
+@app.exception_handler(MessageResponseInvalidError)
+async def message_response_exception_handler(request, exc: MessageResponseInvalidError):
+    return JSONResponse(json_like(MessageResponse(
+        status=ResponseStatus.INVALID,
+        message=exc.message,
+        response=exc.response,    
+    )), status_code=400)
 
 @app.exception_handler(RequestValidationError)
 @app.exception_handler(ValidationError)
@@ -129,7 +137,7 @@ async def validation_exception_handler(request, exc: RequestValidationError|Vali
         if "ctx" in ele:
             del ele["ctx"]
     return JSONResponse(json_like(
-        MessageResponse[Any](
+        MessageResponse(
             status=ResponseStatus.ERROR,
             message=errors[0]["msg"] if errors else "Invalid request",
             response=errors
@@ -192,7 +200,7 @@ async def set_status(data: Dict[str, str|int|None]):
             if not await Submitter.objects.get_or_none(id=data[key]):
                 raise HTTPException(400, "Submitter not found")
         if key == "PASSWORD_HASH" and not data[key] is None:
-            if len(data[key]) < 8:
+            if len(str(data[key])) < 8:
                 raise HTTPException(400, "Password too short (at least 8 chars)")
             data[key] = crypto.hash(data[key])
 
@@ -224,7 +232,6 @@ if DEBUG or CORS_ALLOW:
 
 if __name__ == '__main__':
     #DO NOT ADD IN lifecycle of FastAPI, it will be spawned more times
-    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     os.environ["TIMEOUT"] = "30"
     os.environ["TZ"] = "Etc/UTC"
     time.tzset()
