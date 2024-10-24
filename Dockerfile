@@ -17,7 +17,7 @@ FROM --platform=$TARGETARCH python:3.12-slim AS base
 RUN pip install uv
 RUN apt-get update && apt-get install -y --no-install-recommends libcapstone-dev build-essential
 WORKDIR /execute
-ADD ./backend/pyproject.toml /execute/pyproject.toml
+ADD ./backend/requirements.txt /execute/requirements.txt
 RUN uv pip install --system --no-cache .
 COPY ./client/ /tmp/client
 RUN uv pip install --system --no-cache /tmp/client && rm -rf /tmp/client

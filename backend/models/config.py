@@ -5,14 +5,14 @@ from typing_extensions import Self
 from functools import cache
 from pydantic import NonNegativeInt, PositiveInt
 from models.submitter import SubmitterDTO
-import asyncio, re
-from db import *
+import asyncio, re, env
 from models.teams import TeamDTO
 from models.service import ServiceDTO
 from models.response import *
 from typing import List
 from models.enums import AttackMode, SetupStatus
 from fasteners import InterProcessLock
+from db import SubmitterID, Env, dbtransaction, create_or_update_env, sqla, AttackExecution, AttackExecutionStatus
 
 _config_write_lock = InterProcessLock("./.xfarm_server_config_write.lock")
 
@@ -76,7 +76,6 @@ class Configuration(BaseModel):
     def keys():
         return list(Configuration().model_dump().keys())
 
-    @transactional
     async def write_on_db(self):
         with _config_write_lock:
             values = self.model_dump(mode="json")
@@ -88,7 +87,8 @@ class Configuration(BaseModel):
     @classmethod
     async def get_from_db(cls) -> Self:
         keys = Configuration.keys()
-        result = await Env.objects.filter(Env.key << keys).all()
+        async with dbtransaction() as db:
+            result = (await db.scalars(sqla.select(Env).where(Env.key.in_(keys)))).all()
         result = {ele.key:ele.value for ele in result}
         res = cls(**result)
         await res.__get_times()
@@ -103,20 +103,16 @@ class Configuration(BaseModel):
         return self.__end_time
     
     async def __get_times(self):
+        from utils import datetime_now
         now = datetime_now()
         start_time = self.START_TIME
         end_time = self.END_TIME if not self.END_TIME is None and self.END_TIME > now else None
-        done_query = AttackExecution.objects.filter(AttackExecution.status == AttackExecutionStatus.done.value)
-        if not start_time:
-            try:
-                start_time = (await done_query.order_by(AttackExecution.received_at.asc()).first()).received_at #We take the first flag time as start time
-            except ormar.NoMatch:
-                start_time = None
-        if start_time and not end_time:
-            try:
-                end_time = (await done_query.order_by(AttackExecution.received_at.desc()).first()).received_at #We take the last flag time as end time
-            except ormar.NoMatch:
-                end_time = None
+        done_query = sqla.select(AttackExecution).where(AttackExecution.status == AttackExecutionStatus.done)
+        async with dbtransaction() as db:
+            if not start_time:
+                start_time = (await db.scalars(done_query.order_by(AttackExecution.received_at.asc()).limit(1))).one_or_none()
+            if start_time and not end_time:
+                end_time = (await done_query.order_by(AttackExecution.received_at.desc()).first()).received_at
         self.__start_time = start_time
         self.__end_time = end_time
         return start_time, end_time

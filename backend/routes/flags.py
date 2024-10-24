@@ -3,10 +3,9 @@ from models.response import *
 from utils import *
 from models.flags import *
 from models.config import *
-from db import Flag, UnHashedClientID
 from fastapi import APIRouter
-from fastapi_pagination import Page, add_pagination, paginate
-from fastapi_pagination.ext.ormar import paginate
+from fastapi_pagination import Page, add_pagination
+from fastapi_pagination.ext.sqlalchemy import paginate
 from typing import Any, Generic
 from fastapi import Query
 from pydantic import BaseModel
@@ -19,7 +18,10 @@ from pydantic import BaseModel
 from fastapi_pagination.bases import AbstractParams, BasePage, RawParams
 from fastapi_pagination.types import GreaterEqualOne, GreaterEqualZero
 from fastapi_pagination.utils import create_pydantic_model
-from utils import get_db_stats
+from utils import get_stats
+from db import UnHashedClientID, Flag, sqla, AttackExecution
+from sqlalchemy.orm import defer, selectinload
+from stats import complete_stats
 
 T = TypeVar("T")
 
@@ -92,19 +94,20 @@ async def get_flags(
         [exploit, Flag.attack.exploit.id],
         [executed_by, Flag.attack.executed_by.id],
     ]
-    filter = None
     
-    for ele in equalities:
-        if ele[0] is not None:
-            equality = ele[0] == ele[1]
-            if filter is None: filter = equality
-            else: filter = filter & equality
-    query = Flag.objects
+    filters = [ele[0] == ele[1] for ele in equalities if ele[0] is not None]
+            
+    query = (
+        sqla.select(Flag)
+        .join(Flag.attack)
+        .join(AttackExecution.target)
+        .join(AttackExecution.exploit)
+        .join(AttackExecution.executed_by)
+        .options(defer(AttackExecution.error, raiseload=True), selectinload(Flag.attack))
+    )
     
-    if filter:
-        query = query.filter(filter)
-    
-    query = query.select_related(Flag.attack).exclude_fields("attack__error")
+    if len(filters) > 0:
+        query = query.where(*filters)
     
     if reversed:
         query = query.order_by(Flag.attack.received_at.asc()).order_by(Flag.id.asc())
@@ -129,18 +132,19 @@ async def get_attacks(
         [exploit, AttackExecution.exploit.id],
         [executed_by, AttackExecution.executed_by.id],
     ]
-    filter = None
     
-    for ele in equalities:
-        if ele[0] is not None:
-            equality = ele[0] == ele[1]
-            if filter is None: filter = equality
-            else: filter = filter & equality
+    filters = [ele[0] == ele[1] for ele in equalities if ele[0] is not None]
     
-    query = AttackExecution.objects.select_related("flags")
+    query = (
+        sqla.select(AttackExecution)
+        .join(AttackExecution.target)
+        .join(AttackExecution.exploit)
+        .join(AttackExecution.executed_by)
+        .options(selectinload(AttackExecution.flags))
+    )
     
-    if filter:
-        query = query.filter(filter)
+    if len(filters) > 0:
+        query = query.where(*filters)
     
     if reversed:
         query = query.order_by(AttackExecution.received_at.asc()).order_by(AttackExecution.id.asc())
@@ -151,12 +155,8 @@ async def get_attacks(
 
 
 @router.get("/stats", response_model=FlagStats)
-#@cache(expire=5)
-async def get_flags():
-    data = await get_db_stats()
-    if not data:
-        from stats import complete_stats
-        return {"ticks":[], "globals":complete_stats()}
-    return data
+async def get_flag_stats():
+    stats = get_stats()
+    return stats if stats else {"ticks":[], "globals":complete_stats()}
 
 add_pagination(router)
