@@ -107,12 +107,12 @@ class Configuration(BaseModel):
         now = datetime_now()
         start_time = self.START_TIME
         end_time = self.END_TIME if not self.END_TIME is None and self.END_TIME > now else None
-        done_query = sqla.select(AttackExecution).where(AttackExecution.status == AttackExecutionStatus.done)
+        done_query = sqla.select(AttackExecution.received_at).where(AttackExecution.status == AttackExecutionStatus.done)
         async with dbtransaction() as db:
             if not start_time:
                 start_time = (await db.scalars(done_query.order_by(AttackExecution.received_at.asc()).limit(1))).one_or_none()
             if start_time and not end_time:
-                end_time = (await done_query.order_by(AttackExecution.received_at.desc()).first()).received_at
+                end_time = (await db.scalars(done_query.order_by(AttackExecution.received_at.desc()).limit(1))).one_or_none()
         self.__start_time = start_time
         self.__end_time = end_time
         return start_time, end_time

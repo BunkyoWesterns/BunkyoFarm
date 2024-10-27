@@ -4,7 +4,6 @@ from pydantic import PlainSerializer, BaseModel
 from typing import Dict, Any, Annotated, List
 from typing import Union, Callable
 from uuid import UUID, uuid4
-from aiocache import cached
 from env import RESET_DB_DANGEROUS
 from hashlib import sha256
 from models.enums import *
@@ -17,14 +16,13 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, AsyncConnection
-from sqlmodel import Field, SQLModel as _SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
-from pydantic import model_validator
 import sqla
 
-def datetime_now_sql(index:bool = False) -> sqla.Column:
-    return sqla.Column(sqla.DateTime(timezone=True), server_default=sqla.func.now(), index=index)
+def datetime_now_sql(index:bool = False, now:bool = True) -> sqla.Column:
+    return sqla.Column(sqla.DateTime(timezone=True), server_default=sqla.func.now() if now else None, index=index)
 
 def extract_id_from_dict(x: Any) -> Any:
     if isinstance(x, dict):
@@ -50,13 +48,6 @@ SubmitterID = int
 
 DateTime = datetime
 
-class SQLModel(_SQLModel):
-    
-    #TODO try to fix parsing
-    @property
-    def model_fields_set(self):
-        return self.__fields__
-
 class Env(SQLModel, table=True):
     __tablename__ = "envs"
     
@@ -65,8 +56,10 @@ class Env(SQLModel, table=True):
 
 
 class ClientAttackLink(SQLModel, table=True):
-    client_id:          ClientID          = Field(default=None, foreign_key="clients.id", primary_key=True)
-    attack_group_id:    AttackGroupID     = Field(default=None, foreign_key="attack_groups.id", primary_key=True)
+    __tablename__ = "client_attack_links"
+    
+    client_id:          ClientID          = Field(default=None, foreign_key="clients.id", primary_key=True, ondelete="CASCADE")
+    attack_group_id:    AttackGroupID     = Field(default=None, foreign_key="attack_groups.id", primary_key=True, ondelete="CASCADE")
 
 
 MANUAL_CLIENT_ID = "manual"
@@ -124,14 +117,14 @@ class Exploit(SQLModel, table=True):
     language:           Language                = Field(default=Language.other)
     status:             ExploitStatus           = Field(default=ExploitStatus.disabled)
     created_at:         DateTime                = Field(sa_column=datetime_now_sql())
-    created_by_id:      ClientID | None         = Field(foreign_key="clients.id")
+    created_by_id:      ClientID | None         = Field(foreign_key="clients.id", ondelete="SET NULL")
     created_by:         Client | None           = Relationship(back_populates="exploits_created")
-    service_id:         ServiceID | None        = Field(foreign_key="services.id")
+    service_id:         ServiceID | None        = Field(foreign_key="services.id", ondelete="SET NULL")
     service:            Service | None          = Relationship(back_populates="exploits")
     
-    groups:     List["AttackGroup"]             = Relationship(back_populates="exploit", passive_deletes="all")
-    sources:    List["ExploitSource"]           = Relationship(back_populates="exploit", passive_deletes="all")
-    executions: List["AttackExecution"]         = Relationship(back_populates="exploit")
+    groups:             List["AttackGroup"]     = Relationship(back_populates="exploit")
+    sources:            List["ExploitSource"]   = Relationship(back_populates="exploit")
+    executions:         List["AttackExecution"] = Relationship(back_populates="exploit")
 
 class Team(SQLModel, table=True):
     __tablename__ = "teams"
@@ -150,10 +143,10 @@ class AttackGroup(SQLModel, table=True):
     
     id:             AttackGroupID       = Field(primary_key=True)
     name:           str
-    last_attack:    DateTime | None
+    last_attack:    DateTime | None     = Field(sa_column=datetime_now_sql(now=False))
     created_at:     DateTime            = Field(sa_column=datetime_now_sql())
-    exploit_id:     ExploitID           = Field(foreign_key="exploits.id")
-    exploit:        Exploit             = Relationship(back_populates="groups", passive_deletes="all")
+    exploit_id:     ExploitID           = Field(foreign_key="exploits.id", ondelete="CASCADE")
+    exploit:        Exploit             = Relationship(back_populates="groups")
     clients:        List["Client"]      = Relationship(link_model=ClientAttackLink, back_populates="attack_groups")
     
     executions:     List["AttackExecution"] = Relationship(back_populates="executed_by_group")
@@ -168,10 +161,10 @@ class ExploitSource(SQLModel, table=True):
     os_type:        str | None
     distro:         str | None
     arch:           str | None
-    pushed_by_id:   ClientID | None             = Field(foreign_key="clients.id")
+    pushed_by_id:   ClientID | None             = Field(foreign_key="clients.id", ondelete="SET NULL")
     pushed_by:      Client | None               = Relationship(back_populates="pushed_exploit_sources")
-    exploit_id:     ExploitID                   = Field(foreign_key="exploits.id")
-    exploit:        "Exploit"                   = Relationship(back_populates="sources", passive_deletes="all")
+    exploit_id:     ExploitID                   = Field(foreign_key="exploits.id", ondelete="CASCADE")
+    exploit:        "Exploit"                   = Relationship(back_populates="sources")
     
     executions: List["AttackExecution"]         = Relationship(back_populates="exploit_source")
 
@@ -179,20 +172,20 @@ class AttackExecution(SQLModel, table=True):
     __tablename__ = "attack_executions"
     
     id:                     AttackExecutionID          = Field(primary_key=True)
-    start_time:             DateTime | None
-    end_time:               DateTime | None
+    start_time:             DateTime | None            = Field(sa_column=datetime_now_sql(now=False))
+    end_time:               DateTime | None            = Field(sa_column=datetime_now_sql(now=False))
     status:                 AttackExecutionStatus      = Field(index=True)
-    error:                  bytes | None
+    output:                  bytes | None
     received_at:            DateTime                   = Field(sa_column=datetime_now_sql(index=True))
-    target_id:              TeamID | None              = Field(foreign_key="teams.id")
+    target_id:              TeamID | None              = Field(foreign_key="teams.id", ondelete="SET NULL")
     target:                 Team | None                = Relationship(back_populates="attacks_executions")
-    exploit_id:             ExploitID | None           = Field(foreign_key="exploits.id")
+    exploit_id:             ExploitID | None           = Field(foreign_key="exploits.id", ondelete="SET NULL")
     exploit:                Exploit | None             = Relationship(back_populates="executions")
-    executed_by_id:         ClientID | None            = Field(foreign_key="clients.id")
+    executed_by_id:         ClientID | None            = Field(foreign_key="clients.id", ondelete="SET NULL")
     executed_by:            Client | None              = Relationship(back_populates="attacks_executions")
-    executed_by_group_id:   AttackGroupID | None    = Field(foreign_key="attack_groups.id")
+    executed_by_group_id:   AttackGroupID | None       = Field(foreign_key="attack_groups.id", ondelete="SET NULL")
     executed_by_group:      AttackGroup | None         = Relationship(back_populates="executions")
-    exploit_source_id:      ExploitSourceID | None     = Field(foreign_key="exploit_sources.id")
+    exploit_source_id:      ExploitSourceID | None     = Field(foreign_key="exploit_sources.id", ondelete="SET NULL")
     exploit_source:         ExploitSource | None       = Relationship(back_populates="executions")
     
     flags:                  List["Flag"]               = Relationship(back_populates="attack")
@@ -203,10 +196,10 @@ class Flag(SQLModel, table=True):
     id:                 FlagID                      = Field(primary_key=True)
     flag:               str                         = Field(unique=True)
     status:             FlagStatus                  = Field(default=FlagStatus.wait, index=True)
-    last_submission_at: DateTime | None             = Field(index=True)
+    last_submission_at: DateTime | None             = Field(sa_column=datetime_now_sql(index=True, now=False))
     status_text:        str | None
     submit_attempts:    int                         = Field(default=0)
-    attack_id:          AttackExecutionID | None    = Field(foreign_key="attack_executions.id")
+    attack_id:          AttackExecutionID | None    = Field(foreign_key="attack_executions.id", ondelete="SET NULL")
     attack:             AttackExecution | None      = Relationship(back_populates="flags")
 
 class Submitter(SQLModel, table=True):
@@ -227,20 +220,30 @@ def dummy_decorator(func):
         return func(*args, **kwargs)
     return wrapper
 
+class g:
+    caching_dict = {}
+    
 def get_dbenv_func(var_name: str, default_func:Callable|None = None, value_cached:bool=False):
-    final_decorator = cached() if value_cached else dummy_decorator 
-    @final_decorator
     async def FUNC() -> str:
-        async with dbsession() as session:   
-            value = (await session.scalars(sqla.select(Env).where(Env.key == var_name))).one_or_none()
+        if value_cached:
+            if var_name in g.caching_dict:
+                return g.caching_dict[var_name]
+        async with dbtransaction() as db:   
+            value = (await db.scalars(sqla.select(Env.value).where(Env.key == var_name))).one_or_none()
             if value is None:
-                value = default_func() if default_func else None
-                session.add(Env(key=var_name, value=value))
+                value = str(default_func()) if default_func else None
+                await db.execute(
+                    sqla.insert(Env)
+                    .values(key=var_name, value=value)
+                    .returning(Env.value)
+                )
+            if value_cached:
+                g.caching_dict[var_name] = value
             return value
     return FUNC
 
 APP_SECRET = get_dbenv_func("APP_SECRET", lambda: secrets.token_hex(32), value_cached=True)
-SERVER_ID = get_dbenv_func("SERVER_ID", lambda: str(uuid4()), value_cached=True)
+SERVER_ID = get_dbenv_func("SERVER_ID", uuid4, value_cached=True)
 SUBMITTER_ERROR_OUTPUT = get_dbenv_func("SUBMITTER_ERROR_OUTPUT", lambda: "")
 SUBMITTER_WARNING_OUTPUT = get_dbenv_func("SUBMITTER_WARNING_OUTPUT", lambda: "")
 

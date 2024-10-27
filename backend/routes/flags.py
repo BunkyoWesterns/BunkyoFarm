@@ -19,9 +19,9 @@ from fastapi_pagination.bases import AbstractParams, BasePage, RawParams
 from fastapi_pagination.types import GreaterEqualOne, GreaterEqualZero
 from fastapi_pagination.utils import create_pydantic_model
 from utils import get_stats
-from db import UnHashedClientID, Flag, sqla, AttackExecution
-from sqlalchemy.orm import defer, selectinload
+from db import UnHashedClientID, Flag, sqla, AttackExecution, DBSession
 from stats import complete_stats
+from sqlalchemy.orm import selectinload
 
 T = TypeVar("T")
 
@@ -78,6 +78,7 @@ router = APIRouter(prefix="/flags", tags=["Flags"])
 
 @router.get("", response_model=CustomPage[FlagDTO] )
 async def get_flags(
+    db: DBSession,
     id: FlagID|None = Query(None, description="Flag ID"),
     flag_status: FlagStatus|None = Query(None, description="Flag status"),
     attack_status: AttackExecutionStatus|None = Query(None, description="Attack status"),
@@ -86,38 +87,38 @@ async def get_flags(
     executed_by: UnHashedClientID|ClientID|None = Query(None, description="Client"),
     reversed: bool = Query(False, description="Reverse order"),
 ):
-    equalities = [
-        [id, Flag.id],
-        [flag_status.value if flag_status is not None else None, Flag.status],
-        [attack_status.value if attack_status is not None else None, Flag.attack.status],
-        [target, Flag.attack.target.id],
-        [exploit, Flag.attack.exploit.id],
-        [executed_by, Flag.attack.executed_by.id],
-    ]
-    
-    filters = [ele[0] == ele[1] for ele in equalities if ele[0] is not None]
+    # TESTING TO FIX TODO
+    filters = []
+    if id is not None:
+        filters.append(Flag.id == id)
+    if flag_status is not None:
+        filters.append(Flag.status == flag_status)
+    if attack_status is not None:
+        filters.append(AttackExecution.status == attack_status)
+    if target is not None:
+        filters.append(AttackExecution.target_id == target)
+    if exploit is not None:
+        filters.append(AttackExecution.exploit_id == exploit)
+    if executed_by is not None:
+        filters.append(AttackExecution.executed_by_id == executed_by)
             
     query = (
         sqla.select(Flag)
-        .join(Flag.attack)
-        .join(AttackExecution.target)
-        .join(AttackExecution.exploit)
-        .join(AttackExecution.executed_by)
-        .options(defer(AttackExecution.error, raiseload=True), selectinload(Flag.attack))
+        .outerjoin(AttackExecution, Flag.attack_id == AttackExecution.id)
+        .where(*filters)
+        .options(selectinload(Flag.attack).defer(AttackExecution.output))
     )
-    
-    if len(filters) > 0:
-        query = query.where(*filters)
-    
+
     if reversed:
-        query = query.order_by(Flag.attack.received_at.asc()).order_by(Flag.id.asc())
+        query = query.order_by(AttackExecution.received_at.asc()).order_by(Flag.id.asc())
     else:
-        query = query.order_by(Flag.attack.received_at.desc()).order_by(Flag.id.desc())
+        query = query.order_by(AttackExecution.received_at.desc()).order_by(Flag.id.desc())
     
-    return await paginate(query)
+    return await paginate(db, query)
 
 @router.get("/attacks", response_model=CustomPage[AttackExecutionDTO] )
 async def get_attacks(
+    db: DBSession,
     id: AttackExecutionID|None = Query(None, description="Attack ID"),
     status: AttackExecutionStatus|None = Query(None, description="Attack status"),
     target: TeamID|None = Query(None, description="Target team"),
@@ -125,37 +126,36 @@ async def get_attacks(
     executed_by: UnHashedClientID|ClientID|None = Query(None, description="Client"),
     reversed: bool = Query(False, description="Reverse order"),
 ):
-    equalities = [
-        [id, AttackExecution.id],
-        [status.value if status is not None else None, AttackExecution.status],
-        [target, AttackExecution.target.id],
-        [exploit, AttackExecution.exploit.id],
-        [executed_by, AttackExecution.executed_by.id],
-    ]
+    # TESTING TO FIX TODO
     
-    filters = [ele[0] == ele[1] for ele in equalities if ele[0] is not None]
+    filters = []
+    if id is not None:
+        filters.append(AttackExecution.id == id)
+    if status is not None:
+        filters.append(AttackExecution.status == status)
+    if target is not None:
+        filters.append(AttackExecution.target_id == target)
+    if exploit is not None:
+        filters.append(AttackExecution.exploit_id == exploit)
+    if executed_by is not None:
+        filters.append(AttackExecution.executed_by_id == executed_by)
     
     query = (
         sqla.select(AttackExecution)
-        .join(AttackExecution.target)
-        .join(AttackExecution.exploit)
-        .join(AttackExecution.executed_by)
-        .options(selectinload(AttackExecution.flags))
+        .where(*filters)
     )
-    
-    if len(filters) > 0:
-        query = query.where(*filters)
     
     if reversed:
         query = query.order_by(AttackExecution.received_at.asc()).order_by(AttackExecution.id.asc())
     else:
         query = query.order_by(AttackExecution.received_at.desc()).order_by(AttackExecution.id.desc())
     
-    return await paginate(query)
+    return await paginate(db, query)
 
 
 @router.get("/stats", response_model=FlagStats)
 async def get_flag_stats():
+    # TESTING TO FIX TODO
     stats = get_stats()
     return stats if stats else {"ticks":[], "globals":complete_stats()}
 

@@ -23,7 +23,7 @@ async def client_new_or_edit(data: ClientAddForm, db: DBSession):
     )).one()
     return { "message": "Client created/updated successfully", "response": client }
 
-@router.delete("/{client_id}", response_model=MessageResponse)
+@router.delete("/{client_id}", response_model=MessageResponse[ClientDTO])
 async def client_delete_hashed_or_uuid(client_id: ClientID, db: DBSession):
     if client_id == MANUAL_CLIENT_ID:
         raise HTTPException(400, "You cannot delete the manual client")
@@ -37,17 +37,17 @@ async def client_delete_hashed_or_uuid(client_id: ClientID, db: DBSession):
     result = (await db.scalars(
         sqla.delete(Client)
             .where(Client.id == client_id)
-            .returning(Client.id)
-    )).all()
+            .returning(Client)
+    )).one_or_none()
     
-    if len(result) == 0:
+    if not result:
         raise HTTPException(404, "Client not found")
     
-    return { "message": "Client deleted successfully" }
+    return { "message": "Client deleted successfully", "response": json_like(result, unset=True) }
 
 @router.put("/{client_id}", response_model=MessageResponse[ClientDTO])
 async def client_edit(client_id: UnHashedClientID, data: ClientEditForm, db: DBSession):
-    client = await (db.scalars(sqla.update(Client).values(json_like(data)).where(Client.id == client_id).returning(Client))).one_or_none()
+    client = (await db.scalars(sqla.update(Client).values(json_like(data)).where(Client.id == client_id).returning(Client))).one_or_none()
     if not client:
         raise HTTPException(404, "Client not found")
-    return { "message": "Client updated successfully", "response": json_like(client) }
+    return { "message": "Client updated successfully", "response": json_like(client, unset=True) }

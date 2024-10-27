@@ -10,32 +10,37 @@ router = APIRouter(prefix="/teams", tags=["Teams"])
 
 @router.get("", response_model=List[TeamDTO])
 async def team_get(db: DBSession):
-    return db.scalars(sqla.select(Team)).all()
+    stmt = sqla.select(Team)
+    return json_like((await db.scalars(stmt)).all(), unset=True)
 
-@router.post("", response_model=MessageResponse)
+@router.post("", response_model=MessageResponse[List[TeamEditForm]])
 async def team_new(data: List[TeamAddForm], db: DBSession):
-    db.add_all([Team(**json_like(ele)) for ele in data])
-    return { "message": "Teams created successfully" }
+    stmt = sqla.insert(Team).values([json_like(ele) for ele in data]).returning(Team)
+    teams = (await db.scalars(stmt)).all()
+    return { "message": "Teams created successfully", "response": json_like(teams, unset=True) }
 
-@router.post("/delete", response_model=MessageResponse)
+@router.post("/delete", response_model=MessageResponse[List[TeamDTO]])
 async def team_delete_list(data: List[TeamID], db: DBSession):
-    await db.execute(sqla.delete(Team).where(Team.id.in_(data)))
-    return { "message": "Teams deleted successfully" }
+    stsm = sqla.delete(Team).where(Team.id.in_(data)).returning(Team)
+    teams = (await db.scalars(stsm)).all()
+    return { "message": "Teams deleted successfully", "response": json_like(teams, unset=True) }
 
-@router.delete("/{team_id}", response_model=MessageResponse)
+@router.delete("/{team_id}", response_model=MessageResponse[TeamDTO])
 async def team_delete(team_id: TeamID, db: DBSession):
-    await db.execute(sqla.delete(Team).where(Team.id == team_id))
-    return { "message": "Team deleted successfully" }
+    stmt = sqla.delete(Team).where(Team.id == team_id).returning(Team)
+    team = (await db.scalars(stmt)).one()
+    return { "message": "Team deleted successfully", "response": json_like(team, unset=True) }
 
-@router.put("", response_model=MessageResponse)
+@router.put("", response_model=MessageResponse[List[TeamEditForm]])
 async def team_edit_list(data: List[TeamEditForm], db: DBSession):
-    
-    updates_queries = (
-        sqla.update(Team) 
-            .where(Team.id == sqla.bindparam("id"))
-            .values(sqlparam_from_model(TeamEditForm, exclude=["id"]))
-    )
-    
-    await db.execute(updates_queries, json_like(data))
-    return { "message": "Teams updated successfully" }
+    updates_queries = [
+        sqla.update(Team)
+        .where(Team.id == ele.id)
+        .values(json_like(ele, exclude=["id"]))
+        .returning(Team)
+        for ele in data
+    ]
+    teams = [o.one_or_none() for o in await asyncio.gather(*[db.scalars(ele) for ele in updates_queries])]
+    teams = [team for team in teams if team is not None]
+    return { "message": "Teams updated successfully", "response": json_like(teams, unset=True) }
 

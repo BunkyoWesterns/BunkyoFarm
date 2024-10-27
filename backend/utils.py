@@ -10,6 +10,7 @@ from models.response import MessageInfo
 import orjson, gzip
 from env import EXPLOIT_SOURCES_DIR
 from typing import Type
+from dateutil.parser import parse as parsedatetime
 
 #logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format="[EXPLOIT-FARM][%(asctime)s] >> [%(levelname)s][%(name)s]:\t%(message)s", datefmt="%d/%m/%Y %H:%M:%S")
@@ -140,10 +141,22 @@ def load_routers(app: FastAPI|APIRouter):
             raise Exception(f"Error loading router {route} in every route has to be defined a 'router' APIRouter from fastapi!")
         app.include_router(router)
 
-def json_like(obj: BaseModel|List[BaseModel], unset=False):
+def _json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json"):
+    res = obj.model_dump(mode=mode, exclude_unset=not unset)
+    if convert_keys:
+        for from_k, to_k in convert_keys.items():
+            if from_k in res:
+                res[to_k] = res.pop(from_k)
+    if exclude:
+        for ele in exclude:
+            if ele in res:
+                del res[ele]
+    return res
+
+def json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json") -> dict:
     if isinstance(obj, list):
-        return [ele.model_dump(mode="json", exclude_unset=not unset) for ele in obj]
-    return obj.model_dump(mode="json", exclude_unset=not unset)
+        return [_json_like(ele, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode) for ele in obj]
+    return _json_like(obj, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode)
 
 async def check_only_setup():
     from models.config import Configuration, SetupStatus
@@ -200,13 +213,18 @@ async def create_or_update_env(key:str, value:str):
 
 def get_stats():
     try:
-        with open(STATS_FILE, "r") as f:
-            return orjson.loads(gzip.decompress(f))
+        with open(STATS_FILE, "rb") as f:
+            data = orjson.loads(gzip.decompress(f.read()))
+        if "start_time" in data:
+            data["start_time"] = parsedatetime(data["start_time"])
+        if "end_time" in data:
+            data["end_time"] = parsedatetime(data["end_time"])
+        return data
     except Exception:
         return None
 
 def set_stats(stats:dict):
-    with open(STATS_FILE, "w") as f:
+    with open(STATS_FILE, "wb") as f:
         f.write(gzip.compress(orjson.dumps(stats)))
 
 

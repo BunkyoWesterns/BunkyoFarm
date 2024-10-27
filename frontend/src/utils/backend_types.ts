@@ -144,7 +144,7 @@ export interface components {
       end_time?: string | null;
       status: components["schemas"]["AttackExecutionStatus"];
       /** Error */
-      error: string | null;
+      output: string | null;
       /**
        * Received At
        * Format: date-time
@@ -345,7 +345,7 @@ export interface components {
       end_time?: string | null;
       status: components["schemas"]["AttackExecutionStatus"];
       /** Error */
-      error?: string | null;
+      output?: string | null;
       executed_by?: components["schemas"]["UnHashedClientID"] | null;
       target?: components["schemas"]["TeamID"] | null;
       /** Flags */

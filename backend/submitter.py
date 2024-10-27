@@ -7,7 +7,8 @@ from utils import Scheduler
 from datetime import timedelta
 from utils import datetime_now
 import env, traceback
-from db import Submitter, Flag, connect_db, close_db, sqla
+from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution
+from sqlalchemy.orm import aliased
 
 class StopLoop(Exception): pass
 
@@ -88,80 +89,82 @@ def submit_task_fork(submitter:Submitter, flags: List[str], submitter_timeout:in
     return return_dict.copy()
 
 async def run_submit_routine(flags: List[Flag]):   
-    async with dbtransaction() as db: 
-        db.add_all(flags) #Keep track of the flags changes
-        submitter = list(filter(lambda x: x.id == g.config.SUBMITTER, g.submitters))
-        if len(submitter) == 0:
-            logging.error(f"Submitter <{g.config.SUBMITTER}> not found, unexpected behavior!")
-            return
-        submitter = submitter[0]
-        try:
-            return_dict = submit_task_fork(submitter, [flag.flag for flag in flags], g.config.SUBMITTER_TIMEOUT)
-        except Exception as e:
-            logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: {e}")
-            for f in flags:
-                f.status_text = str(e)
-                f.last_submission_at = datetime_now()
-                f.submit_attempts += 1
-            #await Flag.objects.bulk_update(flags) TODO REMOVE (Check if works without a similar function)
-            return
-        
-        if not "ok" in return_dict or not return_dict["ok"]:
-            if not "error" in return_dict or not "output" in return_dict:
-                logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: killed by SUBMITTER_TIMEOUT")
-                await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "killed by SUBMITTER_TIMEOUT (no data received from submit)")
-                return
-            logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: {return_dict['error']}")
-            await create_or_update_env("SUBMITTER_ERROR_OUTPUT", return_dict["output"] if return_dict["output"] else "An error without output was generated") #Put the error in the db
-            print("\n\n-------------- SUBMITTER OUTPUT --------------\n\n", return_dict["output"], "\n\n------------ SUBMITTER OUTPUT END ------------\n\n", sep="")
-            for f in flags:
-                f.status_text = return_dict["error"]
-                f.last_submission_at = datetime_now()
-                f.submit_attempts += 1
-            #await Flag.objects.bulk_update(flags) TODO REMOVE (Check if works without a similar function)
-            return
+    submitter = list(filter(lambda x: x.id == g.config.SUBMITTER, g.submitters))
+    if len(submitter) == 0:
+        logging.error(f"Submitter <{g.config.SUBMITTER}> not found, unexpected behavior!")
+        return False
+    submitter = submitter[0]
+    try:
+        return_dict = submit_task_fork(submitter, [flag.flag for flag in flags], g.config.SUBMITTER_TIMEOUT)
+    except Exception as e:
+        logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: {e}")
+        for f in flags:
+            f.status_text = str(e)
+            f.last_submission_at = datetime_now()
+            f.submit_attempts += 1
+        return False
+    
+    if not "ok" in return_dict or not return_dict["ok"]:
+        if not "error" in return_dict or not "output" in return_dict:
+            logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: killed by SUBMITTER_TIMEOUT")
+            await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "killed by SUBMITTER_TIMEOUT (no data received from submit)")
+            return False
+        logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: {return_dict['error']}")
+        await create_or_update_env("SUBMITTER_ERROR_OUTPUT", return_dict["output"] if return_dict["output"] else "An error without output was generated") #Put the error in the db
+        print("\n\n-------------- SUBMITTER OUTPUT --------------\n\n", return_dict["output"], "\n\n------------ SUBMITTER OUTPUT END ------------\n\n", sep="")
+        for f in flags:
+            f.status_text = return_dict["error"]
+            f.last_submission_at = datetime_now()
+            f.submit_attempts += 1
+        return False
+    else:
+        await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "") #Clear the error output
+    
+    if "warning" in return_dict and return_dict["warning"]:
+        await create_or_update_env("SUBMITTER_WARNING_OUTPUT", return_dict["output"] if return_dict["output"] else "A warning without output was generated") #Put the output in the db
+    else:
+        await create_or_update_env("SUBMITTER_WARNING_OUTPUT", "")
+    
+    results_dict = {ele[0]:ele[1:] for ele in return_dict["results"]}
+    
+    if len(results_dict.keys()) != len(flags):
+        await create_or_update_env("SUBMITTER_ERROR_OUTPUT", f"The submitter returned a different amount of flag status than the flags put in the submitter (given flags: {len(flags)}, returned flags: {len(results_dict.keys())}). Please check the submitter code.")
+    
+    for flag in flags:
+        status, status_text = results_dict.get(flag.flag, (None, None))
+        if status is None or status_text is None:       
+            continue
+        flag.submit_attempts += 1
+        flag.last_submission_at = datetime_now()
+        if status in [ele.value for ele in list(FlagStatus)]:
+            flag.status = status
+            flag.status_text = status_text
         else:
-            await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "") #Clear the error output
-        
-        if "warning" in return_dict and return_dict["warning"]:
-            await create_or_update_env("SUBMITTER_WARNING_OUTPUT", return_dict["output"] if return_dict["output"] else "A warning without output was generated") #Put the output in the db
-        else:
-            await create_or_update_env("SUBMITTER_WARNING_OUTPUT", "")
-        
-        results_dict = {ele[0]:ele[1:] for ele in return_dict["results"]}
-        
-        if len(results_dict.keys()) != len(flags):
-            await create_or_update_env("SUBMITTER_ERROR_OUTPUT", f"The submitter returned a different amount of flag status than the flags put in the submitter (given flags: {len(flags)}, returned flags: {len(results_dict.keys())}). Please check the submitter code.")
-        
-        for flag in flags:
-            status, status_text = results_dict.get(flag.flag, (None, None))
-            if status is None or status_text is None:       
-                continue
-            flag.submit_attempts += 1
-            flag.last_submission_at = datetime_now()
-            if status in [ele.value for ele in list(FlagStatus)]:
-                flag.status = status
-                flag.status_text = status_text
-            else:
-                flag.status_text = "The submitter return an invalid status! must be [(flag, status, msg), ...]"
-        #await Flag.objects.bulk_update(flags) TODO REMOVE (Check if works without a similar function)
-
+            flag.status_text = "The submitter return an invalid status! must be [(flag, status, msg), ...]"
+    return True
 
 async def submit_flags_task():
     async with dbtransaction() as db:
         if g.config.FLAG_TIMEOUT:
-            await db.execute(
-                sqla.update(Flag)
-                .where(
-                    (datetime_now() - timedelta(seconds=g.config.FLAG_TIMEOUT)) > Flag.attack.received_at, # Is expired
-                    Flag.status == FlagStatus.wait, # Has not been submitted
-                    Flag.submit_attempts > 0 # Has at least 1 submission attempt
-                ).values(
-                    status=FlagStatus.timeout,
-                    status_text="⚠️ Timeouted by Exploitfarm due to FLAG_TIMEOUT"
+
+            stmt = sqla.update(Flag).where(
+                Flag.id.in_(
+                    sqla.select(Flag.id).outerjoin(AttackExecution, AttackExecution.id == Flag.attack_id).where(
+                        (datetime_now() - timedelta(seconds=g.config.FLAG_TIMEOUT)) > AttackExecution.received_at, # Is expired
+                        Flag.status == FlagStatus.wait, # Has not been submitted
+                        Flag.submit_attempts > 0 # Has at least 1 submission attempt
+                    ).subquery().select()
                 )
+            ).values(
+                status=FlagStatus.timeout,
+                status_text="⚠️ Timeouted by Exploitfarm due to FLAG_TIMEOUT"
             )
-        flags_to_submit = sqla.select(Flag).filter(Flag.status == FlagStatus.wait).order_by(Flag.attack.received_at.asc()) #TODO check if works
+            
+            await db.execute(stmt)
+        flags_to_submit = (
+            sqla.select(Flag).outerjoin(AttackExecution, AttackExecution.id == Flag.attack_id)
+                .where(Flag.status == FlagStatus.wait).order_by(AttackExecution.received_at.asc())
+        )
         if g.config.FLAG_SUBMIT_LIMIT is not None:
             flags_to_submit = flags_to_submit.limit(g.config.FLAG_SUBMIT_LIMIT)
         
@@ -169,13 +172,16 @@ async def submit_flags_task():
 
         if len(flags_to_submit) == 0:  
             return g.flag_submit.reset_exec()
-        await run_submit_routine(flags_to_submit)
+        status = await run_submit_routine(flags_to_submit)
+        if not status:
+            g.additional_sleep = 5
 
 class g:
     flag_submit = Scheduler(submit_flags_task)
     structure_update = Scheduler(update_db_structures, env.FLAG_UPDATE_POLLING)
     config:Configuration = None
     submitters:List[Submitter] = None
+    additional_sleep = 0
 
 async def loop():
     await g.structure_update.commit()
@@ -200,6 +206,9 @@ async def loop_init():
         while True:
             await loop()
             await asyncio.sleep(0.3)
+            if g.additional_sleep > 0:
+                await asyncio.sleep(g.additional_sleep)
+                g.additional_sleep = 0
     except KeyboardInterrupt:
         pass
     finally:
