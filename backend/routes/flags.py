@@ -87,7 +87,6 @@ async def get_flags(
     executed_by: UnHashedClientID|ClientID|None = Query(None, description="Client"),
     reversed: bool = Query(False, description="Reverse order"),
 ):
-    # TESTING TO FIX TODO
     filters = []
     if id is not None:
         filters.append(Flag.id == id)
@@ -125,9 +124,7 @@ async def get_attacks(
     exploit: ExploitID|None = Query(None, description="Exploit"),
     executed_by: UnHashedClientID|ClientID|None = Query(None, description="Client"),
     reversed: bool = Query(False, description="Reverse order"),
-):
-    # TESTING TO FIX TODO
-    
+):  
     filters = []
     if id is not None:
         filters.append(AttackExecution.id == id)
@@ -155,7 +152,6 @@ async def get_attacks(
 
 @router.get("/stats", response_model=FlagStats)
 async def get_flag_stats():
-    # TESTING TO FIX TODO
     stats = get_stats()
     return stats if stats else {"ticks":[], "globals":complete_stats()}
 
