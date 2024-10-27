@@ -169,7 +169,6 @@ async def login_api(form: OAuth2PasswordRequestForm = Depends()):
 async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
     """ This will return the application status, and the configuration if the user is allowed to see it """
     config = await Configuration.get_from_db()
-    # CHECK IF WORKS TODO
     if config.PASSWORD_HASH: config.PASSWORD_HASH = "********"  
     messages = await get_messages_array()
     
@@ -207,7 +206,6 @@ async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
 async def set_status(data: Dict[str, str|int|None], db: DBSession):
     """ Set some configuration values, you can set the values to change only """
     config = await Configuration.get_from_db()
-    # CHECK IF WORKS TODO
     for key in data.keys():
         if key not in Configuration.keys():
             raise HTTPException(400, f"Invalid key {key}")
