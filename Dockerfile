@@ -18,7 +18,7 @@ RUN pip install uv
 RUN apt-get update && apt-get install -y --no-install-recommends libcapstone-dev build-essential
 WORKDIR /execute
 ADD ./backend/requirements.txt /execute/requirements.txt
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache -r requirements.txt
 COPY ./client/ /tmp/client
 RUN uv pip install --system --no-cache /tmp/client && rm -rf /tmp/client
 
