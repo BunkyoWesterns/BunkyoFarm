@@ -1,16 +1,19 @@
 from multiprocessing import Process
-from db import *
 from models.all import *
 import logging, uvloop, sys
-from utils import Scheduler
+from utils import Scheduler, get_stats
 from datetime import timedelta
 import env, traceback
-import math
+import math, time
 from dateutil.parser import parse as dateparse
+from datetime import datetime
+from db import set_stats, AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client
+from sqlalchemy.orm import defer, selectinload
 
 class StopLoop(Exception): pass
 
 LIMIT_QUERY_SIZE = 3000
+
 
 def flags_stats() -> dict:
     return {
@@ -44,6 +47,7 @@ def create_tick(tick:int, start_time:datetime, end_time:datetime) -> dict:
     }
 
 def reset_stats():
+    print("Stats Proc: ----- RESETTING STATS -----")
     g.stats = {
         "last_flag_id": 0,
         "last_attack_id": 0,
@@ -55,9 +59,9 @@ def reset_stats():
     }
     return g.stats
 
-async def recover_stats():
+def recover_stats():
     if g.stats is None:
-        g.stats = await get_db_stats()
+        g.stats = get_stats()
         if not g.stats:
             return reset_stats()
         return g.stats
@@ -65,15 +69,12 @@ async def recover_stats():
 
 async def update_db_structures():
     g.config = await Configuration.get_from_db()
-    await recover_stats()
+    recover_stats()
     if g.stats["start_time"] is None:
         g.stats["start_time"] = g.config.start_time
     if g.stats["start_time"] != g.config.start_time or g.stats["tick_duration"] != g.config.TICK_DURATION:
         reset_stats()
     g.stats["start_time"] = dateparse(g.stats["start_time"]) if isinstance(g.stats["start_time"], str) else g.stats["start_time"]
-
-async def write_on_db():
-    await set_db_stats(g.stats)
 
 def calc_tick(time:datetime):
     return math.ceil((time - g.stats["start_time"]).total_seconds() / g.stats["tick_duration"]) + 1
@@ -100,19 +101,19 @@ def add_stats(attack: AttackExecution, action: callable):
     action(tick_block["globals"])
     
     # Add stats in exploit
-    exploit_id = str(attack.exploit.id) if attack.exploit else "null"
+    exploit_id = str(attack.exploit_id) if attack.exploit_id else "null"
     if tick_block["exploits"].get(exploit_id) is None:
         tick_block["exploits"][exploit_id] = complete_stats()
     action(tick_block["exploits"][exploit_id])
     
     # Add stats in team
-    team_id = str(attack.target.id) if attack.target else "null"
+    team_id = str(attack.target_id) if attack.target_id else "null"
     if tick_block["teams"].get(team_id) is None:
         tick_block["teams"][team_id] = complete_stats()
     action(tick_block["teams"][team_id])
     
     # Add stats in client
-    client_id = str(attack.executed_by.id) if attack.executed_by else "null"
+    client_id = str(attack.executed_by_id) if attack.executed_by_id else "null"
     if tick_block["clients"].get(client_id) is None:
         tick_block["clients"][client_id] = complete_stats()
     action(tick_block["clients"][client_id])
@@ -120,71 +121,110 @@ def add_stats(attack: AttackExecution, action: callable):
 def add_attack_stats(att: AttackExecution, value:int = 1):
     def add_single_stat(stat: dict):
         stat["attacks"]["tot"] += value
-        stat["attacks"][att.status] += value
+        stat["attacks"][att.status.value] += value
     return add_stats(att, add_single_stat)
     
 def add_flag_stats(flg: Flag, value:int = 1):
     def add_single_stat(stat: dict):
         stat["flags"]["tot"] += value
-        stat["flags"][flg.status] += value
+        stat["flags"][flg.status.value] += value
     return add_stats(flg.attack, add_single_stat)
 
+async def clear_deleted_object_stats():
+    async with dbtransaction() as db:
+        stmt = sqla.select(Exploit.id)
+        exploits = list(map(str, (await db.scalars(stmt)).all()))
+        stmt = sqla.select(Team.id)
+        teams = list((await db.scalars(stmt)).all())
+        stmt = sqla.select(Client.id)
+        clients = list((await db.scalars(stmt)).all())
+    
+    for tick in g.stats["ticks"]:
+        for exploit_id in list(tick["exploits"].keys()):
+            if exploit_id != "null" and exploit_id not in exploits:
+                del tick["exploits"][exploit_id]
+        for team_id in list(tick["teams"].keys()):
+            if team_id != "null" and int(team_id) not in teams:
+                del tick["teams"][team_id]
+        for client_id in list(tick["clients"].keys()):
+            if client_id != "null" and client_id not in clients:
+                del tick["clients"][client_id]
+
 async def stats_updater_task():
+    await clear_deleted_object_stats()
     if g.stats["start_time"] is None:
         return
     
-    flags_query = Flag.objects.select_related(["attack", "attack__exploit"]).exclude_fields("attack__error").order_by(Flag.id.asc()).limit(LIMIT_QUERY_SIZE)
-    attacks_query = AttackExecution.objects.select_related(["target", "exploit", "executed_by"]).exclude_fields("error").order_by(AttackExecution.id.asc()).limit(LIMIT_QUERY_SIZE)
+    flags_query = (
+        sqla.select(Flag)
+            .options(
+                selectinload(Flag.attack)
+                .defer(AttackExecution.output)
+                .selectinload(AttackExecution.exploit))
+            .order_by(Flag.id.asc()).limit(LIMIT_QUERY_SIZE)
+    )
+    
+    attacks_query = sqla.select(AttackExecution).options(defer(AttackExecution.output)).order_by(AttackExecution.id.asc()).limit(LIMIT_QUERY_SIZE)
 
     try:
-        flags_before_waited = await flags_query.filter(Flag.id << g.stats["wait_flag_ids"]).all()
-        
-        new_wait_list = []
-        
-        for flg in flags_before_waited:
-            if flg.status == FlagStatus.wait.value:
-                new_wait_list.append(flg.id)
-            else:
-                new_status = flg.status
-                flg.status = FlagStatus.wait.value
-                add_flag_stats(flg, -1)
-                flg.status = new_status
+        async with dbtransaction() as db:
+            flags_before_waited = (await db.scalars(
+                flags_query.where(Flag.id.in_(g.stats["wait_flag_ids"]))
+            )).all()
+            
+            new_wait_list = []
+            
+            for flg in flags_before_waited:
+                if flg.status == FlagStatus.wait:
+                    new_wait_list.append(flg.id)
+                else:
+                    new_status = flg.status
+                    flg.status = FlagStatus.wait
+                    add_flag_stats(flg, -1)
+                    flg.status = new_status
+                    add_flag_stats(flg)
+            
+            g.stats["wait_flag_ids"] = new_wait_list
+            
+            flags_to_analyse = (await db.scalars(flags_query.where(Flag.id > (g.stats["last_flag_id"])))).all()
+            attacks_to_analyse = (await db.scalars(attacks_query.where(AttackExecution.id > (g.stats["last_attack_id"])))).all()
+            
+            # Probably need to fasten the loop
+            if len(flags_to_analyse) == LIMIT_QUERY_SIZE or len(attacks_to_analyse) == LIMIT_QUERY_SIZE:
+                g.loop_sleep = 0.1
+            
+            max_id = None
+            
+            for flg in flags_to_analyse:
+                if max_id is None or flg.id > max_id:
+                    max_id = flg.id
+                if flg.status == FlagStatus.wait:
+                    g.stats["wait_flag_ids"].append(flg.id)
                 add_flag_stats(flg)
-        
-        g.stats["wait_flag_ids"] = new_wait_list
-        
-        flags_to_analyse = await flags_query.filter(Flag.id > g.stats["last_flag_id"]).all()
-        attacks_to_analyse = await attacks_query.filter(AttackExecution.id > g.stats["last_attack_id"]).all()
-        
-        max_id = None
-        
-        for flg in flags_to_analyse:
-            if max_id is None or flg.id > max_id:
-                max_id = flg.id
-            if flg.status == FlagStatus.wait.value:
-                g.stats["wait_flag_ids"].append(flg.id)
-            add_flag_stats(flg)
-        
-        if not max_id is None:
-            g.stats["last_flag_id"] = max_id
-        
-        max_id = None
-        
-        for att in attacks_to_analyse:
-            if max_id is None or att.id > max_id:
-                max_id = att.id
-            add_attack_stats(att)
-        
-        if not max_id is None:
-            g.stats["last_attack_id"] = max_id
+            
+            if not max_id is None:
+                g.stats["last_flag_id"] = max_id
+            
+            max_id = None
+            
+            for att in attacks_to_analyse:
+                if max_id is None or att.id > max_id:
+                    max_id = att.id
+                add_attack_stats(att)
+            
+            if not max_id is None:
+                g.stats["last_attack_id"] = max_id
     finally:
-        await write_on_db()
+        set_stats(g.stats)
+
+DEFAULT_LOOP_SLEEP = 1
 
 class g:
     stats_updater = Scheduler(stats_updater_task)
     structure_update = Scheduler(update_db_structures, env.FLAG_UPDATE_POLLING)
     config:Configuration = None
     stats: dict = None
+    loop_sleep = DEFAULT_LOOP_SLEEP
 
 async def loop():
     await g.structure_update.commit()
@@ -200,7 +240,8 @@ async def loop_init():
         logging.info("Stats loop started")
         while True:
             await loop()
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(g.loop_sleep)
+            g.loop_sleep = DEFAULT_LOOP_SLEEP #Reset sleep time (if changed)
     except KeyboardInterrupt:
         pass
     finally:
@@ -210,14 +251,11 @@ def inital_setup():
     try:
         while True:
             try:
-                if sys.version_info >= (3, 11):
-                    with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
-                        runner.run(loop_init())
-                else:
-                    uvloop.install()
-                    asyncio.run(loop_init())
+                with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
+                    runner.run(loop_init())
             except Exception as e:
                 traceback.print_exc()
+                time.sleep(5)
                 logging.exception(f"Stats loop failed: {e}, restarting loop")
     except (KeyboardInterrupt, StopLoop):
         logging.info("Stats stopped by KeyboardInterrupt")

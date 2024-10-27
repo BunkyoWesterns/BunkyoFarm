@@ -22,6 +22,6 @@ class SubmitterInfoForm(BaseModel):
     code: str
 
 class SubmitterEditForm(BaseModel):
-    code: str
+    code: str|None = None
     name: str|None = Field(None, min_length=1)
     kargs: Dict[str, Any]|None = None

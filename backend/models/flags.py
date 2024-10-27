@@ -8,7 +8,7 @@ class AttackExecutionDTO(BaseModel):
     start_time: AwareDatetime|None = None
     end_time: AwareDatetime|None = None
     status: AttackExecutionStatus
-    error: bytes|None
+    output: str|None
     received_at: AwareDatetime
     target: FkType[TeamID]|None = None,
     exploit: FkType[ExploitID]|None = None

@@ -1,16 +1,16 @@
 from models.submitter import *
 from models.response import *
 from models.config import *
-from db import Submitter
 from typing import List
 from fastapi import APIRouter, HTTPException
 from utils import *
 import re
+from db import Submitter, DBSession
 
 router = APIRouter(prefix="/submitters", tags=["Submitters"])
 
 @router.post("", response_model=MessageResponse[SubmitterDTO])
-async def new_submitter(data: SubmitterAddForm):
+async def new_submitter(data: SubmitterAddForm, db: DBSession):
     """ Set the submitter code """
     submit_function, error = extract_submit(data.code)
     
@@ -34,9 +34,14 @@ async def new_submitter(data: SubmitterAddForm):
         if not type_check_annotation(v["value"], v["type"]):
             raise HTTPException(400, f"Invalid type for {k} ({v['value']} is not of type {v['type']})")
     
-    submitter = await Submitter(name=data.name, code=data.code, kargs=kargs).save()
+    submitter = (await db.scalars(
+        sqla.insert(Submitter)
+        .values(name=data.name, code=data.code, kargs=kargs)
+        .returning(Submitter)
+    )).one()
+    submitter.model_validate(submitter)
     
-    return { "message": "The submitter has been created", "response": json_like(submitter)}
+    return { "message": "The submitter has been created", "response": json_like(submitter, unset=True)}
 
 @router.post("/check", response_model=MessageResponse[SubmitterKargs])
 async def info_submitter(data: SubmitterInfoForm):
@@ -55,14 +60,18 @@ async def info_submitter(data: SubmitterInfoForm):
     return { "message": "The submitter is valid", "response": kargs}
 
 @router.get("", response_model=List[SubmitterDTO])
-async def get_submitters():
+async def get_submitters(db: DBSession):
     """ Get all the submitters """
-    return await Submitter.objects.all()
+    return (await db.scalars(sqla.select(Submitter))).all()
 
 @router.put("/{submitter_id}", response_model=MessageResponse[SubmitterDTO])
-async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm):
+async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm, db: DBSession):
     """ Edit a submitter """
-    submitter = await Submitter.objects.get_or_none(id=submitter_id)
+    
+    submitter = (await db.scalars(
+        sqla.select(Submitter).where(Submitter.id == submitter_id)
+    )).one_or_none()
+    
     if not submitter:
         raise HTTPException(404, "Submitter not found")
     
@@ -97,26 +106,37 @@ async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm):
         if not type_check_annotation(v["value"], v["type"]):
             raise HTTPException(400, f"Invalid type for {k} ({v['value']} is not of type {v['type']})")
 
-    await submitter.update(**json_like(data))
-    return { "message": "The submitter has been updated", "response": json_like(submitter)}
+    submitter = (await db.scalars(
+        sqla.update(Submitter)
+        .where(Submitter.id == submitter_id)
+        .values(json_like(data))
+        .returning(Submitter)
+    )).one()
+    return { "message": "The submitter has been updated", "response": json_like(submitter, unset=True)}
 
 @router.delete("/{submitter_id}", response_model=MessageResponse[SubmitterDTO])
-async def delete_submitter(submitter_id: SubmitterID):
+async def delete_submitter(submitter_id: SubmitterID, db: DBSession):
     """ Delete a submitter """
     config = await Configuration.get_from_db()
+    
     if config.SUBMITTER == submitter_id:
         raise HTTPException(400, "Cannot delete the currently selected submitter (change it in configuration first)")
-    submitter = await Submitter.objects.get_or_none(id=submitter_id)
+    
+    submitter = (await db.scalars(
+        sqla.select(Submitter).where(Submitter.id == submitter_id)
+    )).one_or_none()
+    
     if not submitter:
         raise HTTPException(404, "Submitter not found")
-    await submitter.delete()
-    return { "message": "The submitter has been deleted", "response": json_like(submitter)}
+    
+    await db.delete(submitter)
+    return { "message": "The submitter has been deleted", "response": json_like(submitter, unset=True)}
 
 @router.post("/{submitter_id}/test", response_model=MessageResponse[Dict[str, Any]])
-async def test_submitter(submitter_id: SubmitterID, data: List[str]):
+async def test_submitter(submitter_id: SubmitterID, data: List[str], db: DBSession):
     """ Test the submitter (Flags will not be stored in the database)"""
     config = await Configuration.get_from_db()
-    submitter = await Submitter.objects.get_or_none(id=submitter_id)
+    submitter = (await db.scalars(sqla.select(Submitter).where(Submitter.id == submitter_id))).one_or_none()
     if not submitter:
         raise HTTPException(404, "Submitter not found")
     if config.FLAG_REGEX:

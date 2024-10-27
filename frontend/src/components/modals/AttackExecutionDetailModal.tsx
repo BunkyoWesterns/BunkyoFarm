@@ -80,7 +80,7 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
             <Alert icon={<BsCardText />} title={<Title order={4}>Attack logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}}>
                 <ScrollArea.Autosize mah={400} >
                     <Box style={{whiteSpace:"pre"}} w={(scollRef.current?.getBoundingClientRect().width-60)+"px"}>
-                        {attack.error?attack.error:<u>No logs found</u>}
+                        {attack.output?attack.output:<u>No logs found</u>}
                     </Box>
                 </ScrollArea.Autosize> 
             </Alert>

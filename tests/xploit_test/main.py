@@ -6,7 +6,7 @@ from pwn import *
 
 host = get_host()
 
-simulate_random_crash = False
+simulate_random_crash = True
 simulate_work = False
 simulate_connection = False
 random_flags = True

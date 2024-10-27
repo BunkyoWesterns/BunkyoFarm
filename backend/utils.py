@@ -5,11 +5,12 @@ from datetime import datetime, UTC
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 from fastapi import HTTPException
-import re, logging, ormar
-from sqlalchemy.sql.dml import Insert
+import re, logging
 from models.response import MessageInfo
-import orjson, gzip, dirhash
-
+import orjson, gzip
+from env import EXPLOIT_SOURCES_DIR
+from typing import Type
+from dateutil.parser import parse as parsedatetime
 
 #logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format="[EXPLOIT-FARM][%(asctime)s] >> [%(levelname)s][%(name)s]:\t%(message)s", datefmt="%d/%m/%Y %H:%M:%S")
@@ -19,6 +20,7 @@ ALLOWED_ANNOTATIONS = ["int", "str", "bool", "float", "any"]
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 ROUTERS_DIR_NAME = "routes"
 ROUTERS_DIR = os.path.join(ROOT_DIR, ROUTERS_DIR_NAME)
+STATS_FILE = os.path.join(EXPLOIT_SOURCES_DIR, f"stats.json")
 
 def extract_function(fun_name:str, code: bytes) -> ast.FunctionDef|None:
     try:
@@ -139,10 +141,22 @@ def load_routers(app: FastAPI|APIRouter):
             raise Exception(f"Error loading router {route} in every route has to be defined a 'router' APIRouter from fastapi!")
         app.include_router(router)
 
-def json_like(obj: BaseModel|List[BaseModel]):
+def _json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json"):
+    res = obj.model_dump(mode=mode, exclude_unset=not unset)
+    if convert_keys:
+        for from_k, to_k in convert_keys.items():
+            if from_k in res:
+                res[to_k] = res.pop(from_k)
+    if exclude:
+        for ele in exclude:
+            if ele in res:
+                del res[ele]
+    return res
+
+def json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json") -> dict:
     if isinstance(obj, list):
-        return [ele.model_dump(mode="json", exclude_unset=True) for ele in obj]
-    return obj.model_dump(mode="json", exclude_unset=True)
+        return [_json_like(ele, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode) for ele in obj]
+    return _json_like(obj, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode)
 
 async def check_only_setup():
     from models.config import Configuration, SetupStatus
@@ -160,20 +174,6 @@ def _extract_values_by_regex(regex:str|bytes, text:str|list[str|bytes]):
 
 def extract_values_by_regex(regex:str, text:str|list[str]) -> list[str]:
     return list(_extract_values_by_regex(regex, text))
-
-async def bulk_insert(objects:List[ormar.Model], postfix=None):
-    if len(objects) == 0:
-        return
-    flags_saves = [obj.prepare_model_to_save(obj.model_dump()) for obj in objects]
-    expr:Insert = type(objects[0]).ormar_config.table.insert().values(flags_saves)
-    if postfix and postfix[0] != " ":
-        postfix = " "+postfix
-    if not postfix:
-        postfix = ""
-    query = str(expr.compile(compile_kwargs={"literal_binds": True}))+postfix #Works on Postgres
-    await type(objects[0]).ormar_config.database.execute(query)
-    for obj in objects:
-        obj.set_save_status(True)
 
 async def _get_messages_array():
     """ This function will recognize problems, dangerous situations and errors detected by the system, and collect them in a list """
@@ -200,26 +200,41 @@ async def get_messages_array() -> List[MessageInfo]:
     return [ele async for ele in _get_messages_array()]
     
 async def create_or_update_env(key:str, value:str):
-    from db import Env
-    var = await Env.objects.filter(key=key).get_or_none()
-    if var:
-        return await var.update(value=value)
-    else:
-        await Env(key=key, value=value).save()
+    from db import Env, dbtransaction, sqla
+    async with dbtransaction() as db:
+        return (await db.scalars(
+            sqla.insert(Env)
+            .values(key=key, value=value)
+            .on_conflict_do_update(
+                index_elements=[Env.key], set_=dict(value=value)
+            ).returning(Env)
+            
+        )).one()
 
-async def get_db_stats(test:bool=False):
-    from db import BinEnv
-    if test: return await BinEnv.objects.filter(BinEnv.key == "STATS").count() > 0
-    encodedjson = await BinEnv.objects.filter(BinEnv.key == "STATS").get_or_none()
-    if encodedjson is None:
+def get_stats():
+    try:
+        with open(STATS_FILE, "rb") as f:
+            data = orjson.loads(gzip.decompress(f.read()))
+        if "start_time" in data:
+            data["start_time"] = parsedatetime(data["start_time"])
+        if "end_time" in data:
+            data["end_time"] = parsedatetime(data["end_time"])
+        return data
+    except Exception:
         return None
-    return orjson.loads(gzip.decompress(encodedjson.value))
 
-async def set_db_stats(stats:dict):
-    from db import BinEnv
-    data = gzip.compress(orjson.dumps(stats))
-    if not await get_db_stats(True):
-        await BinEnv(key="STATS", value=data).save()
-    else:
-        await BinEnv.objects.filter(BinEnv.key == "STATS").update(value=data)
+def set_stats(stats:dict):
+    with open(STATS_FILE, "wb") as f:
+        f.write(gzip.compress(orjson.dumps(stats)))
+
+
+def sqlparam_from_model(Model:Type[BaseModel], exclude:list[str]|None=None, include:list[str]|None=None) -> dict:
+    from db import sqla
+    def filter_check(x:str):
+        if exclude and x in exclude:
+            return False
+        if include and x not in include:
+            return False
+        return True
+    return {k: sqla.bindparam(k) for k in list(filter(filter_check, Model.model_fields.keys()))}
     

@@ -13,13 +13,13 @@ from stats import run_stats_daemon
 from utils import *
 from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
 from fastapi.responses import FileResponse
-from db import *
 from models.all import *
 from utils import datetime_now, load_routers
-from typing import Dict
+from typing import Dict, Annotated
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
+from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
@@ -166,11 +166,28 @@ async def login_api(form: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": await create_access_token({"authenticated":True}), "token_type": "bearer"}
 
 @router.get("/api/status", response_model=StatusAPI, tags=["Status"])
-async def get_status(loggined: None|bool = Depends(is_loggined)):
+async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
     """ This will return the application status, and the configuration if the user is allowed to see it """
     config = await Configuration.get_from_db()
+    # CHECK IF WORKS TODO
     if config.PASSWORD_HASH: config.PASSWORD_HASH = "********"  
     messages = await get_messages_array()
+    
+    teams_response = None
+    services_response = None
+    submitter_response = None
+    if loggined:
+        teams_response = json_like(
+            (await db.scalars(sqla.select(Team))).all()
+            , unset=True
+        )
+        services_response = json_like(
+            list((await db.scalars(sqla.select(Service))).all())
+            , unset=True
+        )
+        if config.SUBMITTER is not None:
+            result = (await db.scalars(sqla.select(Submitter).where(Submitter.id == config.SUBMITTER))).one_or_none()
+            submitter_response = json_like(result, unset=True) if result else None
 
     return StatusAPI(
         status=config.SETUP_STATUS,
@@ -178,26 +195,29 @@ async def get_status(loggined: None|bool = Depends(is_loggined)):
         config=config if loggined else None,
         server_id=await SERVER_ID(),
         server_time=datetime_now(),
-        teams = json_like(await Team.objects.all()) if loggined else None,
-        submitter=None if not loggined or config.SUBMITTER is None else json_like(await Submitter.objects.get(id=config.SUBMITTER)),
+        teams = teams_response,
+        submitter=submitter_response,
         messages= messages if loggined else None,
-        services = json_like(await Service.objects.all()) if loggined else None,
+        services=services_response,
         start_time=config.start_time,
         end_time=config.end_time
     )
 
 @api.post("/setup", response_model=MessageResponse[Configuration], tags=["Status"])
-async def set_status(data: Dict[str, str|int|None]):
+async def set_status(data: Dict[str, str|int|None], db: DBSession):
     """ Set some configuration values, you can set the values to change only """
     config = await Configuration.get_from_db()
-    
+    # CHECK IF WORKS TODO
     for key in data.keys():
         if key not in Configuration.keys():
             raise HTTPException(400, f"Invalid key {key}")
         if key == "SETUP_STATUS" and config.SETUP_STATUS != SetupStatus.SETUP and data[key] == SetupStatus.SETUP.value:
             raise HTTPException(400, "Setup status cannot be changed back to setup")
         if key == "SUBMITTER":
-            if not await Submitter.objects.get_or_none(id=data[key]):
+            sub_count = (await db.scalars(
+                sqla.select(sqla.func.count(Submitter.id)).where(Submitter.id == data[key])
+            )).one_or_none()
+            if sub_count == 0:
                 raise HTTPException(400, "Submitter not found")
         if key == "PASSWORD_HASH" and not data[key] is None:
             if len(str(data[key])) < 8:
