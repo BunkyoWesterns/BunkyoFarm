@@ -4,2353 +4,2353 @@
  */
 
 export interface paths {
-  "/api/setup": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /**
-       * Set Status
-       * @description Set some configuration values, you can set the values to change only
-       */
-      post: operations["set_status_api_setup_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/submitters": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /**
-       * Get Submitters
-       * @description Get all the submitters
-       */
-      get: operations["get_submitters_api_submitters_get"];
-      put?: never;
-      /**
-       * New Submitter
-       * @description Set the submitter code
-       */
-      post: operations["new_submitter_api_submitters_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/submitters/check": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /**
-       * Info Submitter
-       * @description Get information about the submitter code
-       */
-      post: operations["info_submitter_api_submitters_check_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/submitters/{submitter_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      /**
-       * Update Submitter
-       * @description Edit a submitter
-       */
-      put: operations["update_submitter_api_submitters__submitter_id__put"];
-      post?: never;
-      /**
-       * Delete Submitter
-       * @description Delete a submitter
-       */
-      delete: operations["delete_submitter_api_submitters__submitter_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/submitters/{submitter_id}/test": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /**
-       * Test Submitter
-       * @description Test the submitter (Flags will not be stored in the database)
-       */
-      post: operations["test_submitter_api_submitters__submitter_id__test_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/services": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Service Get */
-      get: operations["service_get_api_services_get"];
-      put?: never;
-      /** Service New */
-      post: operations["service_new_api_services_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/services/{service_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      /** Service Edit */
-      put: operations["service_edit_api_services__service_id__put"];
-      post?: never;
-      /** Service Delete */
-      delete: operations["service_delete_api_services__service_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Exploits Get */
-      get: operations["exploits_get_api_exploits_get"];
-      put?: never;
-      /** Exploit New Or Edit */
-      post: operations["exploit_new_or_edit_api_exploits_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/{exploit_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      /** Exploit Edit */
-      put: operations["exploit_edit_api_exploits__exploit_id__put"];
-      post?: never;
-      /** Exploit Delete */
-      delete: operations["exploit_delete_api_exploits__exploit_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/{exploit_id}/submit": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /** Exploit Submit */
-      post: operations["exploit_submit_api_exploits__exploit_id__submit_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/submit": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /** Exploit Submit */
-      post: operations["exploit_submit_api_exploits_submit_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/source": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /** New Exploit Source */
-      post: operations["new_exploit_source_api_exploits_source_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/{exploit_id}/source": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Exploit Source List */
-      get: operations["exploit_source_list_api_exploits__exploit_id__source_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/source/{source_hash}/download": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Download Exploit Source */
-      get: operations["download_exploit_source_api_exploits_source__source_hash__download_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/exploits/source/{source_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      /** Edit Exploit Source */
-      put: operations["edit_exploit_source_api_exploits_source__source_id__put"];
-      post?: never;
-      /** Delete Exploit Source */
-      delete: operations["delete_exploit_source_api_exploits_source__source_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/flags": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Get Flags */
-      get: operations["get_flags_api_flags_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/flags/attacks": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Get Attacks */
-      get: operations["get_attacks_api_flags_attacks_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/flags/stats": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Get Flag Stats */
-      get: operations["get_flag_stats_api_flags_stats_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/teams": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Team Get */
-      get: operations["team_get_api_teams_get"];
-      /** Team Edit List */
-      put: operations["team_edit_list_api_teams_put"];
-      /** Team New */
-      post: operations["team_new_api_teams_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/teams/delete": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /** Team Delete List */
-      post: operations["team_delete_list_api_teams_delete_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/teams/{team_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      post?: never;
-      /** Team Delete */
-      delete: operations["team_delete_api_teams__team_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/clients": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /** Client Get */
-      get: operations["client_get_api_clients_get"];
-      put?: never;
-      /** Client New Or Edit */
-      post: operations["client_new_or_edit_api_clients_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/clients/{client_id}": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      /** Client Edit */
-      put: operations["client_edit_api_clients__client_id__put"];
-      post?: never;
-      /** Client Delete Hashed Or Uuid */
-      delete: operations["client_delete_hashed_or_uuid_api_clients__client_id__delete"];
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/login": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      get?: never;
-      put?: never;
-      /**
-       * Login Api
-       * @description Get a login token to use the apis
-       */
-      post: operations["login_api_api_login_post"];
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
-  "/api/status": {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      /**
-       * Get Status
-       * @description This will return the application status, and the configuration if the user is allowed to see it
-       */
-      get: operations["get_status_api_status_get"];
-      put?: never;
-      post?: never;
-      delete?: never;
-      options?: never;
-      head?: never;
-      patch?: never;
-      trace?: never;
-  };
+    "/api/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Status
+         * @description Set some configuration values, you can set the values to change only
+         */
+        post: operations["set_status_api_setup_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submitters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Submitters
+         * @description Get all the submitters
+         */
+        get: operations["get_submitters_api_submitters_get"];
+        put?: never;
+        /**
+         * New Submitter
+         * @description Set the submitter code
+         */
+        post: operations["new_submitter_api_submitters_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submitters/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Info Submitter
+         * @description Get information about the submitter code
+         */
+        post: operations["info_submitter_api_submitters_check_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submitters/{submitter_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Submitter
+         * @description Edit a submitter
+         */
+        put: operations["update_submitter_api_submitters__submitter_id__put"];
+        post?: never;
+        /**
+         * Delete Submitter
+         * @description Delete a submitter
+         */
+        delete: operations["delete_submitter_api_submitters__submitter_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/submitters/{submitter_id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Test Submitter
+         * @description Test the submitter (Flags will not be stored in the database)
+         */
+        post: operations["test_submitter_api_submitters__submitter_id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Service Get */
+        get: operations["service_get_api_services_get"];
+        put?: never;
+        /** Service New */
+        post: operations["service_new_api_services_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/services/{service_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Service Edit */
+        put: operations["service_edit_api_services__service_id__put"];
+        post?: never;
+        /** Service Delete */
+        delete: operations["service_delete_api_services__service_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exploits Get */
+        get: operations["exploits_get_api_exploits_get"];
+        put?: never;
+        /** Exploit New Or Edit */
+        post: operations["exploit_new_or_edit_api_exploits_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/{exploit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Exploit Edit */
+        put: operations["exploit_edit_api_exploits__exploit_id__put"];
+        post?: never;
+        /** Exploit Delete */
+        delete: operations["exploit_delete_api_exploits__exploit_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/{exploit_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exploit Submit */
+        post: operations["exploit_submit_api_exploits__exploit_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exploit Submit */
+        post: operations["exploit_submit_api_exploits_submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** New Exploit Source */
+        post: operations["new_exploit_source_api_exploits_source_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/{exploit_id}/source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Exploit Source List */
+        get: operations["exploit_source_list_api_exploits__exploit_id__source_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/source/{source_hash}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Exploit Source */
+        get: operations["download_exploit_source_api_exploits_source__source_hash__download_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exploits/source/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Exploit Source */
+        put: operations["edit_exploit_source_api_exploits_source__source_id__put"];
+        post?: never;
+        /** Delete Exploit Source */
+        delete: operations["delete_exploit_source_api_exploits_source__source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Flags */
+        get: operations["get_flags_api_flags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/flags/attacks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Attacks */
+        get: operations["get_attacks_api_flags_attacks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/flags/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Flag Stats */
+        get: operations["get_flag_stats_api_flags_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Team Get */
+        get: operations["team_get_api_teams_get"];
+        /** Team Edit List */
+        put: operations["team_edit_list_api_teams_put"];
+        /** Team New */
+        post: operations["team_new_api_teams_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Team Delete List */
+        post: operations["team_delete_list_api_teams_delete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Team Delete */
+        delete: operations["team_delete_api_teams__team_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Client Get */
+        get: operations["client_get_api_clients_get"];
+        put?: never;
+        /** Client New Or Edit */
+        post: operations["client_new_or_edit_api_clients_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/clients/{client_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Client Edit */
+        put: operations["client_edit_api_clients__client_id__put"];
+        post?: never;
+        /** Client Delete Hashed Or Uuid */
+        delete: operations["client_delete_hashed_or_uuid_api_clients__client_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login Api
+         * @description Get a login token to use the apis
+         */
+        post: operations["login_api_api_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Status
+         * @description This will return the application status, and the configuration if the user is allowed to see it
+         */
+        get: operations["get_status_api_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-      /** AttackExecutionDTO */
-      AttackExecutionDTO: {
-          /** Id */
-          id: number;
-          /** Start Time */
-          start_time?: string | null;
-          /** End Time */
-          end_time?: string | null;
-          status: components["schemas"]["AttackExecutionStatus"];
-          /** Output */
-          output: string | null;
-          /**
-           * Received At
-           * Format: date-time
-           */
-          received_at: string;
-          /** @default [
-           *       null
-           *     ] */
-          target: components["schemas"]["FkType_int_"] | null;
-          exploit?: components["schemas"]["FkType_UUID_"] | null;
-          executed_by?: components["schemas"]["FkType_str_"] | null;
-          /** Flags */
-          flags: components["schemas"]["FkType_int_"][];
-      };
-      /**
-       * AttackExecutionStatus
-       * @enum {string}
-       */
-      AttackExecutionStatus: "done" | "noflags" | "crashed";
-      /**
-       * AttackMode
-       * @enum {string}
-       */
-      AttackMode: "wait-for-time-tick" | "tick-delay" | "loop-delay";
-      /** Body_login_api_api_login_post */
-      Body_login_api_api_login_post: {
-          /** Grant Type */
-          grant_type?: string | null;
-          /** Username */
-          username: string;
-          /** Password */
-          password: string;
-          /**
-           * Scope
-           * @default
-           */
-          scope: string;
-          /** Client Id */
-          client_id?: string | null;
-          /** Client Secret */
-          client_secret?: string | null;
-      };
-      /** Body_new_exploit_source_api_exploits_source_post */
-      Body_new_exploit_source_api_exploits_source_post: {
-          /**
-           * File
-           * Format: binary
-           */
-          file: string;
-          /** Message */
-          message: string | null;
-          /** Os Type */
-          os_type: string | null;
-          /** Distro */
-          distro: string | null;
-          /** Arch */
-          arch: string | null;
-          /** Pushed By */
-          pushed_by: string | null;
-      };
-      /** ClientAddForm */
-      ClientAddForm: {
-          /** Id */
-          id: string;
-          /** Name */
-          name?: string | null;
-      };
-      /** ClientDTO */
-      ClientDTO: {
-          /** Id */
-          id: string;
-          /** Name */
-          name?: string | null;
-          /**
-           * Created At
-           * Format: date-time
-           */
-          created_at: string;
-      };
-      /** ClientEditForm */
-      ClientEditForm: {
-          /** Name */
-          name?: string | null;
-      };
-      /** Configuration */
-      Configuration: {
-          /**
-           * Flag Regex
-           * @default
-           */
-          FLAG_REGEX: string;
-          /** Start Time */
-          START_TIME?: string | null;
-          /** End Time */
-          END_TIME?: string | null;
-          /**
-           * Tick Duration
-           * @default 120
-           */
-          TICK_DURATION: number;
-          /** @default tick-delay */
-          ATTACK_MODE: components["schemas"]["AttackMode"];
-          /**
-           * Loop Attack Delay
-           * @default 60
-           */
-          LOOP_ATTACK_DELAY: number;
-          /**
-           * Attack Time Tick Delay
-           * @default 0
-           */
-          ATTACK_TIME_TICK_DELAY: number;
-          /** Flag Timeout */
-          FLAG_TIMEOUT?: number | null;
-          /** Flag Submit Limit */
-          FLAG_SUBMIT_LIMIT?: number | null;
-          /**
-           * Submit Delay
-           * @default 0
-           */
-          SUBMIT_DELAY: number;
-          /** Submitter */
-          SUBMITTER?: number | null;
-          /**
-           * Submitter Timeout
-           * @default 30
-           */
-          SUBMITTER_TIMEOUT: number | null;
-          /**
-           * Authentication Required
-           * @default false
-           */
-          AUTHENTICATION_REQUIRED: boolean;
-          /** Password Hash */
-          PASSWORD_HASH?: string | null;
-          /** @default setup */
-          SETUP_STATUS: components["schemas"]["SetupStatus"];
-      };
-      /** CustomPage[AttackExecutionDTO] */
-      CustomPage_AttackExecutionDTO_: {
-          /** Items */
-          items: components["schemas"]["AttackExecutionDTO"][];
-          /** Total */
-          total: number | null;
-          /** Page */
-          page: number | null;
-          /** Size */
-          size: number | null;
-          /** Pages */
-          pages?: number | null;
-      };
-      /** CustomPage[FlagDTO] */
-      CustomPage_FlagDTO_: {
-          /** Items */
-          items: components["schemas"]["FlagDTO"][];
-          /** Total */
-          total: number | null;
-          /** Page */
-          page: number | null;
-          /** Size */
-          size: number | null;
-          /** Pages */
-          pages?: number | null;
-      };
-      /** ExploitAddForm */
-      ExploitAddForm: {
-          /**
-           * Id
-           * Format: uuid
-           */
-          id: string;
-          /** Name */
-          name: string;
-          /** @default other */
-          language: components["schemas"]["Language"];
-          /**
-           * Service
-           * Format: uuid
-           */
-          service: string;
-          /** Created By */
-          created_by: string;
-      };
-      /** ExploitDTO */
-      ExploitDTO: {
-          /**
-           * Id
-           * Format: uuid
-           */
-          id: string;
-          /** Name */
-          name: string;
-          language: components["schemas"]["Language"];
-          status?: components["schemas"]["ExploitStatus"] | null;
-          /** Last Update */
-          last_update?: string | null;
-          /**
-           * Created At
-           * Format: date-time
-           */
-          created_at: string;
-          /**
-           * Service
-           * Format: uuid
-           */
-          service: string;
-          /** Created By */
-          created_by: string;
-          /** Last Execution By */
-          last_execution_by?: string | null;
-      };
-      /** ExploitEditForm */
-      ExploitEditForm: {
-          /** Name */
-          name?: string | null;
-          language?: components["schemas"]["Language"] | null;
-          /** Service */
-          service?: string | null;
-      };
-      /** ExploitSourceDTO */
-      ExploitSourceDTO: {
-          /**
-           * Id
-           * Format: uuid
-           */
-          id: string;
-          /** Hash */
-          hash: string;
-          /** Message */
-          message: string | null;
-          /**
-           * Pushed At
-           * Format: date-time
-           */
-          pushed_at: string;
-          /** Pushed By */
-          pushed_by: string;
-          /** Os Type */
-          os_type: string | null;
-          /** Distro */
-          distro: string | null;
-          /** Arch */
-          arch: string | null;
-          /**
-           * Exploit
-           * Format: uuid
-           */
-          exploit: string;
-      };
-      /** ExploitSourcePushForm */
-      ExploitSourcePushForm: {
-          /** Message */
-          message: string | null;
-      };
-      /**
-       * ExploitStatus
-       * @enum {string}
-       */
-      ExploitStatus: "active" | "disabled";
-      /** ExploitSubmitForm */
-      ExploitSubmitForm: {
-          /** Start Time */
-          start_time?: string | null;
-          /** End Time */
-          end_time?: string | null;
-          status: components["schemas"]["AttackExecutionStatus"];
-          /** Output */
-          output?: string | null;
-          /** Executed By */
-          executed_by?: string | null;
-          /** Target */
-          target?: number | null;
-          /** Flags */
-          flags: string[];
-      };
-      FkType_UUID_: unknown;
-      FkType_int_: unknown;
-      FkType_str_: unknown;
-      /** FlagDTO */
-      FlagDTO: {
-          /** Id */
-          id: number;
-          /** Flag */
-          flag: string;
-          status: components["schemas"]["FlagStatus"];
-          /** Last Submission At */
-          last_submission_at: string | null;
-          /** Status Text */
-          status_text?: string | null;
-          /**
-           * Submit Attempts
-           * @default 0
-           */
-          submit_attempts: number;
-          attack: components["schemas"]["FlagDTOAttackDetails"];
-      };
-      /** FlagDTOAttackDetails */
-      FlagDTOAttackDetails: {
-          /** Id */
-          id: number;
-          /** Start Time */
-          start_time?: string | null;
-          /** End Time */
-          end_time?: string | null;
-          status: components["schemas"]["AttackExecutionStatus"];
-          /**
-           * Received At
-           * Format: date-time
-           */
-          received_at: string;
-          /** @default [
-           *       null
-           *     ] */
-          target: components["schemas"]["FkType_int_"] | null;
-          exploit?: components["schemas"]["FkType_UUID_"] | null;
-          executed_by?: components["schemas"]["FkType_str_"] | null;
-      };
-      /** FlagStats */
-      FlagStats: {
-          /**
-           * Ticks
-           * @default []
-           */
-          ticks: components["schemas"]["TickStats"][];
-          /**
-           * Globals
-           * @default {}
-           */
-          globals: Record<string, never>;
-      };
-      /**
-       * FlagStatus
-       * @enum {string}
-       */
-      FlagStatus: "ok" | "wait" | "timeout" | "invalid";
-      /**
-       * Language
-       * @enum {string}
-       */
-      Language: "python" | "java" | "javascript" | "typescript" | "c#" | "c++" | "php" | "r" | "kotlin" | "go" | "ruby" | "rust" | "lua" | "dart" | "perl" | "haskell" | "other";
-      /** ManualSubmitForm */
-      ManualSubmitForm: {
-          /** Flags */
-          flags?: string[] | null;
-          /** Output */
-          output?: string | null;
-      };
-      /** MessageInfo */
-      MessageInfo: {
-          /** @default warning */
-          level: components["schemas"]["MessageStatusLevel"];
-          /** Title */
-          title: string;
-          /** Message */
-          message: string;
-      };
-      /** MessageResponse[Any] */
-      MessageResponse_Any_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: unknown | null;
-      };
-      /** MessageResponse[ClientDTO] */
-      MessageResponse_ClientDTO_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["ClientDTO"] | null;
-      };
-      /** MessageResponse[Configuration] */
-      MessageResponse_Configuration_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["Configuration"] | null;
-      };
-      /** MessageResponse[Dict[str, Any]] */
-      MessageResponse_Dict_str__Any__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: Record<string, never> | null;
-      };
-      /** MessageResponse[Dict[str, int]] */
-      MessageResponse_Dict_str__int__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: {
-              [key: string]: number;
-          } | null;
-      };
-      /** MessageResponse[ExploitDTO] */
-      MessageResponse_ExploitDTO_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["ExploitDTO"] | null;
-      };
-      /** MessageResponse[List[TeamDTO]] */
-      MessageResponse_List_TeamDTO__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: components["schemas"]["TeamDTO"][] | null;
-      };
-      /** MessageResponse[List[TeamEditForm]] */
-      MessageResponse_List_TeamEditForm__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: components["schemas"]["TeamEditForm"][] | null;
-      };
-      /** MessageResponse[ServiceDTO] */
-      MessageResponse_ServiceDTO_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["ServiceDTO"] | null;
-      };
-      /** MessageResponse[SubmitterDTO] */
-      MessageResponse_SubmitterDTO_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["SubmitterDTO"] | null;
-      };
-      /** MessageResponse[SubmitterKargs] */
-      MessageResponse_SubmitterKargs_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["SubmitterKargs"] | null;
-      };
-      /** MessageResponse[TeamDTO] */
-      MessageResponse_TeamDTO_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["TeamDTO"] | null;
-      };
-      /** MessageResponse[UUID] */
-      MessageResponse_UUID_: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: string | null;
-      };
-      /** MessageResponse[Union[ExploitSourceDTO, NoneType]] */
-      MessageResponse_Union_ExploitSourceDTO__NoneType__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          response?: components["schemas"]["ExploitSourceDTO"] | null;
-      };
-      /** MessageResponse[Union[UUID, NoneType]] */
-      MessageResponse_Union_UUID__NoneType__: {
-          /** @default ok */
-          status: components["schemas"]["ResponseStatus"];
-          /** Message */
-          message?: string | null;
-          /** Response */
-          response?: string | null;
-      };
-      /**
-       * MessageStatusLevel
-       * @enum {string}
-       */
-      MessageStatusLevel: "info" | "warning" | "error";
-      /**
-       * ResponseStatus
-       * @enum {string}
-       */
-      ResponseStatus: "ok" | "error" | "invalid";
-      /** ServiceAddForm */
-      ServiceAddForm: {
-          /** Name */
-          name: string;
-      };
-      /** ServiceDTO */
-      ServiceDTO: {
-          /**
-           * Id
-           * Format: uuid
-           */
-          id: string;
-          /** Name */
-          name: string;
-      };
-      /** ServiceEditForm */
-      ServiceEditForm: {
-          /** Name */
-          name?: string | null;
-      };
-      /**
-       * SetupStatus
-       * @enum {string}
-       */
-      SetupStatus: "setup" | "running";
-      /** StatusAPI */
-      StatusAPI: {
-          status: components["schemas"]["SetupStatus"];
-          /** Loggined */
-          loggined: boolean;
-          config?: components["schemas"]["Configuration"] | null;
-          /**
-           * Server Time
-           * Format: date-time
-           */
-          server_time: string;
-          submitter?: components["schemas"]["SubmitterDTO"] | null;
-          /** Teams */
-          teams?: components["schemas"]["TeamDTO"][] | null;
-          /** Messages */
-          messages: components["schemas"]["MessageInfo"][] | null;
-          /** Services */
-          services: components["schemas"]["ServiceDTO"][] | null;
-          /** Start Time */
-          start_time?: string | null;
-          /** End Time */
-          end_time?: string | null;
-          /**
-           * Version
-           * @default 0.0.0
-           */
-          version: string;
-          /** Server Id */
-          server_id?: string;
-          /**
-           * Whoami
-           * @default exploitfarm
-           */
-          whoami: string;
-      };
-      /** SubmitterAddForm */
-      SubmitterAddForm: {
-          /**
-           * Name
-           * @default
-           */
-          name: string;
-          /** Code */
-          code: string;
-          /** Kargs */
-          kargs?: Record<string, never> | null;
-      };
-      /** SubmitterDTO */
-      SubmitterDTO: {
-          /** Id */
-          id: number;
-          /** Name */
-          name: string;
-          /** Code */
-          code: string;
-          /** @default {} */
-          kargs: components["schemas"]["SubmitterKargs"];
-          /**
-           * Created At
-           * Format: date-time
-           */
-          created_at: string;
-      };
-      /** SubmitterEditForm */
-      SubmitterEditForm: {
-          /** Code */
-          code?: string | null;
-          /** Name */
-          name?: string | null;
-          /** Kargs */
-          kargs?: Record<string, never> | null;
-      };
-      /** SubmitterInfoForm */
-      SubmitterInfoForm: {
-          /** Code */
-          code: string;
-      };
-      SubmitterKargs: {
-          [key: string]: Record<string, never>;
-      };
-      /** TeamAddForm */
-      TeamAddForm: {
-          /** Name */
-          name?: string | null;
-          /** Short Name */
-          short_name?: string | null;
-          /** Host */
-          host: string;
-      };
-      /** TeamDTO */
-      TeamDTO: {
-          /** Id */
-          id: number;
-          /** Name */
-          name: string | null;
-          /** Short Name */
-          short_name: string | null;
-          /** Host */
-          host: string;
-          /**
-           * Created At
-           * Format: date-time
-           */
-          created_at: string;
-      };
-      /** TeamEditForm */
-      TeamEditForm: {
-          /** Id */
-          id: number;
-          /** Name */
-          name?: string | null;
-          /** Short Name */
-          short_name?: string | null;
-          /** Host */
-          host?: string | null;
-      };
-      /** TickStats */
-      TickStats: {
-          /** Tick */
-          tick: number;
-          /**
-           * Start Time
-           * Format: date-time
-           */
-          start_time: string;
-          /**
-           * End Time
-           * Format: date-time
-           */
-          end_time: string;
-          /**
-           * Globals
-           * @default {}
-           */
-          globals: Record<string, never>;
-          /**
-           * Exploits
-           * @default {}
-           */
-          exploits: Record<string, never>;
-          /**
-           * Services
-           * @default {}
-           */
-          services: Record<string, never>;
-          /**
-           * Teams
-           * @default {}
-           */
-          teams: Record<string, never>;
-          /**
-           * Clients
-           * @default {}
-           */
-          clients: Record<string, never>;
-      };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    schemas: {
+        /** AttackExecutionDTO */
+        AttackExecutionDTO: {
+            /** Id */
+            id: number;
+            /** Start Time */
+            start_time?: string | null;
+            /** End Time */
+            end_time?: string | null;
+            status: components["schemas"]["AttackExecutionStatus"];
+            /** Output */
+            output: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** @default [
+             *       null
+             *     ] */
+            target: components["schemas"]["FkType_int_"] | null;
+            exploit?: components["schemas"]["FkType_UUID_"] | null;
+            executed_by?: components["schemas"]["FkType_str_"] | null;
+            /** Flags */
+            flags: components["schemas"]["FkType_int_"][];
+        };
+        /**
+         * AttackExecutionStatus
+         * @enum {string}
+         */
+        AttackExecutionStatus: "done" | "noflags" | "crashed";
+        /**
+         * AttackMode
+         * @enum {string}
+         */
+        AttackMode: "wait-for-time-tick" | "tick-delay" | "loop-delay";
+        /** Body_login_api_api_login_post */
+        Body_login_api_api_login_post: {
+            /** Grant Type */
+            grant_type?: string | null;
+            /** Username */
+            username: string;
+            /** Password */
+            password: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /** Client Id */
+            client_id?: string | null;
+            /** Client Secret */
+            client_secret?: string | null;
+        };
+        /** Body_new_exploit_source_api_exploits_source_post */
+        Body_new_exploit_source_api_exploits_source_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /** Message */
+            message: string | null;
+            /** Os Type */
+            os_type: string | null;
+            /** Distro */
+            distro: string | null;
+            /** Arch */
+            arch: string | null;
+            /** Pushed By */
+            pushed_by: string | null;
+        };
+        /** ClientAddForm */
+        ClientAddForm: {
+            /** Id */
+            id: string;
+            /** Name */
+            name?: string | null;
+        };
+        /** ClientDTO */
+        ClientDTO: {
+            /** Id */
+            id: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ClientEditForm */
+        ClientEditForm: {
+            /** Name */
+            name?: string | null;
+        };
+        /** Configuration */
+        Configuration: {
+            /**
+             * Flag Regex
+             * @default
+             */
+            FLAG_REGEX: string;
+            /** Start Time */
+            START_TIME?: string | null;
+            /** End Time */
+            END_TIME?: string | null;
+            /**
+             * Tick Duration
+             * @default 120
+             */
+            TICK_DURATION: number;
+            /** @default tick-delay */
+            ATTACK_MODE: components["schemas"]["AttackMode"];
+            /**
+             * Loop Attack Delay
+             * @default 60
+             */
+            LOOP_ATTACK_DELAY: number;
+            /**
+             * Attack Time Tick Delay
+             * @default 0
+             */
+            ATTACK_TIME_TICK_DELAY: number;
+            /** Flag Timeout */
+            FLAG_TIMEOUT?: number | null;
+            /** Flag Submit Limit */
+            FLAG_SUBMIT_LIMIT?: number | null;
+            /**
+             * Submit Delay
+             * @default 0
+             */
+            SUBMIT_DELAY: number;
+            /** Submitter */
+            SUBMITTER?: number | null;
+            /**
+             * Submitter Timeout
+             * @default 30
+             */
+            SUBMITTER_TIMEOUT: number | null;
+            /**
+             * Authentication Required
+             * @default false
+             */
+            AUTHENTICATION_REQUIRED: boolean;
+            /** Password Hash */
+            PASSWORD_HASH?: string | null;
+            /** @default setup */
+            SETUP_STATUS: components["schemas"]["SetupStatus"];
+        };
+        /** CustomPage[AttackExecutionDTO] */
+        CustomPage_AttackExecutionDTO_: {
+            /** Items */
+            items: components["schemas"]["AttackExecutionDTO"][];
+            /** Total */
+            total: number | null;
+            /** Page */
+            page: number | null;
+            /** Size */
+            size: number | null;
+            /** Pages */
+            pages?: number | null;
+        };
+        /** CustomPage[FlagDTO] */
+        CustomPage_FlagDTO_: {
+            /** Items */
+            items: components["schemas"]["FlagDTO"][];
+            /** Total */
+            total: number | null;
+            /** Page */
+            page: number | null;
+            /** Size */
+            size: number | null;
+            /** Pages */
+            pages?: number | null;
+        };
+        /** ExploitAddForm */
+        ExploitAddForm: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** @default other */
+            language: components["schemas"]["Language"];
+            /**
+             * Service
+             * Format: uuid
+             */
+            service: string;
+            /** Created By */
+            created_by: string;
+        };
+        /** ExploitDTO */
+        ExploitDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            language: components["schemas"]["Language"];
+            status?: components["schemas"]["ExploitStatus"] | null;
+            /** Last Update */
+            last_update?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Service
+             * Format: uuid
+             */
+            service: string;
+            /** Created By */
+            created_by: string;
+            /** Last Execution By */
+            last_execution_by?: string | null;
+        };
+        /** ExploitEditForm */
+        ExploitEditForm: {
+            /** Name */
+            name?: string | null;
+            language?: components["schemas"]["Language"] | null;
+            /** Service */
+            service?: string | null;
+        };
+        /** ExploitSourceDTO */
+        ExploitSourceDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Hash */
+            hash: string;
+            /** Message */
+            message: string | null;
+            /**
+             * Pushed At
+             * Format: date-time
+             */
+            pushed_at: string;
+            /** Pushed By */
+            pushed_by: string;
+            /** Os Type */
+            os_type: string | null;
+            /** Distro */
+            distro: string | null;
+            /** Arch */
+            arch: string | null;
+            /**
+             * Exploit
+             * Format: uuid
+             */
+            exploit: string;
+        };
+        /** ExploitSourcePushForm */
+        ExploitSourcePushForm: {
+            /** Message */
+            message: string | null;
+        };
+        /**
+         * ExploitStatus
+         * @enum {string}
+         */
+        ExploitStatus: "active" | "disabled";
+        /** ExploitSubmitForm */
+        ExploitSubmitForm: {
+            /** Start Time */
+            start_time?: string | null;
+            /** End Time */
+            end_time?: string | null;
+            status: components["schemas"]["AttackExecutionStatus"];
+            /** Output */
+            output?: string | null;
+            /** Executed By */
+            executed_by?: string | null;
+            /** Target */
+            target?: number | null;
+            /** Flags */
+            flags: string[];
+        };
+        FkType_UUID_: string;
+        FkType_int_: number;
+        FkType_str_: string;
+        /** FlagDTO */
+        FlagDTO: {
+            /** Id */
+            id: number;
+            /** Flag */
+            flag: string;
+            status: components["schemas"]["FlagStatus"];
+            /** Last Submission At */
+            last_submission_at: string | null;
+            /** Status Text */
+            status_text?: string | null;
+            /**
+             * Submit Attempts
+             * @default 0
+             */
+            submit_attempts: number;
+            attack: components["schemas"]["FlagDTOAttackDetails"];
+        };
+        /** FlagDTOAttackDetails */
+        FlagDTOAttackDetails: {
+            /** Id */
+            id: number;
+            /** Start Time */
+            start_time?: string | null;
+            /** End Time */
+            end_time?: string | null;
+            status: components["schemas"]["AttackExecutionStatus"];
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** @default [
+             *       null
+             *     ] */
+            target: components["schemas"]["FkType_int_"] | null;
+            exploit?: components["schemas"]["FkType_UUID_"] | null;
+            executed_by?: components["schemas"]["FkType_str_"] | null;
+        };
+        /** FlagStats */
+        FlagStats: {
+            /**
+             * Ticks
+             * @default []
+             */
+            ticks: components["schemas"]["TickStats"][];
+            /**
+             * Globals
+             * @default {}
+             */
+            globals: Record<string, never>;
+        };
+        /**
+         * FlagStatus
+         * @enum {string}
+         */
+        FlagStatus: "ok" | "wait" | "timeout" | "invalid";
+        /**
+         * Language
+         * @enum {string}
+         */
+        Language: "python" | "java" | "javascript" | "typescript" | "c#" | "c++" | "php" | "r" | "kotlin" | "go" | "ruby" | "rust" | "lua" | "dart" | "perl" | "haskell" | "other";
+        /** ManualSubmitForm */
+        ManualSubmitForm: {
+            /** Flags */
+            flags?: string[] | null;
+            /** Output */
+            output?: string | null;
+        };
+        /** MessageInfo */
+        MessageInfo: {
+            /** @default warning */
+            level: components["schemas"]["MessageStatusLevel"];
+            /** Title */
+            title: string;
+            /** Message */
+            message: string;
+        };
+        /** MessageResponse[Any] */
+        MessageResponse_Any_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: unknown | null;
+        };
+        /** MessageResponse[ClientDTO] */
+        MessageResponse_ClientDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["ClientDTO"] | null;
+        };
+        /** MessageResponse[Configuration] */
+        MessageResponse_Configuration_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["Configuration"] | null;
+        };
+        /** MessageResponse[Dict[str, Any]] */
+        MessageResponse_Dict_str__Any__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: Record<string, never> | null;
+        };
+        /** MessageResponse[Dict[str, int]] */
+        MessageResponse_Dict_str__int__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: {
+                [key: string]: number;
+            } | null;
+        };
+        /** MessageResponse[ExploitDTO] */
+        MessageResponse_ExploitDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["ExploitDTO"] | null;
+        };
+        /** MessageResponse[List[TeamDTO]] */
+        MessageResponse_List_TeamDTO__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: components["schemas"]["TeamDTO"][] | null;
+        };
+        /** MessageResponse[List[TeamEditForm]] */
+        MessageResponse_List_TeamEditForm__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: components["schemas"]["TeamEditForm"][] | null;
+        };
+        /** MessageResponse[ServiceDTO] */
+        MessageResponse_ServiceDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["ServiceDTO"] | null;
+        };
+        /** MessageResponse[SubmitterDTO] */
+        MessageResponse_SubmitterDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["SubmitterDTO"] | null;
+        };
+        /** MessageResponse[SubmitterKargs] */
+        MessageResponse_SubmitterKargs_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["SubmitterKargs"] | null;
+        };
+        /** MessageResponse[TeamDTO] */
+        MessageResponse_TeamDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["TeamDTO"] | null;
+        };
+        /** MessageResponse[UUID] */
+        MessageResponse_UUID_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: string | null;
+        };
+        /** MessageResponse[Union[ExploitSourceDTO, NoneType]] */
+        MessageResponse_Union_ExploitSourceDTO__NoneType__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["ExploitSourceDTO"] | null;
+        };
+        /** MessageResponse[Union[UUID, NoneType]] */
+        MessageResponse_Union_UUID__NoneType__: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: string | null;
+        };
+        /**
+         * MessageStatusLevel
+         * @enum {string}
+         */
+        MessageStatusLevel: "info" | "warning" | "error";
+        /**
+         * ResponseStatus
+         * @enum {string}
+         */
+        ResponseStatus: "ok" | "error" | "invalid";
+        /** ServiceAddForm */
+        ServiceAddForm: {
+            /** Name */
+            name: string;
+        };
+        /** ServiceDTO */
+        ServiceDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /** ServiceEditForm */
+        ServiceEditForm: {
+            /** Name */
+            name?: string | null;
+        };
+        /**
+         * SetupStatus
+         * @enum {string}
+         */
+        SetupStatus: "setup" | "running";
+        /** StatusAPI */
+        StatusAPI: {
+            status: components["schemas"]["SetupStatus"];
+            /** Loggined */
+            loggined: boolean;
+            config?: components["schemas"]["Configuration"] | null;
+            /**
+             * Server Time
+             * Format: date-time
+             */
+            server_time: string;
+            submitter?: components["schemas"]["SubmitterDTO"] | null;
+            /** Teams */
+            teams?: components["schemas"]["TeamDTO"][] | null;
+            /** Messages */
+            messages: components["schemas"]["MessageInfo"][] | null;
+            /** Services */
+            services: components["schemas"]["ServiceDTO"][] | null;
+            /** Start Time */
+            start_time?: string | null;
+            /** End Time */
+            end_time?: string | null;
+            /**
+             * Version
+             * @default 0.0.0
+             */
+            version: string;
+            /** Server Id */
+            server_id?: string;
+            /**
+             * Whoami
+             * @default exploitfarm
+             */
+            whoami: string;
+        };
+        /** SubmitterAddForm */
+        SubmitterAddForm: {
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** Code */
+            code: string;
+            /** Kargs */
+            kargs?: Record<string, never> | null;
+        };
+        /** SubmitterDTO */
+        SubmitterDTO: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Code */
+            code: string;
+            /** @default {} */
+            kargs: components["schemas"]["SubmitterKargs"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** SubmitterEditForm */
+        SubmitterEditForm: {
+            /** Code */
+            code?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Kargs */
+            kargs?: Record<string, never> | null;
+        };
+        /** SubmitterInfoForm */
+        SubmitterInfoForm: {
+            /** Code */
+            code: string;
+        };
+        SubmitterKargs: {
+            [key: string]: Record<string, never>;
+        };
+        /** TeamAddForm */
+        TeamAddForm: {
+            /** Name */
+            name?: string | null;
+            /** Short Name */
+            short_name?: string | null;
+            /** Host */
+            host: string;
+        };
+        /** TeamDTO */
+        TeamDTO: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string | null;
+            /** Short Name */
+            short_name: string | null;
+            /** Host */
+            host: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** TeamEditForm */
+        TeamEditForm: {
+            /** Id */
+            id: number;
+            /** Name */
+            name?: string | null;
+            /** Short Name */
+            short_name?: string | null;
+            /** Host */
+            host?: string | null;
+        };
+        /** TickStats */
+        TickStats: {
+            /** Tick */
+            tick: number;
+            /**
+             * Start Time
+             * Format: date-time
+             */
+            start_time: string;
+            /**
+             * End Time
+             * Format: date-time
+             */
+            end_time: string;
+            /**
+             * Globals
+             * @default {}
+             */
+            globals: Record<string, never>;
+            /**
+             * Exploits
+             * @default {}
+             */
+            exploits: Record<string, never>;
+            /**
+             * Services
+             * @default {}
+             */
+            services: Record<string, never>;
+            /**
+             * Teams
+             * @default {}
+             */
+            teams: Record<string, never>;
+            /**
+             * Clients
+             * @default {}
+             */
+            clients: Record<string, never>;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  set_status_api_setup_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": {
-                  [key: string]: string | number | null;
-              };
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Configuration_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  get_submitters_api_submitters_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["SubmitterDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  new_submitter_api_submitters_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["SubmitterAddForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  info_submitter_api_submitters_check_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["SubmitterInfoForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_SubmitterKargs_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  update_submitter_api_submitters__submitter_id__put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              submitter_id: number;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["SubmitterEditForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  delete_submitter_api_submitters__submitter_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              submitter_id: number;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  test_submitter_api_submitters__submitter_id__test_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              submitter_id: number;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": string[];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Dict_str__Any__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  service_get_api_services_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["ServiceDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  service_new_api_services_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ServiceAddForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  service_edit_api_services__service_id__put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              service_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ServiceEditForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  service_delete_api_services__service_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              service_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploits_get_api_exploits_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["ExploitDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_new_or_edit_api_exploits_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ExploitAddForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_edit_api_exploits__exploit_id__put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              exploit_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ExploitEditForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_delete_api_exploits__exploit_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              exploit_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_submit_api_exploits__exploit_id__submit_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              exploit_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ExploitSubmitForm"][];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Dict_str__int__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_submit_api_exploits_submit_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ManualSubmitForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Dict_str__int__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  new_exploit_source_api_exploits_source_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "multipart/form-data": components["schemas"]["Body_new_exploit_source_api_exploits_source_post"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Union_UUID__NoneType__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  exploit_source_list_api_exploits__exploit_id__source_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              exploit_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["ExploitSourceDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  download_exploit_source_api_exploits_source__source_hash__download_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              source_hash: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content?: never;
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  edit_exploit_source_api_exploits_source__source_id__put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              source_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ExploitSourcePushForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Union_ExploitSourceDTO__NoneType__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  delete_exploit_source_api_exploits_source__source_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              source_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_UUID_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  get_flags_api_flags_get: {
-      parameters: {
-          query?: {
-              /** @description Flag ID */
-              id?: number | null;
-              /** @description Flag status */
-              flag_status?: components["schemas"]["FlagStatus"] | null;
-              /** @description Attack status */
-              attack_status?: components["schemas"]["AttackExecutionStatus"] | null;
-              /** @description Target team */
-              target?: number | null;
-              /** @description Exploit */
-              exploit?: string | null;
-              /** @description Client */
-              executed_by?: string | null;
-              /** @description Reverse order */
-              reversed?: boolean;
-              /** @description Page number */
-              page?: number;
-              /** @description Page size */
-              size?: number;
-          };
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["CustomPage_FlagDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  get_attacks_api_flags_attacks_get: {
-      parameters: {
-          query?: {
-              /** @description Attack ID */
-              id?: number | null;
-              /** @description Attack status */
-              status?: components["schemas"]["AttackExecutionStatus"] | null;
-              /** @description Target team */
-              target?: number | null;
-              /** @description Exploit */
-              exploit?: string | null;
-              /** @description Client */
-              executed_by?: string | null;
-              /** @description Reverse order */
-              reversed?: boolean;
-              /** @description Page number */
-              page?: number;
-              /** @description Page size */
-              size?: number;
-          };
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["CustomPage_AttackExecutionDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  get_flag_stats_api_flags_stats_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["FlagStats"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  team_get_api_teams_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["TeamDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  team_edit_list_api_teams_put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["TeamEditForm"][];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_List_TeamEditForm__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  team_new_api_teams_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["TeamAddForm"][];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_List_TeamEditForm__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  team_delete_list_api_teams_delete_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": number[];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_List_TeamDTO__"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  team_delete_api_teams__team_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              team_id: number;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_TeamDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  client_get_api_clients_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["ClientDTO"][];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  client_new_or_edit_api_clients_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ClientAddForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  client_edit_api_clients__client_id__put: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              client_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/json": components["schemas"]["ClientEditForm"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  client_delete_hashed_or_uuid_api_clients__client_id__delete: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path: {
-              client_id: string;
-          };
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  login_api_api_login_post: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody: {
-          content: {
-              "application/x-www-form-urlencoded": components["schemas"]["Body_login_api_api_login_post"];
-          };
-      };
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": unknown;
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
-  get_status_api_status_get: {
-      parameters: {
-          query?: never;
-          header?: never;
-          path?: never;
-          cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-          /** @description Successful Response */
-          200: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["StatusAPI"];
-              };
-          };
-          /** @description Validation error */
-          422: {
-              headers: {
-                  [name: string]: unknown;
-              };
-              content: {
-                  "application/json": components["schemas"]["MessageResponse_Any_"];
-              };
-          };
-      };
-  };
+    set_status_api_setup_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: string | number | null;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Configuration_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    get_submitters_api_submitters_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubmitterDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    new_submitter_api_submitters_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitterAddForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    info_submitter_api_submitters_check_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitterInfoForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_SubmitterKargs_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    update_submitter_api_submitters__submitter_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                submitter_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitterEditForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    delete_submitter_api_submitters__submitter_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                submitter_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_SubmitterDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    test_submitter_api_submitters__submitter_id__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                submitter_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": string[];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Dict_str__Any__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    service_get_api_services_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    service_new_api_services_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceAddForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    service_edit_api_services__service_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ServiceEditForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    service_delete_api_services__service_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ServiceDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploits_get_api_exploits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploitDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_new_or_edit_api_exploits_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExploitAddForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_edit_api_exploits__exploit_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exploit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExploitEditForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_delete_api_exploits__exploit_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exploit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ExploitDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_submit_api_exploits__exploit_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exploit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExploitSubmitForm"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Dict_str__int__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_submit_api_exploits_submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualSubmitForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Dict_str__int__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    new_exploit_source_api_exploits_source_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_new_exploit_source_api_exploits_source_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Union_UUID__NoneType__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_source_list_api_exploits__exploit_id__source_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exploit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploitSourceDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    download_exploit_source_api_exploits_source__source_hash__download_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_hash: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    edit_exploit_source_api_exploits_source__source_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExploitSourcePushForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Union_ExploitSourceDTO__NoneType__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    delete_exploit_source_api_exploits_source__source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_UUID_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    get_flags_api_flags_get: {
+        parameters: {
+            query?: {
+                /** @description Flag ID */
+                id?: number | null;
+                /** @description Flag status */
+                flag_status?: components["schemas"]["FlagStatus"] | null;
+                /** @description Attack status */
+                attack_status?: components["schemas"]["AttackExecutionStatus"] | null;
+                /** @description Target team */
+                target?: number | null;
+                /** @description Exploit */
+                exploit?: string | null;
+                /** @description Client */
+                executed_by?: string | null;
+                /** @description Reverse order */
+                reversed?: boolean;
+                /** @description Page number */
+                page?: number;
+                /** @description Page size */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPage_FlagDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    get_attacks_api_flags_attacks_get: {
+        parameters: {
+            query?: {
+                /** @description Attack ID */
+                id?: number | null;
+                /** @description Attack status */
+                status?: components["schemas"]["AttackExecutionStatus"] | null;
+                /** @description Target team */
+                target?: number | null;
+                /** @description Exploit */
+                exploit?: string | null;
+                /** @description Client */
+                executed_by?: string | null;
+                /** @description Reverse order */
+                reversed?: boolean;
+                /** @description Page number */
+                page?: number;
+                /** @description Page size */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomPage_AttackExecutionDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    get_flag_stats_api_flags_stats_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagStats"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    team_get_api_teams_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    team_edit_list_api_teams_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamEditForm"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_List_TeamEditForm__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    team_new_api_teams_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamAddForm"][];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_List_TeamEditForm__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    team_delete_list_api_teams_delete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": number[];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_List_TeamDTO__"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    team_delete_api_teams__team_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_TeamDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    client_get_api_clients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    client_new_or_edit_api_clients_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientAddForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    client_edit_api_clients__client_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientEditForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    client_delete_hashed_or_uuid_api_clients__client_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_ClientDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    login_api_api_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["Body_login_api_api_login_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    get_status_api_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusAPI"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
 }

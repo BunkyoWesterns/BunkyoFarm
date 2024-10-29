@@ -139,7 +139,7 @@ export const SubmitterModal = ({ open, onClose }:{ open:boolean, onClose:()=>voi
                 message: res.message??"There was an unknown error."
             })
             if (res.status === "ok"){
-                setLastKArgsDetails(res.response??{})
+                setLastKArgsDetails(res.response as any??{})
                 setShowKArgs(true)
             }else{
                 setShowKArgs(false)
