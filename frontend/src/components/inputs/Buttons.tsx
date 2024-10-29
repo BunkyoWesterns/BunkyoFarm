@@ -6,6 +6,7 @@ import { IoMdArrowRoundBack } from "react-icons/io"
 import { IoLogOut } from "react-icons/io5"
 import { MdAdd } from "react-icons/md";
 import { FaWrench } from "react-icons/fa6";
+import { FaDownload } from "react-icons/fa";
 
 export const BackButton =  forwardRef<HTMLButtonElement, {onClick?:()=>void, disabled?: boolean}>(({ onClick, disabled }, ref) => {
     return <Button ref={ref} color='cyan' size="compact-xs" radius={10} h={35} w={35} onClick={onClick} disabled={disabled}>
@@ -38,8 +39,14 @@ export const EngineButton = forwardRef<HTMLButtonElement, {onClick?:()=>void, di
 })
 
 export const DeleteButton = forwardRef<HTMLButtonElement, {onClick?:()=>void, disabled?: boolean}>(({ onClick, disabled }, ref) => {
-    return <Button ref={ref} color='red' size="compact-xs" h={35} w={35} onClick={onClick} disabled={disabled}>
+    return <Button ref={ref} color='red' size="compact-xs" radius={10} h={35} w={35} onClick={onClick} disabled={disabled}>
         <FaTrash size={15} />
+    </Button>
+})
+
+export const DownloadButton = forwardRef<HTMLButtonElement, {onClick?:()=>void, disabled?: boolean}>(({ onClick, disabled }, ref) => {
+    return <Button ref={ref} color='grape' size="compact-xs" radius={10} h={35} w={35} onClick={onClick} disabled={disabled}>
+        <FaDownload size={15} />
     </Button>
 })
 

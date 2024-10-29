@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { deleteRequest, getRequest, postRequest, putRequest } from "@/utils/net";
+import { deleteRequest, getLink, getRequest, postRequest, putRequest } from "@/utils/net";
 import { paths } from "./backend_types";
 import { useGlobalStore, useSettingsStore } from "./stores";
 import { useMemo } from "react";
@@ -141,6 +141,31 @@ export const exploitsQuery = () => {
         queryFn: async () => await getRequest("/exploits") as paths["/api/exploits"]["get"]["responses"][200]["content"]["application/json"],
         refetchInterval: refreshDataTime
     })
+}
+
+export const exploitsSourcesQuery = (exploit_id?: string) => {
+    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
+    return useQuery({
+        queryKey: ["exploits", "sources", exploit_id],
+        queryFn: async () => exploit_id != null ? (await getRequest(`/exploits/${exploit_id}/source`) as paths["/api/exploits/{exploit_id}/source"]["get"]["responses"][200]["content"]["application/json"]) : [],
+        refetchInterval: refreshDataTime
+    })
+}
+
+export const deleteExploitSource = async (source_id: string) => {
+    return await deleteRequest(`/exploits/source/${source_id}`) as paths["/api/exploits/source/{source_id}"]["delete"]["responses"][200]["content"]["application/json"]
+}
+
+export const editExploitSource = async (source_id: string, data:paths["/api/exploits/source/{source_id}"]["put"]["requestBody"]["content"]["application/json"]) => {
+    return await putRequest(`/exploits/source/${source_id}`, { body: data }) as paths["/api/exploits/source/{source_id}"]["put"]["responses"][200]["content"]["application/json"]
+}
+
+export const triggerDownloadExploitSource = async (source_hash: string) => {
+    const a = document.createElement('a')
+    a.href = getLink(`/exploits/source/${source_hash}/download`)
+    a.target = '_blank'
+    a.download = `source_${source_hash}.tar.gz`
+    a.click()
 }
 
 export const submittersQuery = () => {
