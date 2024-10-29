@@ -31,7 +31,7 @@ def extract_id_from_dict(x: Any) -> Any:
         return x.id
     return x
 
-type FkType[T] = Annotated[T, PlainSerializer(lambda x: extract_id_from_dict(x), return_type=T, when_used="always")]
+type FkType[T] = Annotated[T|Any, PlainSerializer(lambda x: extract_id_from_dict(x), return_type=T, when_used="always")]
 
 # IDs types
 
