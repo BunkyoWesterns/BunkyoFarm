@@ -8,7 +8,6 @@ from datetime import timedelta
 from utils import datetime_now
 import env, traceback
 from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution
-from sqlalchemy.orm import aliased
 
 class StopLoop(Exception): pass
 
@@ -172,16 +171,19 @@ async def submit_flags_task():
 
         if len(flags_to_submit) == 0:  
             return g.flag_submit.reset_exec()
+        g.loop_sleep = 0.1
         status = await run_submit_routine(flags_to_submit)
         if not status:
-            g.additional_sleep = 5
+            g.loop_sleep = 10
+
+DEFAULT_LOOP_SLEEP = 1
 
 class g:
     flag_submit = Scheduler(submit_flags_task)
     structure_update = Scheduler(update_db_structures, env.FLAG_UPDATE_POLLING)
     config:Configuration = None
     submitters:List[Submitter] = None
-    additional_sleep = 0
+    loop_sleep = DEFAULT_LOOP_SLEEP
 
 async def loop():
     await g.structure_update.commit()
@@ -205,10 +207,8 @@ async def loop_init():
         logging.info("Submitter loop started")
         while True:
             await loop()
-            await asyncio.sleep(0.3)
-            if g.additional_sleep > 0:
-                await asyncio.sleep(g.additional_sleep)
-                g.additional_sleep = 0
+            await asyncio.sleep(g.loop_sleep)
+            g.loop_sleep = DEFAULT_LOOP_SLEEP
     except KeyboardInterrupt:
         pass
     finally:

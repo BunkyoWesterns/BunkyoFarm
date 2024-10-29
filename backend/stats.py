@@ -217,7 +217,7 @@ async def stats_updater_task():
     finally:
         set_stats(g.stats)
 
-DEFAULT_LOOP_SLEEP = 1
+DEFAULT_LOOP_SLEEP = 3
 
 class g:
     stats_updater = Scheduler(stats_updater_task)
