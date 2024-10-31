@@ -35,6 +35,7 @@ export const LoginProvider = ({ children }: { children:any }) => {
             queryClient.resetQueries({ queryKey: [] })
         }
     },[status.isError])
+    
     if (status.isError){
         return <Box className="center-flex-col" style={{
             width: "100%",

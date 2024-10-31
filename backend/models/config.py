@@ -11,10 +11,8 @@ from models.service import ServiceDTO
 from models.response import *
 from typing import List
 from models.enums import AttackMode, SetupStatus
-from fasteners import InterProcessLock
 from db import SubmitterID, Env, dbtransaction, create_or_update_env, sqla, AttackExecution, AttackExecutionStatus
-
-_config_write_lock = InterProcessLock("./.xfarm_server_config_write.lock")
+from utils import json_like
 
 class Configuration(BaseModel):
     FLAG_REGEX: str = ""
@@ -77,13 +75,20 @@ class Configuration(BaseModel):
         return list(Configuration().model_dump().keys())
 
     async def write_on_db(self):
-        with _config_write_lock:
-            values = self.model_dump(mode="json")
-            async def key_create_or_update(k, v):
-                value = None if v is None else str(v)
-                await create_or_update_env(k, value)
-            await asyncio.gather(*[key_create_or_update(k, v) for k, v in values.items()])
-    
+        data = self.model_dump(mode="json")
+        async with dbtransaction() as db:
+            async with db.begin():
+                for k, v in data.items():
+                    v = None if v is None else str(v)
+                    await db.execute(
+                        sqla.insert(Env)
+                        .values(key=k, value=v)
+                        .on_conflict_do_update(
+                            index_elements=[Env.key],
+                            set_={"value": v}
+                        )
+                    )
+
     @classmethod
     async def get_from_db(cls) -> Self:
         keys = Configuration.keys()

@@ -10,16 +10,18 @@ import time, jwt
 from fastapi.middleware.cors import CORSMiddleware
 from submitter import run_submitter_daemon
 from stats import run_stats_daemon
+from skio import run_skio_daemon
 from utils import *
 from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
 from fastapi.responses import FileResponse
 from models.all import *
 from utils import datetime_now, load_routers
-from typing import Dict, Annotated
+from typing import Dict
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
-from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla
+from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla, redis_conn, redis_channels
+from skio import sio_app
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
@@ -225,6 +227,7 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
     config = Configuration.model_validate(config.model_dump() | data)
     await config.write_on_db()
     config.PASSWORD_HASH = "********" if config.PASSWORD_HASH else None
+    await redis_conn.publish(redis_channels.config, "update")
     return {"status": ResponseStatus.OK, "message": "The configuration has been updated", "response": config.model_dump()}
 
 
@@ -248,14 +251,19 @@ if DEBUG or CORS_ALLOW:
         allow_headers=["*"],
     )
 
+app.mount("/sock", app=sio_app)
+
 if __name__ == '__main__':
     #DO NOT ADD IN lifecycle of FastAPI, it will be spawned more times
     os.environ["TIMEOUT"] = "30"
     os.environ["TZ"] = "Etc/UTC"
     time.tzset()
     asyncio.run(init_db())
-    submitter = run_submitter_daemon()
-    stats = run_stats_daemon()
+    procs = [
+        run_submitter_daemon(),
+        run_stats_daemon(),
+        run_skio_daemon()
+    ]
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
@@ -264,8 +272,7 @@ if __name__ == '__main__':
         access_log=True,
         workers=env.NTHREADS
     )
-    submitter.terminate()
-    stats.terminate()
-    stats.join()
-    submitter.join()
+    for proc in procs:
+        proc.terminate()
+        proc.join()
         

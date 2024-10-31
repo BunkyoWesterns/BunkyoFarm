@@ -90,7 +90,7 @@ export const AttackScreen = () => {
                         variant="gradient"
                         gradient={{ from: 'blue', to: 'teal', deg: 90 }}
                         onClick={() => {
-                            queryClient.resetQueries({ queryKey:["attacks"] })
+                            queryClient.invalidateQueries({ queryKey:["attacks"] })
                             notifications.show({
                                 title: "Fresh data arrived 🌱",
                                 message: "Attacks data has been refreshed!",
@@ -98,7 +98,7 @@ export const AttackScreen = () => {
                                 autoClose: 3000
                             })
                         }}
-                        loading={attacks.isLoading}
+                        loading={attacks.isFetching}
                     >
                         Refresh
                     </Button>

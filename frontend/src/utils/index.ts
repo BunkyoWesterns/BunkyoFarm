@@ -106,8 +106,8 @@ export const useGetTick = () => {
     
 }
 
-
-
 export const calcAttackDuration = ( attack: AttackExecutionRestricted) => {
     return (attack.start_time && attack.end_time)?(new Date(attack.end_time).getTime()-new Date(attack.start_time).getTime())/1000:null
 }
+
+export const sleep = (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms))

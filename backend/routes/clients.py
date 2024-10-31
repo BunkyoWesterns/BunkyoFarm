@@ -3,7 +3,7 @@ from models.response import *
 from typing import List
 from fastapi import APIRouter, HTTPException
 from utils import *
-from db import Client, DBSession, sqla, MANUAL_CLIENT_ID, client_id_hashing, check_client_id_hashing
+from db import Client, DBSession, sqla, MANUAL_CLIENT_ID, client_id_hashing, check_client_id_hashing, redis_channels, redis_conn
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -21,6 +21,7 @@ async def client_new_or_edit(data: ClientAddForm, db: DBSession):
                 set_=json_like(data)
             ).returning(Client)
     )).one()
+    await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client created/updated successfully", "response": client }
 
 @router.delete("/{client_id}", response_model=MessageResponse[ClientDTO])
@@ -43,6 +44,7 @@ async def client_delete_hashed_or_uuid(client_id: ClientID, db: DBSession):
     if not result:
         raise HTTPException(404, "Client not found")
     
+    await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client deleted successfully", "response": json_like(result, unset=True) }
 
 @router.put("/{client_id}", response_model=MessageResponse[ClientDTO])
@@ -50,4 +52,5 @@ async def client_edit(client_id: UnHashedClientID, data: ClientEditForm, db: DBS
     client = (await db.scalars(sqla.update(Client).values(json_like(data)).where(Client.id == client_id).returning(Client))).one_or_none()
     if not client:
         raise HTTPException(404, "Client not found")
+    await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client updated successfully", "response": json_like(client, unset=True) }

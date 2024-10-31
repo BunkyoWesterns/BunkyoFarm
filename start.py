@@ -151,7 +151,7 @@ def write_compose():
                     "extra_hosts": ["host.docker.internal:host-gateway"],
                     "ports": [f"{args.port}:5050"],
                     "volumes": [f"{g.compose_volume_sources}:/execute/exploit-sources/"],
-                    "depends_on": ["database"]
+                    "depends_on": ["database", "redis"]
                 },
                 "database": {
                     "image": "postgres:17",
@@ -164,6 +164,10 @@ def write_compose():
                         f"POSTGRES_DB={g.container_name}"
                     ],
                     "volumes": [f"{g.compose_volume_database}:/var/lib/postgresql/data"]
+                },
+                "redis": {
+                    "image": "redis:7",
+                    "restart": "unless-stopped",
                 }
             },
             "volumes": {

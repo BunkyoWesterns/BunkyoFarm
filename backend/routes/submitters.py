@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from utils import *
 import re
-from db import Submitter, DBSession
+from db import Submitter, DBSession, redis_conn, redis_channels
 
 router = APIRouter(prefix="/submitters", tags=["Submitters"])
 
@@ -41,6 +41,7 @@ async def new_submitter(data: SubmitterAddForm, db: DBSession):
     )).one()
     submitter.model_validate(submitter)
     
+    await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been created", "response": json_like(submitter, unset=True)}
 
 @router.post("/check", response_model=MessageResponse[SubmitterKargs])
@@ -112,6 +113,7 @@ async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm, d
         .values(json_like(data))
         .returning(Submitter)
     )).one()
+    await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been updated", "response": json_like(submitter, unset=True)}
 
 @router.delete("/{submitter_id}", response_model=MessageResponse[SubmitterDTO])
@@ -130,6 +132,7 @@ async def delete_submitter(submitter_id: SubmitterID, db: DBSession):
         raise HTTPException(404, "Submitter not found")
     
     await db.delete(submitter)
+    await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been deleted", "response": json_like(submitter, unset=True)}
 
 @router.post("/{submitter_id}/test", response_model=MessageResponse[Dict[str, Any]])

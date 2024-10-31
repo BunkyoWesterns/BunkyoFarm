@@ -487,14 +487,16 @@ export interface components {
              * Format: date-time
              */
             received_at: string;
-            /** @default [
-             *       null
-             *     ] */
-            target: components["schemas"]["FkType_int_"] | null;
-            exploit?: components["schemas"]["FkType_UUID_"] | null;
-            executed_by?: components["schemas"]["FkType_str_"] | null;
+            /** Target */
+            target?: number | null;
+            /** Exploit */
+            exploit?: string | null;
+            /** Executed By */
+            executed_by?: string | null;
             /** Flags */
-            flags: components["schemas"]["FkType_int_"][];
+            flags: components["schemas"]["FlagDTOSmall"][];
+            /** Exploit Source */
+            exploit_source?: string | null;
         };
         /**
          * AttackExecutionStatus
@@ -692,6 +694,10 @@ export interface components {
             created_by: string;
             /** Last Execution By */
             last_execution_by?: string | null;
+            /** Last Execution Group By */
+            last_execution_group_by?: number | null;
+            /** Last Source */
+            last_source?: string | null;
         };
         /** ExploitEditForm */
         ExploitEditForm: {
@@ -757,9 +763,6 @@ export interface components {
             /** Flags */
             flags: string[];
         };
-        FkType_UUID_: string;
-        FkType_int_: number;
-        FkType_str_: string;
         /** FlagDTO */
         FlagDTO: {
             /** Id */
@@ -792,12 +795,22 @@ export interface components {
              * Format: date-time
              */
             received_at: string;
-            /** @default [
-             *       null
-             *     ] */
-            target: components["schemas"]["FkType_int_"] | null;
-            exploit?: components["schemas"]["FkType_UUID_"] | null;
-            executed_by?: components["schemas"]["FkType_str_"] | null;
+            /** Target */
+            target?: number | null;
+            /** Exploit */
+            exploit?: string | null;
+            /** Executed By */
+            executed_by?: string | null;
+            /** Exploit Source */
+            exploit_source?: string | null;
+        };
+        /** FlagDTOSmall */
+        FlagDTOSmall: {
+            /** Id */
+            id: number;
+            /** Flag */
+            flag: string;
+            status: components["schemas"]["FlagStatus"];
         };
         /** FlagStats */
         FlagStats: {

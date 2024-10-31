@@ -413,7 +413,7 @@ export const SubmitterModal = ({ open, onClose }:{ open:boolean, onClose:()=>voi
                     if (!form.isDirty() && setAsDefaultSubmitter){
                         //only requiring to change the default submitter
                         setDefaultSubmitter(selectedOption).then(() => {
-                            queryClient.resetQueries({ queryKey: ["status"] })
+                            queryClient.invalidateQueries({ queryKey: ["status"] })
                         })
                     }else if (selectedOption != -1){
                         let kargs = {} as any
@@ -432,7 +432,7 @@ export const SubmitterModal = ({ open, onClose }:{ open:boolean, onClose:()=>voi
                             setResetOnRefetch(resetOnRefetch+1)
                             if (setAsDefaultSubmitter){
                                 setDefaultSubmitter(selectedOption).then(() => {
-                                    queryClient.resetQueries({ queryKey: ["status"] })
+                                    queryClient.invalidateQueries({ queryKey: ["status"] })
                                 })
                             }
                         }).catch((err) => {
@@ -457,7 +457,7 @@ export const SubmitterModal = ({ open, onClose }:{ open:boolean, onClose:()=>voi
                             setResetOnRefetch(resetOnRefetch+1)
                             if (setAsDefaultSubmitter || !thereWhereSubmitters){
                                 res.response && setDefaultSubmitter(res.response?.id).then(() => {
-                                    queryClient.resetQueries({ queryKey: ["status"] })
+                                    queryClient.invalidateQueries({ queryKey: ["status"] })
                                 })
                             }
                         }).catch((err) => {

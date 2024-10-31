@@ -1,6 +1,6 @@
 uuid = "f396776e-dd32-4712-b61b-5c6cb90d5a01"
-name = "xploit_test"
+name = "xploit_testefv"
 interpreter = "python3"
 run = "main.py"
 language = "python"
-service = "08b44036-6cfe-41f7-803c-64e1e10b59d3"
+service = "a03d4372-ceef-44d6-b324-8603178b26d4"

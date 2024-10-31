@@ -48,22 +48,14 @@ export const useTokenStore = create<tokenStore>()(
 
 type settingsStore = {
     tablePageSize: number
-    refreshInterval: number
-    statusRefreshInterval: number,
-    setStatusRefreshInterval: (sri:number) => void
     setTablePageSize: (psr:number) => void
-    setRefreshInterval: (ri:number) => void
 }
 
 export const useSettingsStore = create<settingsStore>()(
   persist(
     (set) => ({
       tablePageSize: 30,
-      refreshInterval: 5000,
       setTablePageSize: (psr) => set(() => ({ tablePageSize:psr })),
-      setRefreshInterval: (ri) => set(() => ({ refreshInterval:ri })),
-      statusRefreshInterval: 3000,
-      setStatusRefreshInterval: (sri) => set(() => ({ statusRefreshInterval:sri })),
     }),
     {
       name: 'settings'

@@ -62,7 +62,7 @@ export const DeleteServiceModal = ({ onClose, service }:{ onClose: () => void, s
             deleteService(service?.id).then(()=>{
                 notifications.show({ title: "Service deleted", message: `The service ${service?.name} has been deleted successfully`, color: "green" })
                 queryClient.invalidateQueries({ queryKey: ["status"] })
-                queryClient.resetQueries({ queryKey: ["exploits"] })
+                queryClient.invalidateQueries({ queryKey: ["exploits"] })
             }).catch((err)=>{
                 notifications.show({ title: "Error deleting client", message: `An error occurred while deleting the service ${service?.name}: ${err.message}`, color: "red" })
             }).finally(()=>{ onClose() })

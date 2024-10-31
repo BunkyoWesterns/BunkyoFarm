@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi import HTTPException
 import re, logging
 from models.response import MessageInfo
-import orjson, gzip
+import pickle
 from env import EXPLOIT_SOURCES_DIR
 from typing import Type
 from dateutil.parser import parse as parsedatetime
@@ -211,22 +211,25 @@ async def create_or_update_env(key:str, value:str):
             
         )).one()
 
-def get_stats():
+async def get_stats():
+    from db import redis_conn, redis_keys
     try:
-        with open(STATS_FILE, "rb") as f:
-            data = orjson.loads(gzip.decompress(f.read()))
-        if "start_time" in data:
-            data["start_time"] = parsedatetime(data["start_time"])
-        if "end_time" in data:
-            data["end_time"] = parsedatetime(data["end_time"])
-        return data
+        data = await redis_conn.get(redis_keys.stats)
+        if not data:
+            return None
+        return pickle.loads(data)
     except Exception:
+        traceback.print_exc()
         return None
 
-def set_stats(stats:dict):
-    with open(STATS_FILE, "wb") as f:
-        f.write(gzip.compress(orjson.dumps(stats)))
+async def pubsub_flush(pubsub):
+    flushed = True
+    while flushed is not None:
+        flushed = await pubsub.get_message(ignore_subscribe_messages=True, timeout=0)
 
+async def set_stats(stats:dict):
+    from db import redis_conn, redis_keys
+    await redis_conn.set(redis_keys.stats, pickle.dumps(stats))
 
 def sqlparam_from_model(Model:Type[BaseModel], exclude:list[str]|None=None, include:list[str]|None=None) -> dict:
     from db import sqla

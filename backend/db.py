@@ -20,6 +20,8 @@ from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
 import sqla
+import redis.asyncio as redis
+from env import DEBUG
 
 def datetime_now_sql(index:bool = False, now:bool = True) -> sqla.Column:
     return sqla.Column(sqla.DateTime(timezone=True), server_default=sqla.func.now() if now else None, index=index)
@@ -31,7 +33,36 @@ def extract_id_from_dict(x: Any) -> Any:
         return x.id
     return x
 
-type FkType[T] = Annotated[T|Any, PlainSerializer(lambda x: extract_id_from_dict(x), return_type=T, when_used="always")]
+redis_conn = redis.Redis(host='localhost' if DEBUG else 'redis', port=6379)
+
+class redis_channels:
+    client = "client"
+    attack_group = "attack_group"
+    exploit = "exploit"
+    service = "service"
+    team = "team"
+    attack_execution = "attack_execution"
+    exploit_source = "exploit_source"
+    submitter = "submitter"
+    stats = "stats"
+    config = "config"
+    
+REDIS_CHANNELS = [
+    "client",
+    "attack_group",
+    "exploit",
+    "service",
+    "team",
+    "attack_execution",
+    "exploit_source",
+    "submitter",
+    "stats",
+    "config"
+]
+    
+
+class redis_keys:
+    stats = "stats"
 
 # IDs types
 
@@ -283,13 +314,13 @@ dbsession: async_sessionmaker[AsyncSession]|None = None
 @asynccontextmanager
 async def dbtransaction():
     async with dbsession() as session:
-        async with session.begin():
-            yield session
-            
+        yield session
+        await session.commit()
+         
 async def _dbtransaction():
     async with dbsession() as session:
-        async with session.begin():
-            yield session
+        yield session
+        await session.commit()
 
 
 DBSession = Annotated[AsyncSession, Depends(_dbtransaction)]

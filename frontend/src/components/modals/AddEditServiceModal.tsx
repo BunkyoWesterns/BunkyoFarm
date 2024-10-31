@@ -47,7 +47,7 @@ export const AddEditServiceModal = ({ open, onClose, service, edit }:{ open?:boo
                         message: "Service has been edited successfully!",
                         color: "green",
                     })
-                    queryClient.resetQueries({ queryKey: ["status"] })
+                    queryClient.invalidateQueries({ queryKey: ["status"] })
                 }).catch((err) => {
                     notifications.show({
                         title: "Error during editing!",
@@ -63,7 +63,7 @@ export const AddEditServiceModal = ({ open, onClose, service, edit }:{ open?:boo
                         message: "Service has been added successfully!",
                         color: "green",
                     })
-                    queryClient.resetQueries({ queryKey: ["status"] })
+                    queryClient.invalidateQueries({ queryKey: ["status"] })
                 }).catch((err) => {
                     notifications.show({
                         title: "Error during adding!",

@@ -52,7 +52,7 @@ export const FlagsScreen = () => {
                 <Table.Td><Box>{item.id}</Box></Table.Td>
                 <Table.Td><Box style={{fontWeight: "bolder"}}>{item.flag}</Box></Table.Td> 
                 <Table.Td><Box><Box style={{fontWeight: "bolder"}}>{getServiceName(item.attack.exploit)}</Box>using {getExploitName(item.attack.exploit)} exploit</Box></Table.Td>
-                <Table.Td><Box><span style={{fontWeight: "bolder"}}>{getTeamName(item.attack.target)}</span><br />{item.attack.target?teamMapping[item.attack.target].host:null}</Box></Table.Td>
+                <Table.Td><Box><span style={{fontWeight: "bolder"}}>{getTeamName(item.attack.target)}</span><br />{item.attack.target?teamMapping[item.attack.target]?.host:null}</Box></Table.Td>
                 <Table.Td>
                     <Box display="flex">
                         <Box>time: {executionTime?secondDurationToString(executionTime):"unknown execution time"}<br />by {getClientName(item.attack.executed_by)}</Box>
@@ -104,7 +104,7 @@ export const FlagsScreen = () => {
                         variant="gradient"
                         gradient={{ from: 'blue', to: 'teal', deg: 90 }}
                         onClick={() => {
-                            queryClient.resetQueries({ queryKey:["flags"] })
+                            queryClient.invalidateQueries({ queryKey:["flags"] })
                             notifications.show({
                                 title: "Fresh data arrived 🌱",
                                 message: "Flag data has been refreshed!",
@@ -112,7 +112,7 @@ export const FlagsScreen = () => {
                                 autoClose: 3000
                             })
                         }}
-                        loading={flags.isLoading}
+                        loading={flags.isFetching}
                     >
                         Refresh
                     </Button>

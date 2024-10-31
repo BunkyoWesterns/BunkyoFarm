@@ -1,7 +1,79 @@
 import { useTokenStore } from "./stores"
-
+import io from 'socket.io-client';
 
 export const DEV_IP_BACKEND = "127.0.0.1:5050"
+
+export const socket_io = import.meta.env.DEV?
+    io("ws://"+DEV_IP_BACKEND, {transports: ["websocket", "polling"], path:"/sock" }):
+    io({transports: ["websocket", "polling"], path:"/sock"})
+
+export const SOCKET_IO_CHANNELS = [
+    "client",
+    "attack_group",
+    "exploit",
+    "service",
+    "team",
+    "attack_execution",
+    "exploit_source",
+    "submitter",
+    "stats",
+    "config"
+]
+
+export const DEBOUNCED_SOCKET_IO_CHANNELS = [
+    "attack_execution",
+    "stats"
+]
+
+export const sockIoChannelToQueryKeys = (channel:string):string[][] => {
+    switch (channel) {
+        case "client":
+            return [
+                ["clients"]
+            ]
+        case "attack_group":
+            return [
+                ["attacks"]
+            ]
+        case "exploit":
+            return [
+                ["exploits"]
+            ]
+        case "service":
+            return [
+                ["status"]
+            ]
+        case "team":
+            return [
+                ["status"]
+            ]
+        case "attack_execution":
+            return [
+                ["attacks"],
+                ["flags"],
+            ]
+        case "exploit_source":
+            return [
+                ["exploits", "sources"]
+            ]
+        case "submitter":
+            return [
+                ["submitters"]
+            ]
+        case "stats":
+            return [
+                ["stats"]
+            ]
+        case "config":
+            return [
+                ["status"]
+            ]
+        default:
+            return [
+                [channel]
+            ]
+    }
+}
 
 export const getAuthHeaders = ():({[k:string]:string}) => {
     

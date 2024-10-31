@@ -3,18 +3,47 @@ from models.all import *
 import logging, uvloop
 from typing import List
 from types import GeneratorType
-from utils import Scheduler
 from datetime import timedelta
 from utils import datetime_now
-import env, traceback
-from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution
+import traceback, time
+from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution, redis_conn, redis_channels
+from utils import pubsub_flush
 
 class StopLoop(Exception): pass
 
-async def update_db_structures():
+class g:
+    config:Configuration = None
+    submitters:List[Submitter] = None
+    last_submission = 0
+    submitter_exec_required = False
+    has_submitter_failed = False
+    
+    error_was_generated = False
+    last_time_error_was_generated = False
+    
+    first_time_config_triggered = False
+
+async def update_config():
     g.config = await Configuration.get_from_db()
     async with dbtransaction() as db:
         g.submitters = list((await db.scalars(sqla.select(Submitter))).all())
+
+async def update_config_task():
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.submitter)
+        await pubsub.subscribe(redis_channels.config)
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout= None)
+            await pubsub_flush(pubsub)
+            if message is not None:
+                await update_config()
+
+async def err_warn_event_update():
+    if g.error_was_generated or g.first_time_config_triggered or (not g.error_was_generated and g.last_time_error_was_generated):
+        g.error_was_generated = False
+        g.first_time_config_triggered = True
+        await redis_conn.publish(redis_channels.config, "update")
+    g.last_time_error_was_generated = g.error_was_generated
 
 def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict: dict):
     from io import StringIO
@@ -104,6 +133,7 @@ async def run_submit_routine(flags: List[Flag]):
         return False
     
     if not "ok" in return_dict or not return_dict["ok"]:
+        g.error_was_generated = True
         if not "error" in return_dict or not "output" in return_dict:
             logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: killed by SUBMITTER_TIMEOUT")
             await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "killed by SUBMITTER_TIMEOUT (no data received from submit)")
@@ -120,6 +150,7 @@ async def run_submit_routine(flags: List[Flag]):
         await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "") #Clear the error output
     
     if "warning" in return_dict and return_dict["warning"]:
+        g.error_was_generated = True
         await create_or_update_env("SUBMITTER_WARNING_OUTPUT", return_dict["output"] if return_dict["output"] else "A warning without output was generated") #Put the output in the db
     else:
         await create_or_update_env("SUBMITTER_WARNING_OUTPUT", "")
@@ -127,6 +158,7 @@ async def run_submit_routine(flags: List[Flag]):
     results_dict = {ele[0]:ele[1:] for ele in return_dict["results"]}
     
     if len(results_dict.keys()) != len(flags):
+        g.error_was_generated = True
         await create_or_update_env("SUBMITTER_ERROR_OUTPUT", f"The submitter returned a different amount of flag status than the flags put in the submitter (given flags: {len(flags)}, returned flags: {len(results_dict.keys())}). Please check the submitter code.")
     
     for flag in flags:
@@ -142,7 +174,8 @@ async def run_submit_routine(flags: List[Flag]):
             flag.status_text = "The submitter return an invalid status! must be [(flag, status, msg), ...]"
     return True
 
-async def submit_flags_task():
+async def submit_flags():
+    g.submitter_exec_required = False
     async with dbtransaction() as db:
         if g.config.FLAG_TIMEOUT:
 
@@ -157,9 +190,13 @@ async def submit_flags_task():
             ).values(
                 status=FlagStatus.timeout,
                 status_text="⚠️ Timeouted by Exploitfarm due to FLAG_TIMEOUT"
-            )
+            ).returning(Flag.id)
             
-            await db.execute(stmt)
+            updated = (await db.scalars(stmt)).all()
+            if len(updated) > 0:
+                logging.warning(f"{len(updated)} flags have been timeouted by FLAG_TIMEOUT")
+                await redis_conn.publish(redis_channels.attack_execution, "update")
+            
         flags_to_submit = (
             sqla.select(Flag).outerjoin(AttackExecution, AttackExecution.id == Flag.attack_id)
                 .where(Flag.status == FlagStatus.wait).order_by(AttackExecution.received_at.asc())
@@ -170,45 +207,68 @@ async def submit_flags_task():
         flags_to_submit = (await db.scalars(flags_to_submit)).all()
 
         if len(flags_to_submit) == 0:  
-            return g.flag_submit.reset_exec()
-        g.loop_sleep = 0.1
-        status = await run_submit_routine(flags_to_submit)
-        if not status:
-            g.loop_sleep = 10
-
-DEFAULT_LOOP_SLEEP = 1
-
-class g:
-    flag_submit = Scheduler(submit_flags_task)
-    structure_update = Scheduler(update_db_structures, env.FLAG_UPDATE_POLLING)
-    config:Configuration = None
-    submitters:List[Submitter] = None
-    loop_sleep = DEFAULT_LOOP_SLEEP
-
-async def loop():
-    await g.structure_update.commit()
-    if g.config.SETUP_STATUS == SetupStatus.SETUP:
-        return
-    if g.config.SUBMITTER is None:
-        if len(g.submitters) == 0:
+            g.submitter_exec_required = False
             return
-        else:
-            g.config.SUBMITTER = g.submitters[0].id
-            await g.config.write_on_db()
-            logging.warning(f"Submitter not set, using id:{g.config.SUBMITTER} as fallback submitter")
-    g.flag_submit.interval = g.config.SUBMIT_DELAY
-    await g.flag_submit.commit()
+        
+        logging.info(f"Submitting {len(flags_to_submit)} flags")
+        print(datetime_now(), f"Submitting {len(flags_to_submit)} flags")
+        status = await run_submit_routine(flags_to_submit)
+        await err_warn_event_update()
+        
+        g.last_submission = time.time()
+        await redis_conn.publish(redis_channels.attack_execution, "update")
+        
+        if not status:
+            g.has_submitter_failed = True
+            g.submitter_exec_required = True
+        elif g.config.FLAG_SUBMIT_LIMIT and len(flags_to_submit) >= g.config.FLAG_SUBMIT_LIMIT:
+            g.submitter_exec_required = True
+
+async def submit_flags_task():
+    await submit_flags()
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.attack_execution)
+        while True:
+            #Check if the submitter can be executed if some attacks has been submitted
+            timeout_message = None
+            if g.submitter_exec_required:
+                timeout_message = 0.1
+            if g.has_submitter_failed:
+                g.has_submitter_failed = False
+                await asyncio.sleep(10)
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=timeout_message)
+            await pubsub_flush(pubsub)
+            #If the submitter is not required, we can skip the submission
+            if g.config.SETUP_STATUS == SetupStatus.SETUP:
+                continue
+            if g.config.SUBMITTER is None: # Strange behavior: the submitter is not set
+                if len(g.submitters) == 0:
+                    #If the submitter is not set and there are no submitters, we can skip the submission
+                    continue
+                else:
+                    #If the submitter is not set, we can use the first submitter as fallback
+                    g.config.SUBMITTER = g.submitters[0].id
+                    await g.config.write_on_db()
+                    await redis_conn.publish(redis_channels.config, "update")
+                    logging.warning(f"Submitter not set, using id:{g.config.SUBMITTER} as fallback submitter")
+            
+            delta_from_last_submission = time.time() - g.last_submission
+            #If a message is received, we can require the submitter execution
+            if message is not None:
+                g.submitter_exec_required = True
+            #If the submitter is required and the delay has passed, we can submit the flags
+            if delta_from_last_submission > g.config.SUBMIT_DELAY and g.submitter_exec_required:
+                await submit_flags()
 
 #Loop based process with a half of a second of delay
-async def loop_init():
+async def tasks_init():
     try:
         await connect_db()
-        await update_db_structures()
-        logging.info("Submitter loop started")
-        while True:
-            await loop()
-            await asyncio.sleep(g.loop_sleep)
-            g.loop_sleep = DEFAULT_LOOP_SLEEP
+        await update_config()
+        logging.info("Submitter started")
+        update_task = asyncio.create_task(update_config_task())
+        flag_task = asyncio.create_task(submit_flags_task())
+        await asyncio.gather(update_task, flag_task)
     except KeyboardInterrupt:
         pass
     finally:
@@ -219,7 +279,7 @@ def inital_setup():
         while True:
             try:
                 with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
-                    runner.run(loop_init())
+                    runner.run(tasks_init())
             except Exception as e:
                 traceback.print_exc()
                 logging.exception(f"Submitter loop failed: {e}, restarting loop")

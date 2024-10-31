@@ -1,30 +1,17 @@
 import { Alert, AppShell, Box, Container, Divider, Image, Modal, Space, Title } from "@mantine/core"
 import { EngineButton, LogoutButton, OptionButton } from "./inputs/Buttons"
 import { useGlobalStore, useTokenStore } from "@/utils/stores"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { statusQuery } from "@/utils/queries"
 import { SetupScreen } from "@/components/screens/SetupScreen"
 import { OptionScreen } from "@/components/screens/OptionScreen"
-import { notifications } from "@mantine/notifications"
 
 export const MainLayout = ({ children }: { children: any }) => {
     const setToken = useTokenStore((store) => store.setToken)
-    const { header, errorMessage, setErrorMessage } = useGlobalStore()
+    const { header, errorMessage } = useGlobalStore()
     const status = statusQuery()
     const [openSetup, setOpenSetup] = useState(false)
     const [openOptions, setOpenOptions] = useState(false)
-
-    useEffect(() => {
-        if (!status.isError && errorMessage != null){
-            notifications.show({
-                title: "Connected to the backend!",
-                message: "Successfully connected to the backend!",
-                color: "blue",
-                icon: "🚀",
-            })
-            setErrorMessage(null)
-        }
-    }, [status.isFetching])
 
     return <AppShell
             header={{ height: 60 }}

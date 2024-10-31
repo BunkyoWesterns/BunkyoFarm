@@ -139,6 +139,7 @@ async def get_attacks(
     
     query = (
         sqla.select(AttackExecution)
+        .options(selectinload(AttackExecution.flags))
         .where(*filters)
     )
     
@@ -149,10 +150,11 @@ async def get_attacks(
     
     return await paginate(db, query)
 
+add_pagination(router)
 
 @router.get("/stats", response_model=FlagStats)
 async def get_flag_stats():
-    stats = get_stats()
+    stats = await get_stats()
     return stats if stats else {"ticks":[], "globals":complete_stats()}
 
-add_pagination(router)
+

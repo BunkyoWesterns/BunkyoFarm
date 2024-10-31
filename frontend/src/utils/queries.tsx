@@ -1,31 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { deleteRequest, getLink, getRequest, postRequest, putRequest } from "@/utils/net";
 import { paths } from "./backend_types";
-import { useGlobalStore, useSettingsStore } from "./stores";
+import { useSettingsStore } from "./stores";
 import { useMemo } from "react";
 import { AttackStatuses, FlagStatuses, Stats } from "./types";
 
-export const statusQuery = () => {
-    const { statusRefreshInterval } = useSettingsStore()
-    const { setErrorMessage } = useGlobalStore()
-    const res = useQuery({
-        queryKey: ["status"],
-        queryFn: async () => {
-            return await getRequest("/status") as paths["/api/status"]["get"]["responses"][200]["content"]["application/json"]
-        },
-        refetchInterval: statusRefreshInterval,
-        retry(_fail, error) {
-            setErrorMessage({
-                title: "BACKEND SEEMS DOWN!",
-                message: "Can't connect to backend APIs: "+error.message,
-                color: "red"
-            })
-            return true
-        },
-        retryDelay: 5000
-    })
-    return res
-}
+export const statusQuery = () => useQuery({
+    queryKey: ["status"],
+    queryFn: async () => {
+        return await getRequest("/status") as paths["/api/status"]["get"]["responses"][200]["content"]["application/json"]
+    }
+})
 
 type AttackRequestOptions = {
     id?: number,
@@ -57,11 +42,10 @@ export const flagsRequest = async (page:number, pageSize: number, others:FlagsRe
 }
 
 export const flagsQuery = (page:number, options:FlagsRequestOptions = {}) => {
-    const [pageSizeRequest, refreshDataTime] = useSettingsStore((state) => [state.tablePageSize, state.refreshInterval])
+    const [pageSizeRequest] = useSettingsStore((state) => [state.tablePageSize])
     return useQuery({
         queryKey: ["flags", options, pageSizeRequest, page],
         queryFn: async () => await flagsRequest(page, pageSizeRequest, options),
-        refetchInterval: refreshDataTime
     })
 }
 
@@ -116,11 +100,10 @@ export const attackRequest = async (page:number, pageSize: number, others:Attack
 }
 
 export const attacksQuery = (page:number, options:AttackRequestOptions = {}) => {
-    const [pageSizeRequest, refreshDataTime] = useSettingsStore((state) => [state.tablePageSize, state.refreshInterval])
+    const [pageSizeRequest] = useSettingsStore((state) => [state.tablePageSize])
     return useQuery({
         queryKey: ["attacks", options, pageSizeRequest, page],
-        queryFn: async () => await attackRequest(page, pageSizeRequest, options),
-        refetchInterval: refreshDataTime
+        queryFn: async () => await attackRequest(page, pageSizeRequest, options)
     })
 }
 
@@ -134,23 +117,15 @@ export const commitManualSubmission = async (flag_text:string) => {
     }) as paths["/api/exploits/submit"]["post"]["responses"][200]["content"]["application/json"]
 }
 
-export const exploitsQuery = () => {
-    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
-    return useQuery({
-        queryKey: ["exploits"],
-        queryFn: async () => await getRequest("/exploits") as paths["/api/exploits"]["get"]["responses"][200]["content"]["application/json"],
-        refetchInterval: refreshDataTime
-    })
-}
+export const exploitsQuery = () => useQuery({
+    queryKey: ["exploits"],
+    queryFn: async () => await getRequest("/exploits") as paths["/api/exploits"]["get"]["responses"][200]["content"]["application/json"],
+})
 
-export const exploitsSourcesQuery = (exploit_id?: string) => {
-    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
-    return useQuery({
-        queryKey: ["exploits", "sources", exploit_id],
-        queryFn: async () => exploit_id != null ? (await getRequest(`/exploits/${exploit_id}/source`) as paths["/api/exploits/{exploit_id}/source"]["get"]["responses"][200]["content"]["application/json"]) : [],
-        refetchInterval: refreshDataTime
-    })
-}
+export const exploitsSourcesQuery = (exploit_id?: string) => useQuery({
+    queryKey: ["exploits", "sources", exploit_id],
+    queryFn: async () => exploit_id != null ? (await getRequest(`/exploits/${exploit_id}/source`) as paths["/api/exploits/{exploit_id}/source"]["get"]["responses"][200]["content"]["application/json"]) : [],
+})
 
 export const deleteExploitSource = async (source_id: string) => {
     return await deleteRequest(`/exploits/source/${source_id}`) as paths["/api/exploits/source/{source_id}"]["delete"]["responses"][200]["content"]["application/json"]
@@ -168,32 +143,21 @@ export const triggerDownloadExploitSource = async (source_hash: string) => {
     a.click()
 }
 
-export const submittersQuery = () => {
-    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
-    return useQuery({
-        queryKey: ["submitters"],
-        queryFn: async () => await getRequest("/submitters") as paths["/api/submitters"]["get"]["responses"][200]["content"]["application/json"],
-        refetchInterval: refreshDataTime
-    })
-}
+export const submittersQuery = () => useQuery({
+    queryKey: ["submitters"],
+    queryFn: async () => await getRequest("/submitters") as paths["/api/submitters"]["get"]["responses"][200]["content"]["application/json"],
+})
 
-export const clientsQuery = () => {
-    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
-    return useQuery({
-        queryKey: ["clients"],
-        queryFn: async () => await getRequest("/clients") as paths["/api/clients"]["get"]["responses"][200]["content"]["application/json"],
-        refetchInterval: refreshDataTime
-    })
-}
+export const clientsQuery = () => useQuery({
+    queryKey: ["clients"],
+    queryFn: async () => await getRequest("/clients") as paths["/api/clients"]["get"]["responses"][200]["content"]["application/json"],
+})
 
-export const statsQuery = () => {
-    const refreshDataTime = useSettingsStore((state) => state.refreshInterval)
-    return useQuery({
-        queryKey: ["flags", "stats"],
-        queryFn: async () => await getRequest("/flags/stats") as Stats,
-        refetchInterval: refreshDataTime
-    })
-}
+export const statsQuery = () => useQuery({
+    queryKey: ["stats"],
+    queryFn: async () => await getRequest("/flags/stats") as Stats
+})
+
 
 export const useServiceMapping = () => {
     const status = statusQuery()

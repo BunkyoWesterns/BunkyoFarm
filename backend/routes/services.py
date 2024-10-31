@@ -3,7 +3,7 @@ from models.response import *
 from utils import *
 from typing import List
 from fastapi import APIRouter, HTTPException
-from db import Service, DBSession, sqla
+from db import Service, DBSession, sqla, redis_conn, redis_channels
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
@@ -18,6 +18,7 @@ async def service_new(data: ServiceAddForm, db: DBSession):
             .values(json_like(data))
             .returning(Service)
     )).one()
+    await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service created successfully", "response": service }
 
 @router.delete("/{service_id}", response_model=MessageResponse[ServiceDTO])
@@ -30,6 +31,7 @@ async def service_delete(service_id: ServiceID, db: DBSession):
     )).one_or_none()
     if not service:
         raise HTTPException(404, "Service not found")
+    await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service deleted successfully", "response": service }
 
 @router.put("/{service_id}", response_model=MessageResponse[ServiceDTO])
@@ -42,4 +44,5 @@ async def service_edit(service_id: ServiceID, data: ServiceEditForm, db: DBSessi
     )).one_or_none()
     if not service:
         raise HTTPException(404, "Service not found")
+    await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service updated successfully", "response": service }

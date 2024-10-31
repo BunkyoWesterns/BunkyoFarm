@@ -18,5 +18,3 @@ NTHREADS = int(os.getenv("NTHREADS", "3"))
 POSTGRES_URL = os.getenv("POSTGRES_URL", f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_HOST}:{DB_PORT}/{POSTGRES_DB}")
 
 EXPLOIT_SOURCES_DIR = "./exploit-sources"
-
-FLAG_UPDATE_POLLING = 5

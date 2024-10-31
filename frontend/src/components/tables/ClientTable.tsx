@@ -61,8 +61,8 @@ export const DeleteClientModal = ({ onClose, client }:{ onClose: () => void, cli
             }
             deleteClient(client?.id).then(()=>{
                 notifications.show({ title: "Client deleted", message: `The client ${client?.name} has been deleted successfully`, color: "green" })
-                queryClient.resetQueries({ queryKey: ["clients"] })
-                queryClient.resetQueries({ queryKey: ["exploits"] })
+                queryClient.invalidateQueries({ queryKey: ["clients"] })
+                queryClient.invalidateQueries({ queryKey: ["exploits"] })
             }).catch((err)=>{
                 notifications.show({ title: "Error deleting client", message: `An error occurred while deleting the client ${client?.name}: ${err.message}`, color: "red" })
             }).finally(()=>{ onClose() })

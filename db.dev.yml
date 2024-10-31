@@ -10,4 +10,9 @@ services:
       - 5432:5432
     volumes:
       - ./db-data:/var/lib/postgresql/data
+  redis: #Redis for testing
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - 6379:6379
 

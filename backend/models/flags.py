@@ -1,7 +1,14 @@
 from pydantic import BaseModel
 from models.enums import FlagStatus, AttackExecutionStatus
 from pydantic import AwareDatetime
-from db import FlagID, AttackExecutionID, TeamID, ExploitID, ClientID, FkType
+from db import FlagID, AttackExecutionID, TeamID, ExploitID, ClientID, ExploitSourceID
+from utils import json_like
+from pydantic import BaseModel, Field, AliasChoices
+
+class FlagDTOSmall(BaseModel):
+    id: FlagID
+    flag: str
+    status: FlagStatus
 
 class AttackExecutionDTO(BaseModel):
     id: AttackExecutionID
@@ -10,22 +17,25 @@ class AttackExecutionDTO(BaseModel):
     status: AttackExecutionStatus
     output: str|None
     received_at: AwareDatetime
-    target: FkType[TeamID]|None = None,
-    exploit: FkType[ExploitID]|None = None
-    executed_by: FkType[ClientID]|None = None
-    flags: list[FkType[FlagID]]
-
+    target: TeamID|None = Field(None, validation_alias=AliasChoices('target_id'))
+    exploit: ExploitID|None = Field(None, validation_alias=AliasChoices('exploit_id'))
+    executed_by: ClientID|None = Field(None, validation_alias=AliasChoices('executed_by_id'))
+    flags: list[FlagDTOSmall]
+    exploit_source: ExploitSourceID|None = Field(None, validation_alias=AliasChoices('exploit_source_id'))
+    
 class FlagDTOAttackDetails(BaseModel):
     id: AttackExecutionID
     start_time: AwareDatetime|None = None
     end_time: AwareDatetime|None = None
     status: AttackExecutionStatus
     received_at: AwareDatetime
-    target: FkType[TeamID]|None = None,
-    exploit: FkType[ExploitID]|None = None
-    executed_by: FkType[ClientID]|None = None
+    target: TeamID|None = Field(None, validation_alias=AliasChoices('target_id'))
+    exploit: ExploitID|None = Field(None, validation_alias=AliasChoices('exploit_id'))
+    executed_by: ClientID|None = Field(None, validation_alias=AliasChoices('executed_by_id'))
+    exploit_source: ExploitSourceID|None = Field(None, validation_alias=AliasChoices('exploit_source_id'))
 
 class FlagDTO(BaseModel):
+    
     id: FlagID
     flag: str
     status: FlagStatus

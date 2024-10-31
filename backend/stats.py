@@ -1,19 +1,24 @@
 from multiprocessing import Process
 from models.all import *
-import logging, uvloop, sys
-from utils import Scheduler, get_stats
+import logging, uvloop
+from utils import get_stats
 from datetime import timedelta
-import env, traceback
+import traceback
 import math, time
 from dateutil.parser import parse as dateparse
 from datetime import datetime
-from db import set_stats, AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client
+from db import set_stats, AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client, redis_channels, redis_conn
 from sqlalchemy.orm import defer, selectinload
+from utils import pubsub_flush
 
 class StopLoop(Exception): pass
 
 LIMIT_QUERY_SIZE = 3000
 
+class g:
+    config:Configuration = None
+    stats: dict = None
+    update_needed: bool = False
 
 def flags_stats() -> dict:
     return {
@@ -46,7 +51,9 @@ def create_tick(tick:int, start_time:datetime, end_time:datetime) -> dict:
         "clients": {}
     }
 
-def reset_stats():
+async def reset_stats():
+    if not g.config:
+        g.config = await Configuration.get_from_db()
     print("Stats Proc: ----- RESETTING STATS -----")
     g.stats = {
         "last_flag_id": 0,
@@ -57,24 +64,25 @@ def reset_stats():
         "globals": complete_stats(),
         "ticks": []
     }
+    await set_stats(g.stats)
     return g.stats
 
-def recover_stats():
-    if g.stats is None:
-        g.stats = get_stats()
-        if not g.stats:
-            return reset_stats()
-        return g.stats
-    return g.stats
-
-async def update_db_structures():
+async def update_config():
     g.config = await Configuration.get_from_db()
-    recover_stats()
     if g.stats["start_time"] is None:
         g.stats["start_time"] = g.config.start_time
     if g.stats["start_time"] != g.config.start_time or g.stats["tick_duration"] != g.config.TICK_DURATION:
-        reset_stats()
+        await reset_stats()
     g.stats["start_time"] = dateparse(g.stats["start_time"]) if isinstance(g.stats["start_time"], str) else g.stats["start_time"]
+
+async def update_config_task():
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.config)
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout= None)
+            await pubsub_flush(pubsub)
+            if message is not None:
+                await update_config()
 
 def calc_tick(time:datetime):
     return math.ceil((time - g.stats["start_time"]).total_seconds() / g.stats["tick_duration"]) + 1
@@ -142,18 +150,21 @@ async def clear_deleted_object_stats():
     for tick in g.stats["ticks"]:
         for exploit_id in list(tick["exploits"].keys()):
             if exploit_id != "null" and exploit_id not in exploits:
-                del tick["exploits"][exploit_id]
+                await reset_stats()
+                return True
         for team_id in list(tick["teams"].keys()):
             if team_id != "null" and int(team_id) not in teams:
-                del tick["teams"][team_id]
+                await reset_stats()
+                return True
         for client_id in list(tick["clients"].keys()):
             if client_id != "null" and client_id not in clients:
-                del tick["clients"][client_id]
+                await reset_stats()
+                return True
+    return False
 
-async def stats_updater_task():
-    await clear_deleted_object_stats()
+async def stats_update():
     if g.stats["start_time"] is None:
-        return
+        return False
     
     flags_query = (
         sqla.select(Flag)
@@ -165,7 +176,7 @@ async def stats_updater_task():
     )
     
     attacks_query = sqla.select(AttackExecution).options(defer(AttackExecution.output)).order_by(AttackExecution.id.asc()).limit(LIMIT_QUERY_SIZE)
-
+    stats_updated = False
     try:
         async with dbtransaction() as db:
             flags_before_waited = (await db.scalars(
@@ -178,6 +189,7 @@ async def stats_updater_task():
                 if flg.status == FlagStatus.wait:
                     new_wait_list.append(flg.id)
                 else:
+                    stats_updated = True
                     new_status = flg.status
                     flg.status = FlagStatus.wait
                     add_flag_stats(flg, -1)
@@ -188,71 +200,92 @@ async def stats_updater_task():
             
             flags_to_analyse = (await db.scalars(flags_query.where(Flag.id > (g.stats["last_flag_id"])))).all()
             attacks_to_analyse = (await db.scalars(attacks_query.where(AttackExecution.id > (g.stats["last_attack_id"])))).all()
-            
-            # Probably need to fasten the loop
-            if len(flags_to_analyse) == LIMIT_QUERY_SIZE or len(attacks_to_analyse) == LIMIT_QUERY_SIZE:
-                g.loop_sleep = 0.1
-            
-            max_id = None
-            
-            for flg in flags_to_analyse:
-                if max_id is None or flg.id > max_id:
-                    max_id = flg.id
-                if flg.status == FlagStatus.wait:
-                    g.stats["wait_flag_ids"].append(flg.id)
-                add_flag_stats(flg)
-            
-            if not max_id is None:
-                g.stats["last_flag_id"] = max_id
-            
-            max_id = None
-            
-            for att in attacks_to_analyse:
-                if max_id is None or att.id > max_id:
-                    max_id = att.id
-                add_attack_stats(att)
-            
-            if not max_id is None:
-                g.stats["last_attack_id"] = max_id
+        
+        if len(flags_to_analyse) != 0 or len(attacks_to_analyse) != 0:
+            stats_updated = True
+        # Probably need to fasten the loop
+        if len(flags_to_analyse) == LIMIT_QUERY_SIZE or len(attacks_to_analyse) == LIMIT_QUERY_SIZE:
+            g.update_needed = True
+        else:
+            g.update_needed = False
+        
+        max_id = None
+        
+        for flg in flags_to_analyse:
+            if max_id is None or flg.id > max_id:
+                max_id = flg.id
+            if flg.status == FlagStatus.wait:
+                g.stats["wait_flag_ids"].append(flg.id)
+            add_flag_stats(flg)
+        
+        if not max_id is None:
+            g.stats["last_flag_id"] = max_id
+        
+        max_id = None
+        
+        for att in attacks_to_analyse:
+            if max_id is None or att.id > max_id:
+                max_id = att.id
+            add_attack_stats(att)
+        
+        if not max_id is None:
+            g.stats["last_attack_id"] = max_id
     finally:
-        set_stats(g.stats)
+        await set_stats(g.stats)
+    return stats_updated
 
-DEFAULT_LOOP_SLEEP = 3
 
-class g:
-    stats_updater = Scheduler(stats_updater_task)
-    structure_update = Scheduler(update_db_structures, env.FLAG_UPDATE_POLLING)
-    config:Configuration = None
-    stats: dict = None
-    loop_sleep = DEFAULT_LOOP_SLEEP
+async def stats_cleaner_task():
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.client)
+        await pubsub.subscribe(redis_channels.exploit)
+        await pubsub.subscribe(redis_channels.team)
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+            await pubsub_flush(pubsub)
+            if message is not None:
+                if await clear_deleted_object_stats():
+                    await redis_conn.publish(redis_channels.stats, "update")
 
-async def loop():
-    await g.structure_update.commit()
-    if g.config.SETUP_STATUS == SetupStatus.SETUP:
-        return
-    await g.stats_updater.commit()
+
+async def stats_update_task():
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.attack_execution)
+        while True:
+            if g.update_needed:
+                if await stats_update():
+                    await redis_conn.publish(redis_channels.stats, "update")
+            else:
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+                await pubsub_flush(pubsub)
+                if message is not None:
+                    g.update_needed = True
 
 #Loop based process with a half of a second of delay
-async def loop_init():
+async def tasks_init():
     try:
         await connect_db()
-        await update_db_structures()
-        logging.info("Stats loop started")
-        while True:
-            await loop()
-            await asyncio.sleep(g.loop_sleep)
-            g.loop_sleep = DEFAULT_LOOP_SLEEP #Reset sleep time (if changed)
+        await reset_stats()
+        await update_config()
+        await stats_update()
+        await redis_conn.publish(redis_channels.stats, "update")
+        logging.info("Stats generator started")
+        update_task = asyncio.create_task(update_config_task())
+        stats_task = asyncio.create_task(stats_update_task())
+        stats_cleaner = asyncio.create_task(stats_cleaner_task())
+        await asyncio.gather(update_task, stats_task, stats_cleaner)
     except KeyboardInterrupt:
         pass
     finally:
         await close_db()
+
 
 def inital_setup():
     try:
         while True:
             try:
                 with asyncio.Runner(loop_factory=uvloop.new_event_loop) as runner:
-                    runner.run(loop_init())
+                    runner.run(tasks_init())
             except Exception as e:
                 traceback.print_exc()
                 time.sleep(5)
