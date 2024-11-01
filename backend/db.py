@@ -1,6 +1,6 @@
 import env, secrets
 import sqlalchemy.exc
-from pydantic import PlainSerializer, BaseModel
+from pydantic import BaseModel
 from typing import Dict, Any, Annotated, List
 from typing import Union, Callable
 from uuid import UUID, uuid4
@@ -10,7 +10,6 @@ from models.enums import *
 from pydantic import BeforeValidator
 from utils import *
 import asyncio
-from sqlalchemy.pool import NullPool
 from fastapi import Depends
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -33,7 +32,9 @@ def extract_id_from_dict(x: Any) -> Any:
         return x.id
     return x
 
-redis_conn = redis.Redis(host='localhost' if DEBUG else 'redis', port=6379)
+redis_conn = redis.Redis(
+    host='localhost' if DEBUG else 'redis', port=6379
+)
 
 class redis_channels:
     client = "client"
@@ -146,7 +147,6 @@ class Exploit(SQLModel, table=True):
     id:                 ExploitID               = Field(primary_key=True)
     name:               str
     language:           Language                = Field(default=Language.other)
-    status:             ExploitStatus           = Field(default=ExploitStatus.disabled)
     created_at:         DateTime                = Field(sa_column=datetime_now_sql())
     created_by_id:      ClientID | None         = Field(foreign_key="clients.id", ondelete="SET NULL")
     created_by:         Client | None           = Relationship(back_populates="exploits_created")
@@ -330,7 +330,6 @@ async def connect_db():
     if engine is None:
         engine = create_async_engine(
             env.POSTGRES_URL,
-            poolclass=NullPool,
             echo=env.PRINT_SQL
         )
         dbconn = await engine.connect()

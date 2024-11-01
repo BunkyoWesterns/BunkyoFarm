@@ -21,7 +21,8 @@ from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla, redis_conn, redis_channels
-from skio import sio_app
+from skio import sio_server
+import socketio
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
@@ -43,8 +44,12 @@ app = FastAPI(
     docs_url="/api/docs",
     lifespan=lifespan,
     version=env.VERSION,
-    responses={ 422: {"description": "Validation error", "model": MessageResponse[Any]} }
+    responses={ 422: {"description": "Validation error", "model": MessageResponse[Any]} },
+    title="ExploitFarm",
 )
+
+sio_app = socketio.ASGIApp(sio_server, socketio_path="/sock/socket.io", other_asgi_app=app)
+app.mount("/sock", sio_app)
 
 async def create_access_token(data: dict) -> str:
     to_encode = data.copy()
@@ -230,7 +235,6 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
     await redis_conn.publish(redis_channels.config, "update")
     return {"status": ResponseStatus.OK, "message": "The configuration has been updated", "response": config.model_dump()}
 
-
 if not DEBUG:
     @router.get("/{full_path:path}", include_in_schema=False)
     async def catch_all(full_path:str):
@@ -242,6 +246,7 @@ if not DEBUG:
         else:
             return FileResponse(file_request)
 
+
 if DEBUG or CORS_ALLOW:
     app.add_middleware(
         CORSMiddleware,
@@ -250,8 +255,6 @@ if DEBUG or CORS_ALLOW:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-app.mount("/sock", app=sio_app)
 
 if __name__ == '__main__':
     #DO NOT ADD IN lifecycle of FastAPI, it will be spawned more times

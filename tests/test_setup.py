@@ -9,7 +9,7 @@ import datetime, argparse
 
 parser = argparse.ArgumentParser(description="GitBackup")
 parser.add_argument("--password", "-p", type=str, default=None, help="Setup the environment")
-parser.add_argument("--teams", "-T", type=int, default=100, help="Number of teams")
+parser.add_argument("--teams", "-T", type=int, default=20, help="Number of teams")
 parser.add_argument("--tick", "-t", type=int, default=60, help="Tick duration")
 parser.add_argument("--docker", action="store_true", help="Run in docker mode (with host.docker.internal)")
 args = parser.parse_args()

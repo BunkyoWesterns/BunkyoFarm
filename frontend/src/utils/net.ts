@@ -4,8 +4,8 @@ import io from 'socket.io-client';
 export const DEV_IP_BACKEND = "127.0.0.1:5050"
 
 export const socket_io = import.meta.env.DEV?
-    io("ws://"+DEV_IP_BACKEND, {transports: ["websocket", "polling"], path:"/sock" }):
-    io({transports: ["websocket", "polling"], path:"/sock"})
+    io("ws://"+DEV_IP_BACKEND, { path:"/sock/socket.io", transports: ['websocket'] }):
+    io({ path:"/sock/socket.io", transports: ['websocket'] })
 
 export const SOCKET_IO_CHANNELS = [
     "client",
@@ -22,7 +22,8 @@ export const SOCKET_IO_CHANNELS = [
 
 export const DEBOUNCED_SOCKET_IO_CHANNELS = [
     "attack_execution",
-    "stats"
+    "stats",
+    "exploit",
 ]
 
 export const sockIoChannelToQueryKeys = (channel:string):string[][] => {

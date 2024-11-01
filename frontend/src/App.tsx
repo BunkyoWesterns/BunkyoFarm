@@ -54,7 +54,7 @@ export default function App() {
             if (socket_io.connected) {
                 setErrorMessage(null)
                 if (!first_time) {
-                    queryClient.resetQueries({ queryKey: ["status"] })
+                    queryClient.resetQueries({ queryKey: [] })
                     notifications.show({
                         id: "connected-backend",
                         title: "Connected to the backend!",

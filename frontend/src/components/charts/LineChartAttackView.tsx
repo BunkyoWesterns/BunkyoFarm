@@ -57,21 +57,47 @@ export const LineChartAttackView = ({ seriesType, attackType, chartType, withCon
     const stats = statsQuery()
     const useTick = status.data?.config?.START_TIME != null
     const data = useMemo(() => {
+        let initialSkip = true
         const res = stats.data?.ticks.map((tick) => {
             let result:{ date: string, [s:string]: string|number} = { date: useTick?"Tick #"+tick.tick.toString():getDateSmallFormatted(tick.start_time) }
             if (finalSeries == "globals"){
-                result = {...result, ...tick.globals.attacks }
+                if (tick.globals.attacks.tot > 0 || !initialSkip){
+                    initialSkip = false
+                    result = {...result, ...tick.globals.attacks }
+                }
             }else if (finalSeries == "services"){
-                Object.keys(tick.exploits).forEach((id) => {
+                const srv_ids = Object.keys(tick.exploits).map((id) => {
                     const service_id = exploits.data?.find((exploit) => exploit.id == id)?.service
                     if (service_id == null) return
                     const oldValue =  (!result[service_id] || typeof result[service_id] == "string")?0:result[service_id] as number
+                    if (tick.exploits[id]?.attacks[finalAttackStatus] == null && initialSkip) return service_id
+                    initialSkip = false
                     result[service_id] = tick.exploits[id]?.attacks[finalAttackStatus]??0 + oldValue
+                    return service_id
                 })
+                if (!initialSkip){
+                    status.data?.services?.map((service) => service.id).filter((id) => !srv_ids.includes(id)).forEach((id) => {
+                        result[id] = 0
+                    })
+                }
             } else {
-                Object.keys(tick[finalSeries]).forEach((id) => {
+                const ids_used = Object.keys(tick[finalSeries]).map((id) => {
+                    if (tick[finalSeries][id]?.attacks[finalAttackStatus] == null && initialSkip) return id
+                    initialSkip = false
                     result[id] = tick[finalSeries][id]?.attacks[finalAttackStatus]??0
+                    return id
                 })
+                if (!initialSkip){
+                    if (finalSeries == "clients"){
+                        clients.data?.map((client) => client.id).filter((id) => !ids_used.includes(id)).forEach((id) => {
+                            result[id] = 0
+                        })
+                    }else if (finalSeries == "exploits"){
+                        exploits.data?.map((exploit) => exploit.id).filter((id) => !ids_used.includes(id)).forEach((id) => {
+                            result[id] = 0
+                        })
+                    }
+                }
             }
             return result
         })

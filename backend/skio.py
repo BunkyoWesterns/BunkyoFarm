@@ -1,15 +1,20 @@
 import socketio, asyncio, uvloop, traceback, logging
 from env import DEBUG
 from multiprocessing import Process
-from db import close_db, redis_conn, REDIS_CHANNELS
+from db import close_db, redis_conn, REDIS_CHANNELS, connect_db
+
 
 class StopLoop(Exception): pass
 
 redis_mgr = socketio.AsyncRedisManager(
     url="redis://localhost:6379/0" if DEBUG else "redis://redis:6379/0",
 )
-sio_server = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins="*", client_manager=redis_mgr)
-sio_app = socketio.ASGIApp(sio_server, socketio_path="")
+sio_server = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins=[],
+    client_manager=redis_mgr,
+    transports=["websocket"],
+)
 
 class g:
     task_list = []
@@ -33,6 +38,7 @@ async def generate_listener_tasks():
 
 async def tasks_init():
     try:
+        await connect_db()
         await generate_listener_tasks()
         logging.info("SocketIO manager started")
         await asyncio.gather(*g.task_list)

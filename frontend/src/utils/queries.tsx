@@ -120,6 +120,7 @@ export const commitManualSubmission = async (flag_text:string) => {
 export const exploitsQuery = () => useQuery({
     queryKey: ["exploits"],
     queryFn: async () => await getRequest("/exploits") as paths["/api/exploits"]["get"]["responses"][200]["content"]["application/json"],
+    refetchInterval: 10000
 })
 
 export const exploitsSourcesQuery = (exploit_id?: string) => useQuery({
