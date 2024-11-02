@@ -94,8 +94,6 @@ def gen_args(args_to_parse: list[str]|None = None):
     
     #Main parser
     parser = argparse.ArgumentParser(description=f"{g.name} Manager")
-    parser.add_argument('--clear', dest="bef_clear", required=False, action="store_true", help=f'Delete docker volume associated to {g.name} resetting all the settings', default=False)
-
     subcommands = parser.add_subparsers(dest="command", help="Command to execute [Default start if not running]")
     
     #Compose Command
@@ -118,6 +116,8 @@ def gen_args(args_to_parse: list[str]|None = None):
     parser_volume = subcommands.add_parser('volume', help=f'Volume manager')
     parser_volume.add_argument('--save', required=False, action="store_true", help=f'Save current volume settings', default=None)
     parser_volume.add_argument('--load', required=False, action="store_true", help=f'Load saved volume settings', default=None)
+    parser_volume.add_argument('--clear', required=False, action="store_true", help=f'Delete docker volume associated to {g.name} resetting all the settings', default=False)
+    parser_volume.add_argument('--tar-file', '-f', required=False, help=f'File where save or load the volumes', default="exploitfarm-volumes.tar.gz")
     
     args = parser.parse_args(args=args_to_parse)
     
@@ -131,10 +131,7 @@ def gen_args(args_to_parse: list[str]|None = None):
         args.port = 5050
     
     if args.command is None:
-        if not args.clear:
-            return gen_args(["start", *sys.argv[1:]])
-        
-    args.clear = args.bef_clear or args.clear
+        return gen_args(["start", *sys.argv[1:]])
 
     return args
 
@@ -191,7 +188,6 @@ def write_volume_manager_compose():
                     "image": "alpine",
                     "command": '["tail","-f","/dev/null"]',
                     "container_name": g.volume_manager_conatiner,
-                    "build" if g.build else "image": "." if g.build else g.container_repo,
                     "volumes": [
                         f"{g.compose_volume_sources}:/volumes/exploit-sources/",
                         f"{g.compose_volume_database}:/volumes/postgresql-data/"
@@ -207,7 +203,7 @@ def write_volume_manager_compose():
 def volume_exists():
     return db_volume_name in cmd_check(f'docker volume ls --filter "name=^{db_volume_name}$"', get_output=True) or sources_volume_name in cmd_check(f'docker volume ls --filter "name=^{sources_volume_name}$"', get_output=True)
 
-def delete_volume():
+def delete_volumes():
     return cmd_check(f"docker volume rm {db_volume_name} {sources_volume_name}")
 
 def main():    
@@ -263,23 +259,26 @@ def main():
                     if not volume_exists():
                         puts(f"{g.name} volume not found!", color=colors.red)
                         exit()
-                    args.save = "exploitfarm-volumes.tar.gz"
                 if args.load == True:
                     if check_already_running():
                         puts(f"Stop first {g.name} before loading volumes!", color=colors.red)
                         exit()
-                    args.load = "exploitfarm-volumes.tar.gz"
+                target_file = args.tar_file
                 write_volume_manager_compose()
                 composecmd("up -d", g.composefile)
                 try:
                     if args.save:
-                        puts(f"Saving volumes to {args.save}", color=colors.green)
+                        puts(f"Saving volumes to {target_file}", color=colors.green)
                         cmd_check(f"docker exec {g.volume_manager_conatiner} sh -c 'echo $PWD; tar -cvf /exploitfarm-volumes.tar.gz ./volumes'", print_output=True)
-                        cmd_check(f"docker cp {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz {os.path.abspath(args.save)}", print_output=True)
+                        cmd_check(f"docker cp {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz {os.path.abspath(target_file)}", print_output=True)
                     elif args.load:
-                        puts(f"Loading volumes from {args.load}", color=colors.green)
-                        cmd_check(f"docker cp {os.path.abspath(args.load)} {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz", print_output=True)
+                        delete_volumes()
+                        puts(f"Loading volumes from {target_file}", color=colors.green)
+                        cmd_check(f"docker cp {os.path.abspath(target_file)} {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz", print_output=True)
                         cmd_check(f"docker exec {g.volume_manager_conatiner} sh -c 'tar -xvf /exploitfarm-volumes.tar.gz'", print_output=True)
+                    elif args.clear:
+                        puts(f"Deleting volumes", color=colors.green)
+                        delete_volumes()
                 finally:
                     composecmd("down", g.composefile)
                 exit()
@@ -288,7 +287,7 @@ def main():
     
     if args.clear:
         if volume_exists():
-            delete_volume()
+            delete_volumes()
         else:
             puts(f"{g.name} volume not found!", color=colors.red)
 
