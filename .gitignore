@@ -25,3 +25,4 @@ tests/xploit_test/.flag_queue.json
 /backend/backend.egg-info
 /backend/build
 exploitfarm-compose-tmp-file.yml
+exploitfarm-volumes.tar.gz

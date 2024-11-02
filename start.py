@@ -12,6 +12,7 @@ class g:
     compose_project_name = "exploitfarm"
     compose_volume_database = "exploitfarm_data"
     compose_volume_sources = "exploitfarm_exploit_sources"
+    volume_manager_conatiner = "exploitfarm-volume-manager"
     container_repo = "ghcr.io/pwnzer0tt1/exploitfarm"
     name = "ExploitFarm"
     build = False
@@ -113,6 +114,11 @@ def gen_args(args_to_parse: list[str]|None = None):
     
     parser_restart = subcommands.add_parser('restart', help=f'Restart {g.name}')
     parser_restart.add_argument('--logs', required=False, action="store_true", help=f'Show {g.name} logs', default=False)
+    
+    parser_volume = subcommands.add_parser('volume', help=f'Volume manager')
+    parser_volume.add_argument('--save', required=False, action="store_true", help=f'Save current volume settings', default=None)
+    parser_volume.add_argument('--load', required=False, action="store_true", help=f'Load saved volume settings', default=None)
+    
     args = parser.parse_args(args=args_to_parse)
     
     if not "clear" in args:
@@ -176,6 +182,28 @@ def write_compose():
             }
         }))
 
+def write_volume_manager_compose():
+    with open(g.composefile, "wt") as compose:
+        compose.write(dict_to_yaml({
+            "services": {
+                g.volume_manager_conatiner: {
+                    "restart": "unless-stopped",
+                    "image": "alpine",
+                    "command": '["tail","-f","/dev/null"]',
+                    "container_name": g.volume_manager_conatiner,
+                    "build" if g.build else "image": "." if g.build else g.container_repo,
+                    "volumes": [
+                        f"{g.compose_volume_sources}:/volumes/exploit-sources/",
+                        f"{g.compose_volume_database}:/volumes/postgresql-data/"
+                    ],  
+                },
+            },
+            "volumes": {
+                g.compose_volume_database:"",
+                g.compose_volume_sources:""
+            }
+        }))
+
 def volume_exists():
     return db_volume_name in cmd_check(f'docker volume ls --filter "name=^{db_volume_name}$"', get_output=True) or sources_volume_name in cmd_check(f'docker volume ls --filter "name=^{sources_volume_name}$"', get_output=True)
 
@@ -224,6 +252,37 @@ def main():
                     composecmd("down", g.composefile)
                 else:
                     puts(f"{g.name} is not running!" , color=colors.red, is_bold=True, flush=True)
+            case "volume":
+                if not args.save and not args.load:
+                    puts("Cannot save and load at the same time!", color=colors.red)
+                    exit()
+                elif not args.save and not args.load:
+                    puts("You must specify --save or --load", color=colors.red)
+                    exit()
+                if args.save == True:
+                    if not volume_exists():
+                        puts(f"{g.name} volume not found!", color=colors.red)
+                        exit()
+                    args.save = "exploitfarm-volumes.tar.gz"
+                if args.load == True:
+                    if check_already_running():
+                        puts(f"Stop first {g.name} before loading volumes!", color=colors.red)
+                        exit()
+                    args.load = "exploitfarm-volumes.tar.gz"
+                write_volume_manager_compose()
+                composecmd("up -d", g.composefile)
+                try:
+                    if args.save:
+                        puts(f"Saving volumes to {args.save}", color=colors.green)
+                        cmd_check(f"docker exec {g.volume_manager_conatiner} sh -c 'echo $PWD; tar -cvf /exploitfarm-volumes.tar.gz ./volumes'", print_output=True)
+                        cmd_check(f"docker cp {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz {os.path.abspath(args.save)}", print_output=True)
+                    elif args.load:
+                        puts(f"Loading volumes from {args.load}", color=colors.green)
+                        cmd_check(f"docker cp {os.path.abspath(args.load)} {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz", print_output=True)
+                        cmd_check(f"docker exec {g.volume_manager_conatiner} sh -c 'tar -xvf /exploitfarm-volumes.tar.gz'", print_output=True)
+                finally:
+                    composecmd("down", g.composefile)
+                exit()
     
     write_compose()
     
