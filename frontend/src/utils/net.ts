@@ -23,7 +23,6 @@ export const SOCKET_IO_CHANNELS = [
 export const DEBOUNCED_SOCKET_IO_CHANNELS = [
     "attack_execution",
     "stats",
-    "exploit",
 ]
 
 export const sockIoChannelToQueryKeys = (channel:string):string[][] => {

@@ -4,20 +4,15 @@ import time, ast, os, traceback
 from datetime import datetime, UTC
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
-from fastapi import HTTPException
 import re, logging
-from models.response import MessageInfo
-import pickle
 from env import EXPLOIT_SOURCES_DIR
-from typing import Type
-from dateutil.parser import parse as parsedatetime
 
 #logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format="[EXPLOIT-FARM][%(asctime)s] >> [%(levelname)s][%(name)s]:\t%(message)s", datefmt="%d/%m/%Y %H:%M:%S")
 crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALLOWED_ANNOTATIONS = ["int", "str", "bool", "float", "any"]
-ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ROUTERS_DIR_NAME = "routes"
 ROUTERS_DIR = os.path.join(ROOT_DIR, ROUTERS_DIR_NAME)
 STATS_FILE = os.path.join(EXPLOIT_SOURCES_DIR, f"stats.json")
@@ -158,12 +153,6 @@ def json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str
         return [_json_like(ele, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode) for ele in obj]
     return _json_like(obj, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode)
 
-async def check_only_setup():
-    from models.config import Configuration, SetupStatus
-    config = await Configuration.get_from_db()
-    if config.SETUP_STATUS != SetupStatus.SETUP:
-        raise HTTPException(400, "You can delete all teams only in SETUP status")
-
 def _extract_values_by_regex(regex:str|bytes, text:str|list[str|bytes]):
     matcher = re.compile(regex if isinstance(regex, bytes) else regex.encode())
     if isinstance(text, str):
@@ -175,69 +164,10 @@ def _extract_values_by_regex(regex:str|bytes, text:str|list[str|bytes]):
 def extract_values_by_regex(regex:str, text:str|list[str]) -> list[str]:
     return list(_extract_values_by_regex(regex, text))
 
-async def _get_messages_array():
-    """ This function will recognize problems, dangerous situations and errors detected by the system, and collect them in a list """
-    from db import SUBMITTER_ERROR_OUTPUT, MessageStatusLevel, SUBMITTER_WARNING_OUTPUT
-    # Submitter exceptions
-    error = await SUBMITTER_ERROR_OUTPUT()
-    warning = await SUBMITTER_WARNING_OUTPUT()
-    if error:
-        yield MessageInfo(
-            level=MessageStatusLevel.error,
-            title="The submitter gave an unexpected exception! That's a problem in your submitter",
-            message=error
-        )
-    if warning:
-        yield MessageInfo(
-            level=MessageStatusLevel.warning,
-            title="The submitter gave a warning! Check the output",
-            message=warning
-        )
-    #yield other messages here!
-    
-async def get_messages_array() -> List[MessageInfo]:
-    """ This function will recognize problems, dangerous situations and errors detected by the system, and collect them in a list """
-    return [ele async for ele in _get_messages_array()]
-    
-async def create_or_update_env(key:str, value:str):
-    from db import Env, dbtransaction, sqla
-    async with dbtransaction() as db:
-        return (await db.scalars(
-            sqla.insert(Env)
-            .values(key=key, value=value)
-            .on_conflict_do_update(
-                index_elements=[Env.key], set_=dict(value=value)
-            ).returning(Env)
-            
-        )).one()
-
-async def get_stats():
-    from db import redis_conn, redis_keys
-    try:
-        data = await redis_conn.get(redis_keys.stats)
-        if not data:
-            return None
-        return pickle.loads(data)
-    except Exception:
-        traceback.print_exc()
-        return None
-
 async def pubsub_flush(pubsub):
     flushed = True
     while flushed is not None:
         flushed = await pubsub.get_message(ignore_subscribe_messages=True, timeout=0)
 
-async def set_stats(stats:dict):
-    from db import redis_conn, redis_keys
-    await redis_conn.set(redis_keys.stats, pickle.dumps(stats))
 
-def sqlparam_from_model(Model:Type[BaseModel], exclude:list[str]|None=None, include:list[str]|None=None) -> dict:
-    from db import sqla
-    def filter_check(x:str):
-        if exclude and x in exclude:
-            return False
-        if include and x not in include:
-            return False
-        return True
-    return {k: sqla.bindparam(k) for k in list(filter(filter_check, Model.model_fields.keys()))}
     

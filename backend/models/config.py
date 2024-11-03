@@ -5,14 +5,13 @@ from typing_extensions import Self
 from functools import cache
 from pydantic import NonNegativeInt, PositiveInt
 from models.submitter import SubmitterDTO
-import asyncio, re, env
+import re, env
 from models.teams import TeamDTO
 from models.service import ServiceDTO
 from models.response import *
 from typing import List
 from models.enums import AttackMode, SetupStatus
-from db import SubmitterID, Env, dbtransaction, create_or_update_env, sqla, AttackExecution, AttackExecutionStatus
-from utils import json_like
+from db import SubmitterID, Env, dbtransaction, sqla, AttackExecution, AttackExecutionStatus
 
 class Configuration(BaseModel):
     FLAG_REGEX: str = ""

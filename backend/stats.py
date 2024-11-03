@@ -1,13 +1,13 @@
 from multiprocessing import Process
 from models.all import *
 import logging, uvloop
-from utils import get_stats
 from datetime import timedelta
-import traceback
+import traceback, asyncio
 import math, time
 from dateutil.parser import parse as dateparse
 from datetime import datetime
-from db import set_stats, AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client, redis_channels, redis_conn
+from db import AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client, redis_channels, redis_conn
+from utils.query import set_stats
 from sqlalchemy.orm import defer, selectinload
 from utils import pubsub_flush
 
@@ -93,33 +93,33 @@ def calc_tick_range(tick:int):
 def add_stats(attack: AttackExecution, action: callable):
     # Add stats in globals
     action(g.stats["globals"])
-    
+
     #Adding missing ticks
     tick = calc_tick(attack.received_at)
     if tick <= 0: return #skip data before start time
-    
+
     if tick-len(g.stats["ticks"]) > 0:
         old_tick = len(g.stats["ticks"])
         for i in range(tick-len(g.stats["ticks"])):
             new_tick = old_tick+i+1
             g.stats["ticks"].append(create_tick(new_tick,*calc_tick_range(new_tick)))
-    
+
     # Add stats in tick
     tick_block = g.stats["ticks"][tick-1]
     action(tick_block["globals"])
-    
+
     # Add stats in exploit
     exploit_id = str(attack.exploit_id) if attack.exploit_id else "null"
     if tick_block["exploits"].get(exploit_id) is None:
         tick_block["exploits"][exploit_id] = complete_stats()
     action(tick_block["exploits"][exploit_id])
-    
+
     # Add stats in team
     team_id = str(attack.target_id) if attack.target_id else "null"
     if tick_block["teams"].get(team_id) is None:
         tick_block["teams"][team_id] = complete_stats()
     action(tick_block["teams"][team_id])
-    
+
     # Add stats in client
     client_id = str(attack.executed_by_id) if attack.executed_by_id else "null"
     if tick_block["clients"].get(client_id) is None:
@@ -131,7 +131,7 @@ def add_attack_stats(att: AttackExecution, value:int = 1):
         stat["attacks"]["tot"] += value
         stat["attacks"][att.status.value] += value
     return add_stats(att, add_single_stat)
-    
+
 def add_flag_stats(flg: Flag, value:int = 1):
     def add_single_stat(stat: dict):
         stat["flags"]["tot"] += value
@@ -146,7 +146,7 @@ async def clear_deleted_object_stats():
         teams = list((await db.scalars(stmt)).all())
         stmt = sqla.select(Client.id)
         clients = list((await db.scalars(stmt)).all())
-    
+
     for tick in g.stats["ticks"]:
         for exploit_id in list(tick["exploits"].keys()):
             if exploit_id != "null" and exploit_id not in exploits:
@@ -165,7 +165,7 @@ async def clear_deleted_object_stats():
 async def stats_update():
     if g.stats["start_time"] is None:
         return False
-    
+
     flags_query = (
         sqla.select(Flag)
             .options(
@@ -174,7 +174,7 @@ async def stats_update():
                 .selectinload(AttackExecution.exploit))
             .order_by(Flag.id.asc()).limit(LIMIT_QUERY_SIZE)
     )
-    
+
     attacks_query = sqla.select(AttackExecution).options(defer(AttackExecution.output)).order_by(AttackExecution.id.asc()).limit(LIMIT_QUERY_SIZE)
     stats_updated = False
     try:
@@ -182,9 +182,9 @@ async def stats_update():
             flags_before_waited = (await db.scalars(
                 flags_query.where(Flag.id.in_(g.stats["wait_flag_ids"]))
             )).all()
-            
+
             new_wait_list = []
-            
+
             for flg in flags_before_waited:
                 if flg.status == FlagStatus.wait:
                     new_wait_list.append(flg.id)
@@ -195,12 +195,12 @@ async def stats_update():
                     add_flag_stats(flg, -1)
                     flg.status = new_status
                     add_flag_stats(flg)
-            
+
             g.stats["wait_flag_ids"] = new_wait_list
-            
+
             flags_to_analyse = (await db.scalars(flags_query.where(Flag.id > (g.stats["last_flag_id"])))).all()
             attacks_to_analyse = (await db.scalars(attacks_query.where(AttackExecution.id > (g.stats["last_attack_id"])))).all()
-        
+
         if len(flags_to_analyse) != 0 or len(attacks_to_analyse) != 0:
             stats_updated = True
         # Probably need to fasten the loop
@@ -208,26 +208,26 @@ async def stats_update():
             g.update_needed = True
         else:
             g.update_needed = False
-        
+
         max_id = None
-        
+
         for flg in flags_to_analyse:
             if max_id is None or flg.id > max_id:
                 max_id = flg.id
             if flg.status == FlagStatus.wait:
                 g.stats["wait_flag_ids"].append(flg.id)
             add_flag_stats(flg)
-        
+
         if not max_id is None:
             g.stats["last_flag_id"] = max_id
-        
+
         max_id = None
-        
+
         for att in attacks_to_analyse:
             if max_id is None or att.id > max_id:
                 max_id = att.id
             add_attack_stats(att)
-        
+
         if not max_id is None:
             g.stats["last_attack_id"] = max_id
     finally:

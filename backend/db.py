@@ -48,7 +48,7 @@ class redis_channels:
     stats = "stats"
     config = "config"
     
-REDIS_CHANNELS = [
+REDIS_CHANNEL_LIST = [
     "client",
     "attack_group",
     "exploit",

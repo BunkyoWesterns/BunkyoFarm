@@ -1,6 +1,6 @@
 from multiprocessing import Process, Manager
 from models.all import *
-import logging, uvloop
+import logging, uvloop, asyncio
 from typing import List
 from types import GeneratorType
 from datetime import timedelta
@@ -8,6 +8,7 @@ from utils import datetime_now
 import traceback, time
 from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution, redis_conn, redis_channels
 from utils import pubsub_flush
+from utils.query import create_or_update_env
 
 class StopLoop(Exception): pass
 

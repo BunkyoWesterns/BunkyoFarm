@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from fastapi_pagination.bases import AbstractParams, BasePage, RawParams
 from fastapi_pagination.types import GreaterEqualOne, GreaterEqualZero
 from fastapi_pagination.utils import create_pydantic_model
-from utils import get_stats
+from utils.query import get_stats
 from db import UnHashedClientID, Flag, sqla, AttackExecution, DBSession
 from stats import complete_stats
 from sqlalchemy.orm import selectinload

@@ -23,6 +23,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla, redis_conn, redis_channels
 from skio import sio_server
 import socketio
+from utils.query import get_messages_array
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
