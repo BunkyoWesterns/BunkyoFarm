@@ -70,7 +70,7 @@ export const LineChartAttackView = ({ seriesType, attackType, chartType, withCon
                     const service_id = exploits.data?.find((exploit) => exploit.id == id)?.service
                     if (service_id == null) return
                     const oldValue =  (!result[service_id] || typeof result[service_id] == "string")?0:result[service_id] as number
-                    if (tick.exploits[id]?.attacks[finalAttackStatus] == null && initialSkip) return service_id
+                    if ((tick.exploits[id]?.attacks[finalAttackStatus]??0) == 0 && initialSkip) return service_id
                     initialSkip = false
                     result[service_id] = tick.exploits[id]?.attacks[finalAttackStatus]??0 + oldValue
                     return service_id
@@ -82,7 +82,7 @@ export const LineChartAttackView = ({ seriesType, attackType, chartType, withCon
                 }
             } else {
                 const ids_used = Object.keys(tick[finalSeries]).map((id) => {
-                    if (tick[finalSeries][id]?.attacks[finalAttackStatus] == null && initialSkip) return id
+                    if ((tick[finalSeries][id]?.attacks[finalAttackStatus]??0) == 0 && initialSkip) return id
                     initialSkip = false
                     result[id] = tick[finalSeries][id]?.attacks[finalAttackStatus]??0
                     return id

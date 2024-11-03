@@ -1,6 +1,5 @@
 
-from pydantic import BaseModel, AwareDatetime
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, AwareDatetime, model_validator
 from typing_extensions import Self
 from functools import cache
 from pydantic import NonNegativeInt, PositiveInt
