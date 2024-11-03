@@ -4,6 +4,7 @@ from models.config import *
 from typing import List
 from fastapi import APIRouter
 from utils import *
+import asyncio
 from db import Team, DBSession, sqla, TeamID, redis_channels, redis_conn
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
