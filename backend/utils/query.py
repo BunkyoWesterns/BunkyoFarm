@@ -6,7 +6,7 @@ from models.enums import *
 from utils import datetime_now
 import pickle, traceback
 from models.response import MessageInfo
-from typing import List, Type, Tuple
+from typing import List, Type, Tuple, Literal
 from fastapi import HTTPException
 from pydantic import BaseModel
 from db import redis_conn, redis_keys
@@ -45,16 +45,31 @@ async def get_exploits_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tup
     return (await db.execute(stmt)).all()
 
 async def get_exploit_status(config: Configuration, latest_attack: AttackExecution|None) -> bool:
+    result, _ = await detailed_exploit_status(config, latest_attack)
+    return result
+
+async def detailed_exploit_status(config: Configuration, latest_attack: AttackExecution|None) -> Tuple[bool, Literal["setup", "timeout", "stopped"]|None]:
+    reason = None
+    
     if config.SETUP_STATUS == SetupStatus.SETUP or latest_attack is None:
-        return ExploitStatus.disabled
+        return ExploitStatus.disabled, "setup"
+    
     timeouted = (datetime_now() - latest_attack.received_at).total_seconds() > calc_max_timeout_exploit(config)
-    exploit_status = ExploitStatus.disabled if timeouted else ExploitStatus.active
+    
+    if timeouted:
+        reason = "timeout"
+        exploit_status = ExploitStatus.disabled
+    else:
+        exploit_status = ExploitStatus.active
+    
     last_exploit_stop = await redis_conn.get(f"last_exploit_{latest_attack.exploit_id}_stopped")
     if last_exploit_stop:
         last_exploit_stop = pickle.loads(last_exploit_stop)
         if last_exploit_stop > latest_attack.received_at:
+            reason = "stopped"
             exploit_status = ExploitStatus.disabled
-    return exploit_status
+    
+    return exploit_status, reason
 
 async def _get_messages_array():
     """ This function will recognize problems, dangerous situations and errors detected by the system, and collect them in a list """

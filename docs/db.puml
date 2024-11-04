@@ -16,7 +16,6 @@ entity "**Exploit**" as exploit{
     language: string [enum]
     hash: string
     cli: boolean
-    status: string [enum]
     created_at: date
 }
 

@@ -14,7 +14,7 @@
 
 Project starts the 3rd of october 2024 and ends the 20th of december 2024
 
-[    Requisiti e Progettazione] as [TASK1] starts 2024-10-03 and ends 2024-10-31
+[    Requisiti e Progettazione] as [TASK1] starts 2024-10-03 and ends 2024-11-31
 note bottom
   - Business Canvas
   - Sequence Diagrams
@@ -23,18 +23,18 @@ note bottom
 end note
 [TASK1] is colored in DeepSkyBlue
 
-[    Exploit Source Managment] as [TASK2] starts 2024-10-20 and ends 2024-11-10
+[    Exploit Source Managment] as [TASK2] starts 2024-10-20 and ends 2024-11-01
 [TASK2] is colored in LimeGreen
-[    Testing] as [TASK2-TEST] requires 7 days
-[TASK2-TEST] is colored in Gold
-[TASK2]->[TASK2-TEST]
-
-[    Exploit Execution Groups Managment + Tests] as [TASK3] starts 2024-11-10 and ends 2024-12-15
-[TASK3] is colored in Crimson
+[    Socket.IO + sqlalchemy integration] as [TASK3] starts 2024-10-31 and ends 2024-11-05
+[TASK3] is colored in Gold
 [TASK2]->[TASK3]
 
-[Exploit management completato] as [M1] happens at [TASK2-TEST]'s end
+[    Exploit Execution Groups Managment + Tests] as [TASK4] starts 2024-11-05 and ends 2024-12-15
+[TASK4] is colored in Crimson
+[TASK2]->[TASK4]
 
-[TASK2-TEST] displays on same row as [TASK2]
+[Exploit management completato] as [M1] happens at [TASK2]'s end
+
+[TASK3] displays on same row as [TASK2]
 
 @endgantt

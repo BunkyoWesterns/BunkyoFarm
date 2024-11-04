@@ -2,7 +2,7 @@ import socketio, asyncio, uvloop, traceback, logging
 from env import DEBUG
 from multiprocessing import Process
 from db import close_db, redis_conn, REDIS_CHANNEL_LIST, connect_db, dbtransaction, redis_channels
-from utils.query import get_exploits_with_latest_attack, get_exploit_status
+from utils.query import get_exploits_with_latest_attack, detailed_exploit_status
 from models.enums import *
 from models.config import Configuration
 
@@ -47,10 +47,10 @@ async def check_exploits_disabled():
             config = await Configuration.get_from_db()
             for ele in data:
                 expl, attack = ele.tuple()
-                current_status = await get_exploit_status(config, attack)
+                current_status, reason = await detailed_exploit_status(config, attack)
                 if current_status == ExploitStatus.disabled and expl.id not in disabled_exploits:
                     disabled_exploits.add(expl.id)
-                    trigger_update = True
+                    trigger_update = reason != "stopped"
                 elif current_status != ExploitStatus.disabled and expl.id in disabled_exploits:
                     disabled_exploits.remove(expl.id)
             if trigger_update:

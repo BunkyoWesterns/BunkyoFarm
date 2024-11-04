@@ -14,7 +14,7 @@ Server --> DB: Save the service
 Client -> Server: Create the exploit
 Server -> DB: Save the exploit and update timestamp
 group Attack Loop
-    Client <--> Server: (polling) get configuration
+    Client <--> Server: (socket.io) get configuration
     & Server <--> DB: Sync configuration
     Client -> Server: (loop) Send attack data
     Server -> DB: Save attack data / update timestamp

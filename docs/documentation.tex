@@ -101,7 +101,7 @@ Infine un'ultima parte fondamentale in tutto il progetto è il client che deve e
 	\end{figure}
 \subsection{Specifica dei requisiti}
 \subsubsection{Setup}
-Il setup di ExploitFarm dalla sua installazione alla conclusione della sua configurazione deve essere di facile ed intuitivo utilizzo e di semplice finalizzazione. Al fine di perseguire questo obiettivo, la tecnologia per l'avvio del progetto è Docker, che ne permette il facile avvio anche del suo database postgres. Inoltre è possibile avviare exploitfarm tramite un one-command, che avvierà il progetto da un repository pubblico con il container buildato. Una volta avviato la configurazione iniziale dovrà essere compilabile sia tramite un'interfaccia web che tramite una automizzazione che è possibile scrivere tramite la libreria python associata al progetto.
+Il setup di ExploitFarm dalla sua installazione alla conclusione della sua configurazione deve essere di facile ed intuitivo utilizzo e di semplice finalizzazione. Al fine di perseguire questo obiettivo, la tecnologia per l'avvio del progetto è Docker, che ne permette facilmente di avviare un postgres e server redis dedicati e isolati. Inoltre è possibile avviare exploitfarm tramite un one-command, che avvierà il progetto da un repository pubblico con il container pre-buildato. Una volta avviato la configurazione iniziale dovrà essere compilabile ed eseguita sia tramite un'interfaccia web che tramite una automizzazione che è possibile scrivere tramite la libreria python associata al progetto.
 \subsubsection{Dinamicità delle configurazioni}
 Tutte le configurazioni nella fase di setup devono essere modificabili e automaticamente aggiornate su tutti i client e in tutte le componenti del backend stesso, in modo da evitare interruzioni brusche degli attacchi, permettendo la continuità dell'esecuzione dei client e quindi dispendi di tempo nella riconfigurazione del sistema.
 \subsubsection{Gestione Exploit}
@@ -126,26 +126,32 @@ Il database che gestisce i dati di ExploitFarm, data l'elevata mole di dati aspe
 	Alcune note aggiuntive:
 	\begin{itemize}
 		\item Env è una tabella che continene alcuni parametri di configurazione di ExploitFarm
-		\item è presente una tabella EnvBin nell'implementazione reale ad ora utile solo a scopo di caching e distribuzione della cache delle statistiche
 		\item Submitter è una collezione di script python candidati come submitter per il sistema, essendo slegato dalla logica di attacco non ha alcuna relazione con le altre tabelle
 	\end{itemize}
+\subsubsection{Redis}
+Il sistema integra un server redis per la coordinazione tra i vari processi all'interno del backend, per permettere una comunicazione immediata tra i vari processi, gestione della cache delle stats, e la gestione delle websocket Socket.Io integrate per gli aggiornamenti realtime sui client
 \subsubsection{Gestione funzionalità backend}
 Il backend di ExploitFarm è composto da 3 parti principali
 \begin{itemize}
 	\item HTTP API routing and serving
 	\item Stats Processor
 	\item Submitter Process
+	\item SocketIo Process (skio process)
 \end{itemize}
 \paragraph{API HTTP}
 L'API HTTP Si occupa di rispondere alle richieste dei client che per la necessità (come da requisito) di mantenere le configurazioni aggiornate, hanno un peso non indifferente sulle richieste fatte, pertanto le API sono parallelizzate per mantenere il sistema reattivo.
 \paragraph{Stats processor}
-Lo stats processor è nato come necessità dato l'elevato costo computazionale del calcolo dei dati per le statistiche inizialmente affidato alle API HTTP. Lo stats processo in maniera asincrona dal resto del sistema, scarica incrementalmente i dati dal database, e incrementa sempre in maniera scalare un dato strutturato json che contiene i contatori di flag e attacchi sulla base di parametri fortemente eterogenei quali lo stato dell'attacco, lo stato della submission della flag, il team target dell'attacco, il client che ha eseguito l'attacco, il servizio associato e l'exploit associato. La seguente struttura dati ha permesso la generazione dei dati ai fini della creazione dei grafici senza appesantire il sistema ad ogni richiesta dei dati, con la possibilità di eseguire per questo un polling frequente dei dati sia frontend che eventualmente lato client. I dati aggregati con le statistiche vengono compressi e inseriti nel database ad ogni iterazioni, L'API HTTP si limita a scaricare ed esporre i dati. Ci sono particolari casi per modifica di configurazioni per cui lo stats processor ricrea da 0 le statistiche, ma prelevando i dati a blocchi per evitare sovraccarichi, e un ricalcolo stesso incrementale.
+Lo stats processor è nato come necessità dato l'elevato costo computazionale del calcolo dei dati per le statistiche inizialmente affidato alle API HTTP. Lo stato processo in maniera asincrona dal resto del sistema, scarica incrementalmente i dati dal database, e incrementa sempre in maniera scalare un dato strutturato json che contiene i contatori di flag e attacchi sulla base di parametri fortemente eterogenei quali lo stato dell'attacco, lo stato della submission della flag, il team target dell'attacco, il client che ha eseguito l'attacco, il servizio associato e l'exploit associato. La seguente struttura dati ha permesso la generazione dei dati ai fini della creazione dei grafici senza appesantire il sistema ad ogni richiesta dei dati. Le statistiche vengono salvati nel server redis permettendone la condivisione tra i vari processi, L'API HTTP si limita a scaricare ed esporre i dati. Ci sono particolari casi per modifica di configurazioni per cui lo stats processor ricrea da 0 le statistiche, ma prelevando i dati a blocchi per evitare sovraccarichi, e un ricalcolo stesso incrementale.
 \paragraph{Submitter Process}
 Il submitter process si occupa della submission delle flag al gameserver dell'infrastruttura di gioco. In particolare rispettando i timeout e le regole configurate nella fase di setup e aggiornando i dati con le ultime modifiche eseguite al submitter anche in fase di esecuzione.
 Il submitter inoltre verifica il corretto funzionamento dello script scritto dal team e segnala tempestivamente sia in tutti i client sia nella pagina frontend eventuali errori o warning permettendo al team di verificare e riparare tempestivamente lo script di submission, evitando di perdere punti a causa di errori nella fase di scrittura dello script di submission.
+\paragraph{SocketIo Process}
+Il processo dedicato a socket.io si occupa di replicare su delle websocket accessibili ed usate dal frontend e da xfarm per permettere la segnalazione immediata di cambiamenti (i client poi si occupano di aggiornare i dati che hanno subito aggiornamenti).
+Inoltre questo processo per gli stessi fini, periodicamente verifica lo stato degli exploit e scatena un evento di aggiornamento per gli exploit in caso un exploit non risponda da troppo tempo. Lo stesso processo si occuperà di gestire l'interazione con i vari client negli attacchi condivisi, coordinadoli tramite le websocket socket.io.
 \subsubsection{Funzionalità frontend}
-Il frontend deve essere reattivo e dinamico, pertanto utilizza tecnologie come react per la sua realizzazione. Il frontend deve gestire il login alla piattaforma se configurato, eseguire il setup iniziale, offrire un editor per la gestione del submitter, modificare i parametri sulla frequenza di polling dei dati, visualizzazione di grafici, tabella delle ultime flag attenute, visualizzare lo status dei vari exploit, i log dei vari attacchi.
-In particolare la schemata principale del frontend deve offrire statistiche tramite grafici su flag, team e attacchi configurabili in base anche a dei filtri nei limiti delle statistiche offerte dal stats processor backend.
+Il frontend deve essere reattivo e dinamico, pertanto utilizza tecnologie come react per la sua realizzazione. Il frontend deve gestire il login alla piattaforma se configurato, eseguire il setup iniziale, offrire un editor per la gestione del submitter, visualizzazione di grafici, tabella delle ultime flag attenute, visualizzare lo status dei vari exploit, i log dei vari attacchi.
+In particolare la schermata principale del frontend deve offrire statistiche tramite grafici su flag, team e attacchi configurabili in base anche a dei filtri nei limiti delle statistiche offerte dal stats processor backend.
+Tramite le websocket esposte backend il frontend monitora gli eventi e aggiorna i dati che hanno subito modifiche.
 \subsubsection{Strutturazione del client (xfarm)}
 Il client xfarm è installato nei sistemi tramite la libreria di exploitfarm disponibile sul package manager di python pip, e consiste in una Terminal UI (TUI) che deve permettere la creazione e avvio degli exploit in maniera semplice. In particolare si deve evitare la memorizzazione e l'utilizzo di flag a riga di comando spesso scomodi da utilizzare. xfarm deve richiedere automaticamente la password di autenticazione se richiesta dal backend stesso, chiedere in input e memorizzare in un file di configurazione a livello di utente di sistema, i dati utili alla connessione al backend di ExploitFarm. Queste informazioni devono essere richieste solo una volta, e il client deve automaticamente rilevare il cambio di server exploitfarm tramite un uuid generato dal server per ogni deploy. Inoltre il client deve assicurarsi che la versione del client stesso coincida con quella del server al fine di evitare incongruenze tra client e server. Il client deve anche creare l'ambiente per l'exploit, dove scrivere l'exploit. Il workspace dell'exploit deve essere adatto alla facile pacchettizzazione e auto-avvio dell'attacco anche su altri client. L'exploit deve poter essere scritto per qualsiasi linguaggio, tuttavia ExploiFarm offrirà funzionalità già scritta nella sua libreria per gli script in python dato che rappresenta il linguaggio maggiormente utilizzato per la scrittura di exploit nelle attack defence.
 \subsubsection{Autobilanciamento del carico sul client per l'esecuzione degli attacchi}
@@ -170,6 +176,7 @@ Sono definite 3 fasi principali nel progetto:
 \begin{itemize}
     \item Brainstorming, definizione dei requisiti tecnici e documentazione
     \item 1* Milestone/Sprint: gestione degli exploit
+    \item Technical features: From polling to event driven updates + switching to sqlalchemy
     \item 2* Milestone/Sprint: gestione dei gruppi di client per gli attacchi condivisi
 \end{itemize}
 Le fasi sono definite proprio per la necessità di progettare lo sviluppo stesso dei nuovi requisiti, e dalla mancanza della feature di gestione degli exploit necessaria allo sviluppo della seconda milestone.
