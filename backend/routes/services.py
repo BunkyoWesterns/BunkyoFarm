@@ -18,6 +18,7 @@ async def service_new(data: ServiceAddForm, db: DBSession):
             .values(json_like(data))
             .returning(Service)
     )).one()
+    await db.commit()
     await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service created successfully", "response": service }
 
@@ -31,6 +32,7 @@ async def service_delete(service_id: ServiceID, db: DBSession):
     )).one_or_none()
     if not service:
         raise HTTPException(404, "Service not found")
+    await db.commit()
     await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service deleted successfully", "response": service }
 
@@ -44,5 +46,6 @@ async def service_edit(service_id: ServiceID, data: ServiceEditForm, db: DBSessi
     )).one_or_none()
     if not service:
         raise HTTPException(404, "Service not found")
+    await db.commit()
     await redis_conn.publish(redis_channels.service, "update")
     return { "message": "Service updated successfully", "response": service }

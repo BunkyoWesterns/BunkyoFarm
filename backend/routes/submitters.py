@@ -43,7 +43,7 @@ async def new_submitter(data: SubmitterAddForm, db: DBSession):
         .returning(Submitter)
     )).one()
     submitter.model_validate(submitter)
-    
+    await db.commit()
     await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been created", "response": json_like(submitter, unset=True)}
 
@@ -117,6 +117,7 @@ async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm, d
         .values(json_like(data))
         .returning(Submitter)
     )).one()
+    await db.commit()
     await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been updated", "response": json_like(submitter, unset=True)}
 
@@ -136,6 +137,7 @@ async def delete_submitter(submitter_id: SubmitterID, db: DBSession):
         raise HTTPException(404, "Submitter not found")
     
     await db.delete(submitter)
+    await db.commit()
     await redis_conn.publish(redis_channels.submitter, "update")
     return { "message": "The submitter has been deleted", "response": json_like(submitter, unset=True)}
 

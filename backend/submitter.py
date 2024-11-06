@@ -202,6 +202,7 @@ async def submit_flags():
             updated = (await db.scalars(stmt)).all()
             if len(updated) > 0:
                 logging.warning(f"{len(updated)} flags have been timeouted by FLAG_TIMEOUT")
+                await db.commit()
                 await redis_conn.publish(redis_channels.attack_execution, "update")
             
         flags_to_submit = (
@@ -220,6 +221,7 @@ async def submit_flags():
         logging.info(f"Submitting {len(flags_to_submit)} flags")
         print(datetime_now(), f"Submitting {len(flags_to_submit)} flags")
         status = await run_submit_routine(flags_to_submit)
+        await db.commit()
         await err_warn_event_update()
         
         g.last_submission = time.time()

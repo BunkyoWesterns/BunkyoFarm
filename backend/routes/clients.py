@@ -24,6 +24,7 @@ async def client_new_or_edit(data: ClientAddForm, db: DBSession):
                 set_=json_like(data)
             ).returning(Client)
     )).one()
+    await db.commit()
     await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client created/updated successfully", "response": client }
 
@@ -47,6 +48,7 @@ async def client_delete_hashed_or_uuid(client_id: ClientID, db: DBSession):
     if not result:
         raise HTTPException(404, "Client not found")
     
+    await db.commit()
     await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client deleted successfully", "response": json_like(result, unset=True) }
 
@@ -55,5 +57,6 @@ async def client_edit(client_id: UnHashedClientID, data: ClientEditForm, db: DBS
     client = (await db.scalars(sqla.update(Client).values(json_like(data)).where(Client.id == client_id).returning(Client))).one_or_none()
     if not client:
         raise HTTPException(404, "Client not found")
+    await db.commit()
     await redis_conn.publish(redis_channels.client, "update")
     return { "message": "Client updated successfully", "response": json_like(client, unset=True) }

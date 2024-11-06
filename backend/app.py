@@ -241,6 +241,7 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
     config = Configuration.model_validate(config.model_dump() | data)
     await config.write_on_db()
     config.PASSWORD_HASH = "********" if config.PASSWORD_HASH else None
+    await db.commit()
     await redis_conn.publish(redis_channels.config, "update")
     return {"status": ResponseStatus.OK, "message": "The configuration has been updated", "response": config.model_dump()}
 

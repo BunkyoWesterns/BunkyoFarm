@@ -59,6 +59,7 @@ async def check_exploits_disabled():
                 elif current_status != ExploitStatus.disabled and expl.id in disabled_exploits:
                     disabled_exploits.remove(expl.id)
             if trigger_update:
+                await db.commit()
                 await redis_conn.publish(redis_channels.exploit, "update")
             await asyncio.sleep(5)
 
