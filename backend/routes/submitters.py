@@ -1,11 +1,13 @@
-from models.submitter import *
-from models.response import *
-from models.config import *
 from typing import List
 from fastapi import APIRouter, HTTPException
-from utils import *
 import re
 from db import Submitter, DBSession, redis_conn, redis_channels
+from models.submitter import SubmitterDTO, SubmitterAddForm, SubmitterEditForm, SubmitterInfoForm, SubmitterKargs
+from models.response import MessageResponse, MessageResponseInvalidError
+from models.config import Configuration
+from typing import Dict, Any
+from utils import json_like, extract_submit, has_submit_signature, get_additional_args, type_check_annotation
+from db import SubmitterID, sqla
 
 router = APIRouter(prefix="/submitters", tags=["Submitters"])
 
@@ -18,7 +20,8 @@ async def new_submitter(data: SubmitterAddForm, db: DBSession):
         raise HTTPException(400, error)
     
     valid_sig, msg = has_submit_signature(submit_function)
-    if not valid_sig: raise HTTPException(400, msg)
+    if not valid_sig:
+        raise HTTPException(400, msg)
     
     kargs = get_additional_args(submit_function)
     
@@ -83,7 +86,8 @@ async def update_submitter(submitter_id: SubmitterID, data: SubmitterEditForm, d
         raise HTTPException(400, error)
     
     valid_sig, msg = has_submit_signature(submit_function)
-    if not valid_sig: raise HTTPException(400, msg)
+    if not valid_sig:
+        raise HTTPException(400, msg)
     kargs = get_additional_args(submit_function)
     
     #Setting old values

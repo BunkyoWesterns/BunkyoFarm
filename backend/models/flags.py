@@ -1,8 +1,6 @@
-from pydantic import BaseModel
 from models.enums import FlagStatus, AttackExecutionStatus
 from pydantic import AwareDatetime
 from db import FlagID, AttackExecutionID, TeamID, ExploitID, ClientID, ExploitSourceID
-from utils import json_like
 from pydantic import BaseModel, Field, AliasChoices
 
 class FlagDTOSmall(BaseModel):

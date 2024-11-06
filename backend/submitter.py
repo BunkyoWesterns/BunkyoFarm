@@ -1,16 +1,22 @@
-from multiprocessing import Process, Manager
-from models.all import *
-import logging, uvloop, asyncio
+import logging
+import uvloop
+import asyncio
+import traceback
+import time
 from typing import List
 from types import GeneratorType
 from datetime import timedelta
 from utils import datetime_now
-import traceback, time
+from multiprocessing import Process, Manager
 from db import Submitter, Flag, connect_db, close_db, sqla, AttackExecution, redis_conn, redis_channels
 from utils import pubsub_flush
 from utils.query import create_or_update_env
+from models.config import Configuration, SetupStatus
+from db import dbtransaction
+from models.enums import FlagStatus
 
-class StopLoop(Exception): pass
+class StopLoop(Exception):
+    pass
 
 class g:
     config:Configuration = None
@@ -133,9 +139,9 @@ async def run_submit_routine(flags: List[Flag]):
             f.submit_attempts += 1
         return False
     
-    if not "ok" in return_dict or not return_dict["ok"]:
+    if "ok" not in return_dict or not return_dict["ok"]:
         g.error_was_generated = True
-        if not "error" in return_dict or not "output" in return_dict:
+        if "error" not in return_dict or "output" not in return_dict:
             logging.error(f"Submitter [{submitter.name}<id:{submitter.id}>] failed: killed by SUBMITTER_TIMEOUT")
             await create_or_update_env("SUBMITTER_ERROR_OUTPUT", "killed by SUBMITTER_TIMEOUT (no data received from submit)")
             return False

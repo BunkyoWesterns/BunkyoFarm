@@ -1,20 +1,23 @@
 import uvicorn
-import os, asyncio, env
+import os
+import asyncio
+import env
+import time
+import jwt
+import socketio
+import traceback
 from asyncpg import UniqueViolationError, ForeignKeyViolationError
 from fastapi import FastAPI, HTTPException, Depends, APIRouter, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
-import time, jwt
 from fastapi.middleware.cors import CORSMiddleware
 from submitter import run_submitter_daemon
 from stats import run_stats_daemon
 from skio import run_skio_daemon
-from utils import *
 from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
 from fastapi.responses import FileResponse
-from models.all import *
 from utils import datetime_now, load_routers
 from typing import Dict
 from pydantic import ValidationError
@@ -22,8 +25,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla, redis_conn, redis_channels
 from skio import sio_server
-import socketio
 from utils.query import get_messages_array
+from models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
+from typing import Any
+from models.config import Configuration, SetupStatus, StatusAPI
+from utils import json_like
+from utils import crypto
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
@@ -106,7 +113,7 @@ async def unique_violation_error_handler(request, exc: UniqueViolationError):
     raise HTTPException(400, error_str)
 
 @app.exception_handler(ForeignKeyViolationError)
-async def unique_violation_error_handler(request, exc: ForeignKeyViolationError):
+async def foreign_key_violation_error_handler(request, exc: ForeignKeyViolationError):
     error_str = "Some references to other datastructures are not valid"
     try:
         if exc.detail:
@@ -177,7 +184,8 @@ async def login_api(form: OAuth2PasswordRequestForm = Depends()):
 async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
     """ This will return the application status, and the configuration if the user is allowed to see it """
     config = await Configuration.get_from_db()
-    if config.PASSWORD_HASH: config.PASSWORD_HASH = "********"  
+    if config.PASSWORD_HASH:
+        config.PASSWORD_HASH = "********"  
     messages = await get_messages_array()
     
     teams_response = None
@@ -225,7 +233,7 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
             )).one_or_none()
             if sub_count == 0:
                 raise HTTPException(400, "Submitter not found")
-        if key == "PASSWORD_HASH" and not data[key] is None:
+        if key == "PASSWORD_HASH" and data[key] is not None:
             if len(str(data[key])) < 8:
                 raise HTTPException(400, "Password too short (at least 8 chars)")
             data[key] = crypto.hash(data[key])

@@ -108,14 +108,15 @@ Tutte le configurazioni nella fase di setup devono essere modificabili e automat
 I sorgenti degli attacchi devono poter essere facilmente condivisibili e avviabili anche da altri utenti. Inoltre è richiesto anche tenere traccia delle versioni dell'attacco di modo da permetterne la segnalazione di vecchie versioni, aggiornamento di nuove versioni in maniera automatica in caso di attacchi condivisi (definiti in seguito), e analisi post-gara.
 \subsubsection{Esecuzione Attacchi}
 Gli attacchi devono essere parallelizzati ed eseguiti tenendo conto delle risorse libere nel sistema: in caso il sistema arrivi in trashing o il processore sia saturo, il client deve ribilanciare automaticamente il quantitativo di attacchi eseguiti al fine di non mandare il sistema in blocco.
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.45\textwidth]{attack_sequence.png}
-	\end{figure}
 \subsubsection{Analisi statistiche e visualizzazione}
 Il sistema deve disporre di una interfaccia sempre aggiornata e facile da visionare per il monitoraggio delle flag in arrivo, degli attacchi eseguiti, che permetta la visualizzazione degli errori in caso di attacchi crashati o non funzionanti, di selezionare e filtrare i dati in base a dei parametri di ricerca e infine disporre di una serie di grafici che mostrino l'andamento degli attacchi durante la gara, di modo da permetterne una visione immediata.
 \subsubsection{Gestione di attacchi distribuiti}
 In caso di exploit con un carico computazionale e di memoria non indifferente come nel caso di alcuni attacchi criptografici o di attacchi che necessitano l'elaborazione di media, ExploitFarm deve disporre di un sistema per creare dei gruppi di client che eseguono lo stesso attacco ma i cui team da attaccare siano distribuiti in maniera bilanciata e basata sulla potenza computazionale dei client nel gruppo.
+\subsubsection{Use-Case diagram}
+    \begin{figure}[H]
+    	\centering
+    	\includegraphics[width=1\textwidth]{general_use_case.png}
+	\end{figure}
 \subsection{Specifiche Tecniche}
 \subsubsection{Database}
 Il database che gestisce i dati di ExploitFarm, data l'elevata mole di dati aspettata e la velocità di ricerca dei dati richiesta, è postgres e a seguito della stesura dell'analisi dei requisiti è stato progettato seguendo il seguente schema E/R
@@ -138,16 +139,17 @@ Il backend di ExploitFarm è composto da 3 parti principali
 	\item Submitter Process
 	\item SocketIo Process (skio process)
 \end{itemize}
-\paragraph{API HTTP}
+\paragraph{API HTTP}\mbox{}\\
+
 L'API HTTP Si occupa di rispondere alle richieste dei client che per la necessità (come da requisito) di mantenere le configurazioni aggiornate, hanno un peso non indifferente sulle richieste fatte, pertanto le API sono parallelizzate per mantenere il sistema reattivo.
-\paragraph{Stats processor}
+\paragraph{Stats processor}\mbox{}\\
 Lo stats processor è nato come necessità dato l'elevato costo computazionale del calcolo dei dati per le statistiche inizialmente affidato alle API HTTP. Lo stato processo in maniera asincrona dal resto del sistema, scarica incrementalmente i dati dal database, e incrementa sempre in maniera scalare un dato strutturato json che contiene i contatori di flag e attacchi sulla base di parametri fortemente eterogenei quali lo stato dell'attacco, lo stato della submission della flag, il team target dell'attacco, il client che ha eseguito l'attacco, il servizio associato e l'exploit associato. La seguente struttura dati ha permesso la generazione dei dati ai fini della creazione dei grafici senza appesantire il sistema ad ogni richiesta dei dati. Le statistiche vengono salvati nel server redis permettendone la condivisione tra i vari processi, L'API HTTP si limita a scaricare ed esporre i dati. Ci sono particolari casi per modifica di configurazioni per cui lo stats processor ricrea da 0 le statistiche, ma prelevando i dati a blocchi per evitare sovraccarichi, e un ricalcolo stesso incrementale.
-\paragraph{Submitter Process}
+\paragraph{Submitter Process}\mbox{}\\
 Il submitter process si occupa della submission delle flag al gameserver dell'infrastruttura di gioco. In particolare rispettando i timeout e le regole configurate nella fase di setup e aggiornando i dati con le ultime modifiche eseguite al submitter anche in fase di esecuzione.
 Il submitter inoltre verifica il corretto funzionamento dello script scritto dal team e segnala tempestivamente sia in tutti i client sia nella pagina frontend eventuali errori o warning permettendo al team di verificare e riparare tempestivamente lo script di submission, evitando di perdere punti a causa di errori nella fase di scrittura dello script di submission.
-\paragraph{SocketIo Process}
+\paragraph{SocketIo Process}\mbox{}\\
 Il processo dedicato a socket.io si occupa di replicare su delle websocket accessibili ed usate dal frontend e da xfarm per permettere la segnalazione immediata di cambiamenti (i client poi si occupano di aggiornare i dati che hanno subito aggiornamenti).
-Inoltre questo processo per gli stessi fini, periodicamente verifica lo stato degli exploit e scatena un evento di aggiornamento per gli exploit in caso un exploit non risponda da troppo tempo. Lo stesso processo si occuperà di gestire l'interazione con i vari client negli attacchi condivisi, coordinadoli tramite le websocket socket.io.
+Inoltre questo processo per gli stessi fini, periodicamente verifica lo stato degli exploit e scatena un evento di aggiornamento per gli exploit in caso un exploit non risponda da troppo tempo. Lo stesso processo si occupa di gestire l'interazione con i vari client negli attacchi condivisi, coordinadoli tramite le websocket socket.io.
 \subsubsection{Funzionalità frontend}
 Il frontend deve essere reattivo e dinamico, pertanto utilizza tecnologie come react per la sua realizzazione. Il frontend deve gestire il login alla piattaforma se configurato, eseguire il setup iniziale, offrire un editor per la gestione del submitter, visualizzazione di grafici, tabella delle ultime flag attenute, visualizzare lo status dei vari exploit, i log dei vari attacchi.
 In particolare la schermata principale del frontend deve offrire statistiche tramite grafici su flag, team e attacchi configurabili in base anche a dei filtri nei limiti delle statistiche offerte dal stats processor backend.
@@ -156,10 +158,80 @@ Tramite le websocket esposte backend il frontend monitora gli eventi e aggiorna 
 Il client xfarm è installato nei sistemi tramite la libreria di exploitfarm disponibile sul package manager di python pip, e consiste in una Terminal UI (TUI) che deve permettere la creazione e avvio degli exploit in maniera semplice. In particolare si deve evitare la memorizzazione e l'utilizzo di flag a riga di comando spesso scomodi da utilizzare. xfarm deve richiedere automaticamente la password di autenticazione se richiesta dal backend stesso, chiedere in input e memorizzare in un file di configurazione a livello di utente di sistema, i dati utili alla connessione al backend di ExploitFarm. Queste informazioni devono essere richieste solo una volta, e il client deve automaticamente rilevare il cambio di server exploitfarm tramite un uuid generato dal server per ogni deploy. Inoltre il client deve assicurarsi che la versione del client stesso coincida con quella del server al fine di evitare incongruenze tra client e server. Il client deve anche creare l'ambiente per l'exploit, dove scrivere l'exploit. Il workspace dell'exploit deve essere adatto alla facile pacchettizzazione e auto-avvio dell'attacco anche su altri client. L'exploit deve poter essere scritto per qualsiasi linguaggio, tuttavia ExploiFarm offrirà funzionalità già scritta nella sua libreria per gli script in python dato che rappresenta il linguaggio maggiormente utilizzato per la scrittura di exploit nelle attack defence.
 \subsubsection{Autobilanciamento del carico sul client per l'esecuzione degli attacchi}
 L'esecuzione degli attacchi agli altri team deve avvenire con un timeout per attacco dinamico e calcolato in base alle risorse della macchina su cui il client è in esecuzione disponibili in realtime, quindi deve adattarsi in base al carico che il sistema ha in quel momento.
+Il flusso di esecuzione di un attacco è rappresentato dal seguente schema:
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.45\textwidth]{attack_sequence.png}
+\end{figure}
 \subsubsection{Gestione e versioning degli exploit}
 Il client deve permettere l'invio il download e l'update degli exploit caricati sulla piattaforma e di quello presente in locale. Questa funzionalità permette una facile condivisione dei sorgenti degli exploit con gli altri componenti del team ed è fondamentale feature per l'implementazione degli attacchi condivisi.
 \subsubsection{Controllo distribuito degli attacchi condivisi}
 Il backend tramite anche uno scambio di dati con i client deve bilanciare l'assegnazione dei team ai vari client negli attacchi condivisi senza una configurazione manuale dei pesi sui vari client sulla quantità di team da associare ad ogniuno di questi. Gli attacchi condivisi devono rispettare i cambiamenti di configurazioni e verificare che tutti i client periodicamente, in caso di client non in risposta deve permettere per quanto possibile di portare a termine l'esecuzione di tutti gli attacchi.
+La comunicazione tra i client e il server riguardante il controllo distribuito è interamente basato su socket.io.
+Gli attacchi condivisi pertanto procedono secondo il seguente workflow:
+\begin{enumerate}
+	\item Creazione di un gruppo di attacco (insieme di client associati ad un exploit)
+	\item Join di ulteriori client nel gruppo di attacco
+	\item Start dell'attack group
+	\item Eventuali nuovi join/left nel gruppo
+	\item Chiusura del gruppo di attacco
+\end{enumerate}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.45\textwidth]{shared_attack_sequence.png}
+\end{figure}
+\paragraph{Definizione dei parametri disponibili e calcolati dal sistema}\mbox{}\\
+Contestualizziamo il problema periodicamente, analizzandone il processo per 1 tick/round, che poi andrà periodizzato per quanto necessario.
+\begin{itemize}
+
+	\item $N_C$: Numero di client nel gruppo
+	\item $N_T$: Numero di team totali\\\\
+	Individueremo in seguito $i = [0,N_C-1]$ l'indice relativo al client\\
+	Inoltre definiamo $j = [0, N_T-1]$ l'indice relativo ai team, e quindi all'attacco eseguito nel tick
+	\item $Q_i$: grandezza della coda di esecuzione per l' i-esimo client. (definita esplicitamente in seguito)
+	\item $R_i$ attacchi in esecuzione sul client (sempre $<= Q_i$)
+	\item $T_R$ Tick/Round time (Tempo definito nel setup relativo alla durata di un round)
+	\item $T_K$ Timeout associato agli attacchi (Kill time)
+	\item $T_{C,j}$ Tempo effettivamente consumato per il j-esimo attacco (per il j-esimo team)
+	
+\end{itemize}
+\paragraph{Valutazione della potenza computazionale di ogni client}\mbox{}\\
+Ai fini di distribuire in base alle risorse disponibili nel gruppo di attacco proporzionalmente a quelle che è la potenza computazionale del singolo client. Al Join/Avvio di un gruppo verrà consigliato un numero di processi in contemporanea da assegnare all'attack group, che sarà personalizzabile dall'utente (questo per valutarlo in base al carico che ci si aspetta di avere per l'attacco). Questo parametro verrà utilizzato come parametro di valutazione sulla potenza del client dato che di default verrà consigliato un valore calcolato sulla base di quanti core sono disponibili sulla macchina.
+\paragraph{Gestione del tempo di esecuzione per ogni attacco}\mbox{}\\
+Il sistema ha come obiettivo quello di riuscire ad eseguire tutti gli attacchi entro il tempo di tick: ai fini di perseguire questo obiettivo, si definisce un timeout globale, inizialmente impostato ad un tempo che ne permette l'esecuzione degli attacchi assegnando slot temporali uguali ad ogni esecuzione. Tuttavia durante l'esecuzione degli attacchi, se questi occuperanno meno tempo, dovranno in qualche modo influire sul tempo di timeout incrementandolo, dando quindi la possibilità di terminare l'esecuzione di attacchi su team in cui l'operazione sta richiedendo un tempo superiore a quello medio degli attacchi. Si definisce la tecnica utilizzata per il calcolo di questo tempo dinamico in seguito.
+Inoltre, i processi seguiranno in ogni caso un timeout globale che ne terminerà l'esecuzione in ogni caso superato il tick time. (Questo timeout è indipendente dal primo timeout dinamico)
+\paragraph{Algoritmo di distribuzione degli attacchi}\mbox{}\\
+Saputi la grandezza delle $Q_i$ code per ogni client, l'assegnazione dei processi avviene tramite una priority queue, in cui ad ogni client viene associato una priorità calcolata, e viene associato un attacco a quel processo che ha priorità maggiore.
+IL sistema entra in uno stato di attesa se il processo con la priorità più alta ha come valore un valore $<= 0$.
+La priorità chiamata $P_{CL, i}$ (Processi per client assegnabili) è calcolata tramite la seguente formula:
+\\\\$P_{CL, i} = \frac{Q_i-R_i}{min\{Q_i\}}$\\\\
+La seguente formula varia dinamicamente il suo valore per client dipendentemente al carico assegnato, al quantitativo di risorse disponibili e modulato sulla base del client più "debole" nella coda.
+Nello specifico l'algoritmo prende i client con $P_{CL, i} >= 1$ ed associa ad ogniuno un numero di attacchi pari a $\lfloor{}P_{CL, i}\rfloor{}$. Terminata una iterazione sui client, si riesegue la stessa operazione.
+Se non ci sono client con $P_{CL, i} >= 1$ allora si procede a considerare tutti i client con $P_{CL, i} > 0$ assegnando ciclicamente un processo al client per cui risulta: $P_{CL, i} = max\{P_{CL_i}\}$.
+Se non ci sono client con $P_{CL}>0$ allora il sistema rimane in attesa di nuovi eventi.
+Si specifica che ad ogni assegnazione di un nuovo attacco ad un client $R_i$ viene incrementato: al contrario nel momento in cui un client termina l'esecuzione di un attacco $R_i$ viene decrementato.
+In caso nuovi client entrano nel gruppo non si modifica lo stato di esecuzione corrente, ma si ricalcolano i coefficienti e si procede come precedentemente descritto. La medesima cosa succede per client che abbandonano il gruppo, che tuttavia in questo caso comporterà un riaccodamento dei processi che erano in esecuzione su quel client. Ciò avviene anche se si verifica la perdita della connessione considerando il client come fuori dal gruppo, in questo caso il client deve terminare la sua esecuzione, poichè il server ri-assegnerà i task che stava eseguendo.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.45\textwidth]{attack_assign.png}
+\end{figure}
+\paragraph{Algoritmo di calcolo del timeout}\mbox{}\\
+NOTA: Di seguito si descriverà come verrà calcolato il timeout da applicare ad ogni processo dipendentemente dalla possibilità di eseguire tutti gli attacchi entro il tick: Questo timeout quindi definisce il tempo che verrebbe assegnato al primo processo avviato per permetterne l'esecuzione degli altri. Ciò implica che durante i ricalcoli successivi descritti in seguito ci potrebbero essere timeout che eccedono dal tempo del tick. Questo non comporta un problema poichè come descritto precedentemente in contemporanea al vincolo del seguente timeout viene applicato anche un vincolo globale e statico, che mette come soglia massima per l'esecuzione la fine del tick, pertanto non sarà in ogni caso possibile eccedere dal tick per l'esecuzione di un attacco relativo al tick stesso.\\\\
+Definiamo dei nuovi valori di tempo:
+\begin{itemize}
+	\item $T_{J, i}$: Tempo di join dell' i-esimo client: Questo tempo vale 0 se il client ha eseguito il join prima dell'inizio del tick, mentre assume un valore che corrisponde al tempo mancante al termine del tick se riguarda un client che ha eseguito il join durante questo tick.
+	\item $T_{L, i}$: Tempo di left dell' i-esimo client: Questo tempo vale il tempo rimanente lasciato non in esecuzione  dalla fine del tick del j-client che esce dal gruppo. Se il j-esimo client non è uscito dal gruppo questo tick questo valore vale 0
+	\item $T_{LJ, i} = T_{J,i}-T_{l,i}$: Tempo di left/join per client (definisce il guadagno totale dato dai left e join di un singolo client.
+	\item $T_{LJ} = \sum_{i} T_{LJ,j} Q_i$: Tempo totale di left/join (definisce in totale il tempo guadagnato/perso a causa delle operazioni di join e left dei client)
+	\item $T_{G, j} = T_R - T_{C, j}$: Tempo di guadagno per attacco
+	\item $T_G = \sum_{j} T_{G,j}$: Tempo di guadagno totale
+	\item $T_{VB} = \sum_{i} Q_i T_R$: (tempo virtualmente disponibile di base) interpretabile come il tempo totale disponibile di esecuzione su un core singolo per tick, calcolato all'inizio del tick.
+	\item $T_{V} = T_{VB} + T_G + T_{LJ}$: Tempo virtualmente disponibile
+\end{itemize}
+Il tempo virtualmente disponibile tiene conto dei tempi guadagnati grazie alla veloce esecuzione di alcuni attacchi, permettendo di ridistribuire questo tempo tra gli altri processi. Questo tempo può incrementare o diminuire durante l'esecuzione anche in base all' abbandono o al join di nuovi client, pertanto si presta utile al calcolo del timeout flessibilmente a quelle che sono le disponibilità istante per istante.\\\\
+Tramite questo tempo definiamo infine il timeout $T_K = \frac{T_V}{N_T}$
+Anch'esso varia in base al numero di team che potrebbe variare durante l'esecuzione.
+
 \section{Project Managment}
 La gestione del progetto è principalmente plan-driven con un approccio però che si avvicina allo "scrum" per progettazione e organizzazione dei task (organizzate in un backlog di user-stories). Il progetto di per se è già in una fase di sviluppo avanzata, pertanto la gestione del progetto riguarderà l'aggiunta della feature per l'avvio di singoli attacchi distribuiti tra più client.
 \subsection{Gestione generale}
@@ -229,7 +301,7 @@ Si utilizzerà un subset dei 17 moltiplicatori previsti per COCOMO post-architec
    \[ T = C \times E^D = 6.8 (mesi) \]
    Tuttavia assumendo gli obiettivi del progetto, è intuitivo comprendere come la stima eseguita è eccessiva rispetto al reale tempo necessario al raggiungimento dell'obiettivo.
 \subsection{Risk Managment and Analysis}
-\subsubsection{Stima dell'Effort e requisiti}
+\subsubsection{Stima dell'effort e requisiti}
 Durante lo sviluppo c'è la possibilità nascano nuove esigenze date da limitazioni tecniche attualmente presenti nel progetto: per attutire i danni possibili generati dalla nascita di nuovi requisiti o anche alla sottostima del tempo necessario, è necessario iniziare al più presto dalla data schedulata l'effettiva data di inizio dello sviluppo di modo da permettere l'allocazione di più slot temporali ad una determinata user-story nello sviluppo prima che possa terminare la deadline di consegna, punto critico nel progetto. Il livello di rischio associato è "Moderato".
 \subsubsection{Rilascio di versioni non totalmente funzionanti}
 C'è la possibilità che a causa di modifiche a diverse parti del progetto, si possano presentare bug in parti non direttamente inerenti ma collegate alla parte di software modificata. Per ovviare a questo problema è utile eseguire in maniera atomizzata prima della pubblicazione della release dei test automatici che verificano il funzionamento corretto della piattaforma. Nonostante il rischio si classificato come Medio, date le scadenze strette non è prevista attualmente la scrittura di test automatizzati.
@@ -266,5 +338,6 @@ Il progetto di per se nasce come progetto totalmente opensource, quindi non a sc
 \section{Sviluppi Futuri}
 \begin{itemize}
 	\item eliminare come single point of failure il server e permettere l'esecuzione di backend multipli e decentralizzati così da evitare in caso di problemi con uno dei server. La gestione di backend decentralizzati è di una complessità altissima e non strettamente necessario per gli obiettivi del progetto pertanto si lascia come sviluppo futuro.
+	\item Sviluppo dei test sulle API backend
 \end{itemize}
 \end{document}

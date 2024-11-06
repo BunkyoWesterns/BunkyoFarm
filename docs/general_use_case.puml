@@ -1,0 +1,92 @@
+@startuml use-case
+
+'left to right direction
+skinparam linetype ortho
+
+package Clients as client {
+    actor xfarm
+    actor frontend as front
+}
+
+package Backend {
+
+    package APIs {
+        (Getting statistics) as get_stats
+        (Edit configurations) as edit_configs
+        (Sync configurations) as sync_configs
+        (Submit flags) as submit_flags
+        (Manual Flag Submission) as manual_flag
+
+        submit_flags <|-- manual_flag
+
+        'align in a vertical line
+        edit_configs -[hidden]down- sync_configs
+        sync_configs -[hidden]down- get_stats
+        get_stats -[hidden]down- manual_flag
+        manual_flag -[hidden]down- submit_flags
+    }
+
+    package "Attack Features" as AttackFeatures{
+        (Start an attack) as start_attack
+        (Create a new attack group) as create_group
+        (Join an attack group) as join_group
+        (Leave an attack group) as leave_group
+        (Push an exploit) as push_exploit
+        (Pull an exploit) as pull_exploit
+        (Create exploit) as create_exploit
+        (Attack Victims) as attack_victims
+        (Submit Attack execution) as submit_attack
+    }
+
+
+
+    manual_flag ..> submit_attack : <<extend>>
+
+    start_attack <|-- create_group
+    start_attack <|-- join_group
+
+    'align in a vertical line
+    start_attack -[hidden]down- create_group
+    start_attack -[hidden]down- join_group
+    'align on the same line
+    create_group -[hidden]left- join_group
+
+    start_attack ..> sync_configs : <<include>>
+    start_attack ..> submit_attack : <<include>>
+    start_attack ..> create_exploit : <<include>>
+    start_attack ..> attack_victims : <<include>>
+
+    submit_attack ..> submit_flags : <<include>>
+    create_group ..> push_exploit : <<include>>
+    join_group ..> pull_exploit : <<include>>
+
+    'align in a vertical line
+    create_group -[hidden]down- submit_attack
+    create_group -[hidden]down- create_exploit
+    create_group -[hidden]down- attack_victims
+    create_group -[hidden]down- push_exploit
+    create_group -[hidden]down- pull_exploit
+
+    create_group -[hidden]down- manual_flag
+    
+}
+
+package "Attack Defence Network\n(external to exploitfarm)" {
+  actor Victim as victim
+  actor "Game Server" as game
+}
+
+' Client to use cases
+
+front -> get_stats
+front -> edit_configs
+xfarm -> AttackFeatures
+client -> sync_configs
+client -> manual_flag
+
+' Server to use cases
+attack_victims -> victim
+submit_flags -> game
+
+
+@enduml

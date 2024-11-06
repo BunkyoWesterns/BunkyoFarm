@@ -1,0 +1,19 @@
+@startuml shared_attack_sequence
+
+!theme sketchy-outline
+!pragma teoz true
+
+actor       "Client i" as Client
+participant Server
+Client -> Server: Regsitration/Creation of a attack group
+Client -> Server: *Other joins*
+Client -> Server: Start the attack
+group Attack Loop
+    Client <--> Server: Attack Timeout Sync
+    Server -> Client: *Assign attack tasks...*
+    Client -> Server: *Send attack finished...*
+    Server <--> Client: Join/Leave attack group
+    Server -> Client: End of attack for this tick
+end
+
+@enduml

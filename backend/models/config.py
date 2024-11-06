@@ -4,10 +4,11 @@ from typing_extensions import Self
 from functools import cache
 from pydantic import NonNegativeInt, PositiveInt
 from models.submitter import SubmitterDTO
-import re, env
+import re
+import env
 from models.teams import TeamDTO
 from models.service import ServiceDTO
-from models.response import *
+from models.response import MessageInfo
 from typing import List
 from models.enums import AttackMode, SetupStatus
 from db import SubmitterID, Env, dbtransaction, sqla, AttackExecution, AttackExecutionStatus
@@ -109,7 +110,7 @@ class Configuration(BaseModel):
         from utils import datetime_now
         now = datetime_now()
         start_time = self.START_TIME
-        end_time = self.END_TIME if not self.END_TIME is None and self.END_TIME > now else None
+        end_time = self.END_TIME if self.END_TIME is not None and self.END_TIME > now else None
         done_query = sqla.select(AttackExecution.received_at).where(AttackExecution.status == AttackExecutionStatus.done)
         async with dbtransaction() as db:
             if not start_time:

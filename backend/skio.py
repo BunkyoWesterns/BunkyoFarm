@@ -1,12 +1,17 @@
-import socketio, asyncio, uvloop, traceback, logging
+import socketio
+import asyncio
+import uvloop
+import traceback
+import logging
 from env import DEBUG
 from multiprocessing import Process
 from db import close_db, redis_conn, REDIS_CHANNEL_LIST, connect_db, dbtransaction, redis_channels
 from utils.query import get_exploits_with_latest_attack, detailed_exploit_status
-from models.enums import *
 from models.config import Configuration
+from models.enums import ExploitStatus
 
-class StopLoop(Exception): pass
+class StopLoop(Exception):
+    pass
 
 redis_mgr = socketio.AsyncRedisManager(
     url="redis://localhost:6379/0" if DEBUG else "redis://redis:6379/0",

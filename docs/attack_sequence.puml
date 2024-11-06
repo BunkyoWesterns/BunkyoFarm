@@ -20,5 +20,4 @@ group Attack Loop
     Server -> DB: Save attack data / update timestamp
 end
 
-
 @enduml

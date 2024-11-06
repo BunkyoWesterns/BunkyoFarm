@@ -1,0 +1,14 @@
+@startuml attack_assign
+start
+
+repeat
+
+repeat
+:assign attack from queue\n(using priorities logics);
+
+repeat while (Wait for attacks to finish) is (attack finished) not (no attacks left)
+
+:wait for next tick;
+
+@enduml
+

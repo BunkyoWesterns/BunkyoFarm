@@ -4,7 +4,7 @@ from db import SubmitterID
 
 ###-- Submitter Models --###
 
-type SubmitterKargs = Dict[str, Dict[str, Any]]    
+SubmitterKargs = Dict[str, Dict[str, Any]]    
 
 class SubmitterDTO(BaseModel):
     id: SubmitterID

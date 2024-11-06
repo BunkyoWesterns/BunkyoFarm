@@ -1,17 +1,24 @@
+import logging
+import uvloop
+import traceback
+import asyncio
+import math
+import time
+import sqla
 from multiprocessing import Process
-from models.all import *
-import logging, uvloop
 from datetime import timedelta
-import traceback, asyncio
-import math, time
 from dateutil.parser import parse as dateparse
 from datetime import datetime
 from db import AttackExecution, Flag, dbtransaction, connect_db, close_db, Exploit, Team, Client, redis_channels, redis_conn
 from utils.query import set_stats
 from sqlalchemy.orm import defer, selectinload
 from utils import pubsub_flush
+from models.config import Configuration
+from models.enums import FlagStatus
 
-class StopLoop(Exception): pass
+
+class StopLoop(Exception):
+    pass
 
 LIMIT_QUERY_SIZE = 3000
 
@@ -96,7 +103,8 @@ def add_stats(attack: AttackExecution, action: callable):
 
     #Adding missing ticks
     tick = calc_tick(attack.received_at)
-    if tick <= 0: return #skip data before start time
+    if tick <= 0:
+        return #skip data before start time
 
     if tick-len(g.stats["ticks"]) > 0:
         old_tick = len(g.stats["ticks"])
@@ -218,7 +226,7 @@ async def stats_update():
                 g.stats["wait_flag_ids"].append(flg.id)
             add_flag_stats(flg)
 
-        if not max_id is None:
+        if max_id is not None:
             g.stats["last_flag_id"] = max_id
 
         max_id = None
@@ -228,7 +236,7 @@ async def stats_update():
                 max_id = att.id
             add_attack_stats(att)
 
-        if not max_id is None:
+        if max_id is not None:
             g.stats["last_attack_id"] = max_id
     finally:
         await set_stats(g.stats)

@@ -1,25 +1,19 @@
 
-from models.response import *
-from utils import *
-from models.flags import *
-from models.config import *
+from models.flags import FlagDTO, AttackExecutionDTO, FlagStats
+from models.enums import FlagStatus, AttackExecutionStatus
 from fastapi import APIRouter
 from fastapi_pagination import Page, add_pagination
 from fastapi_pagination.ext.sqlalchemy import paginate
-from typing import Any, Generic
 from fastapi import Query
 from pydantic import BaseModel
-from fastapi_pagination.bases import AbstractParams, RawParams
-
+from fastapi_pagination.bases import AbstractParams, RawParams, BasePage
 from math import ceil
 from typing import Any, Generic, Optional, Sequence, TypeVar
-from fastapi import Query
-from pydantic import BaseModel
-from fastapi_pagination.bases import AbstractParams, BasePage, RawParams
 from fastapi_pagination.types import GreaterEqualOne, GreaterEqualZero
 from fastapi_pagination.utils import create_pydantic_model
 from utils.query import get_stats
 from db import UnHashedClientID, Flag, sqla, AttackExecution, DBSession
+from db import FlagID, TeamID, ExploitID, AttackExecutionID, ClientID
 from stats import complete_stats
 from sqlalchemy.orm import selectinload
 

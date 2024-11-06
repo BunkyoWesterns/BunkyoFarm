@@ -1,4 +1,8 @@
-import env, secrets
+import env
+import secrets
+import asyncio
+import sqla
+import time
 import sqlalchemy.exc
 from pydantic import BaseModel
 from typing import Dict, Any, Annotated, List
@@ -6,10 +10,7 @@ from typing import Union, Callable
 from uuid import UUID, uuid4
 from env import RESET_DB_DANGEROUS
 from hashlib import sha256
-from models.enums import *
 from pydantic import BeforeValidator
-from utils import *
-import asyncio
 from fastapi import Depends
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -18,9 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, AsyncConnection
 from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
-import sqla
 import redis.asyncio as redis
 from env import DEBUG
+from models.enums import Language, AttackExecutionStatus, FlagStatus
 
 def datetime_now_sql(index:bool = False, now:bool = True) -> sqla.Column:
     return sqla.Column(sqla.DateTime(timezone=True), server_default=sqla.func.now() if now else None, index=index)

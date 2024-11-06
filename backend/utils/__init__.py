@@ -1,10 +1,14 @@
 from passlib.context import CryptContext
 from typing import Tuple, List, Any
-import time, ast, os, traceback
+import time
+import ast
+import os
+import traceback
 from datetime import datetime, UTC
 from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
-import re, logging
+import re
+import logging
 from env import EXPLOIT_SOURCES_DIR
 
 #logging.getLogger().setLevel(logging.DEBUG)
@@ -15,7 +19,7 @@ ALLOWED_ANNOTATIONS = ["int", "str", "bool", "float", "any"]
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ROUTERS_DIR_NAME = "routes"
 ROUTERS_DIR = os.path.join(ROOT_DIR, ROUTERS_DIR_NAME)
-STATS_FILE = os.path.join(EXPLOIT_SOURCES_DIR, f"stats.json")
+STATS_FILE = os.path.join(EXPLOIT_SOURCES_DIR, "stats.json")
 
 def extract_function(fun_name:str, code: bytes) -> ast.FunctionDef|None:
     try:
@@ -30,13 +34,13 @@ def extract_function(fun_name:str, code: bytes) -> ast.FunctionDef|None:
 def _extract_value_or_none(value: Any) -> Any:
     try:
        return value.value
-    except:
+    except Exception:
         return None
 
 def _extract_annotation_or_any(value: Any) -> Any:
     try:
        return value.annotation.id.lower()
-    except:
+    except Exception:
         return "any"
 
 
@@ -70,7 +74,7 @@ def has_submit_signature(fun: ast.FunctionDef) -> bool:
     if len(default_args) == len(args):
         return False, "The first argument cannot have a default value"
     for name, annot in args:
-        if not annot in ALLOWED_ANNOTATIONS:
+        if annot not in ALLOWED_ANNOTATIONS:
             return False, f"Argument {name} cannot have an annotation, only {", ".join(ALLOWED_ANNOTATIONS)} are allowed"
     return True, "ok"
 
