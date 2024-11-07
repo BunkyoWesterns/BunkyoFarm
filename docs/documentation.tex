@@ -221,7 +221,7 @@ Definiamo dei nuovi valori di tempo:
 \begin{itemize}
 	\item $T_{J, i}$: Tempo di join dell' i-esimo client: Questo tempo vale 0 se il client ha eseguito il join prima dell'inizio del tick, mentre assume un valore che corrisponde al tempo mancante al termine del tick se riguarda un client che ha eseguito il join durante questo tick.
 	\item $T_{L, i}$: Tempo di left dell' i-esimo client: Questo tempo vale il tempo rimanente lasciato non in esecuzione  dalla fine del tick del j-client che esce dal gruppo. Se il j-esimo client non è uscito dal gruppo questo tick questo valore vale 0
-	\item $T_{LJ, i} = T_{J,i}-T_{l,i}$: Tempo di left/join per client (definisce il guadagno totale dato dai left e join di un singolo client.
+	\item $T_{LJ, i} = T_{J,i}-T_{l,i}$: Tempo di left/join per client (definisce il guadagno totale dato dai left e join di un singolo client).
 	\item $T_{LJ} = \sum_{i} T_{LJ,j} Q_i$: Tempo totale di left/join (definisce in totale il tempo guadagnato/perso a causa delle operazioni di join e left dei client)
 	\item $T_{G, j} = T_R - T_{C, j}$: Tempo di guadagno per attacco
 	\item $T_G = \sum_{j} T_{G,j}$: Tempo di guadagno totale
