@@ -5,11 +5,12 @@ import traceback
 import logging
 from env import DEBUG
 from multiprocessing import Process
-from db import close_db, redis_conn, REDIS_CHANNEL_LIST, connect_db, dbtransaction, redis_channels
+from db import close_db, redis_conn, REDIS_CHANNEL_PUBLISH_LIST, connect_db, dbtransaction, redis_channels
 from utils.query import get_exploits_with_latest_attack, detailed_exploit_status
 from models.config import Configuration
 from models.enums import ExploitStatus
-
+from utils.auth import login_validation, AuthStatus
+from socketio.exceptions import ConnectionRefusedError
 class StopLoop(Exception):
     pass
 
@@ -26,22 +27,50 @@ sio_server = socketio.AsyncServer(
 class g:
     task_list = []
 
+async def check_login(token: str) -> None:
+    status = await login_validation(token)
+    if status == AuthStatus.ok:
+        return None
+    if status == AuthStatus.nologin:
+        raise ConnectionRefusedError("Authentication required")
+    raise ConnectionRefusedError("Unauthorized")
+
 @sio_server.on("connect")
-async def sio_connect(sid, environ): pass
+async def sio_connect(sid, environ, auth):
+    await check_login(auth.get("token"))
+    await redis_conn.lpush("sid_list", sid)
 
 @sio_server.on("disconnect")
-async def sio_disconnect(sid): pass
+async def sio_disconnect(sid):
+    await redis_conn.lrem("sid_list", 0, sid)
+
+async def disconnect_all():
+    while True:
+        sids = await redis_conn.lpop("sid_list", count=100)
+        if sids is None or len(sids) == 0:
+            break
+        for sid in sids:
+            await sio_server.disconnect(sid)
 
 async def generate_listener_tasks():
-    for chann in REDIS_CHANNEL_LIST:
+    for chann in REDIS_CHANNEL_PUBLISH_LIST:
         async def listener(chann=chann):
             await sio_server.emit(chann, "init")
             async with redis_conn.pubsub() as pubsub:
                 await pubsub.subscribe(chann)
                 while True:
                     message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
-                    await sio_server.emit(chann, message)
+                    if message:
+                        await sio_server.emit(chann, message)
         g.task_list.append(asyncio.create_task(listener()))
+
+async def password_change_listener():
+    async with redis_conn.pubsub() as pubsub:
+        await pubsub.subscribe(redis_channels.password_change)
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+            if message:
+                await disconnect_all()
 
 async def check_exploits_disabled():
     disabled_exploits = set([])
@@ -67,9 +96,10 @@ async def tasks_init():
     try:
         await connect_db()
         await generate_listener_tasks()
-        check_disabled_exploits = asyncio.create_task(check_exploits_disabled())
+        pwd_change = asyncio.create_task(password_change_listener())
+        check_disab = asyncio.create_task(check_exploits_disabled())
         logging.info("SocketIO manager started")
-        await asyncio.gather(*g.task_list, check_disabled_exploits)
+        await asyncio.gather(*g.task_list, check_disab, pwd_change)
     except KeyboardInterrupt:
         pass
     finally:

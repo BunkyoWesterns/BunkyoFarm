@@ -30,9 +30,8 @@ from utils.query import get_messages_array
 from models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
 from typing import Any
 from models.config import Configuration, SetupStatus, StatusAPI
-from utils import json_like
-from utils import crypto
-
+from utils import json_like, crypto
+from utils.auth import login_validation, AuthStatus
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
 
@@ -67,23 +66,17 @@ async def create_access_token(data: dict) -> str:
     return encoded_jwt
 
 async def is_loggined(token: str = Depends(oauth2_scheme)) -> None|bool:
-    
-    #App status checks
-    config = await Configuration.get_from_db()
-
-    if not config.login_enabled:
-        return True
-    
-    #If the app is running and requires login
-    if not token:
-        return None
-    
-    try:
-        payload = jwt.decode(token, await APP_SECRET(), algorithms=[JWT_ALGORITHM])
-        authenticated: bool = payload.get("authenticated", False)
-        return authenticated
-    except Exception:
-        return False
+    result = await login_validation(token)
+    match result:
+        case AuthStatus.ok:
+            return True
+        case AuthStatus.nologin:
+            return None
+        case AuthStatus.invalid:
+            return False
+        case AuthStatus.wrong:
+            return False
+    return None
 
 async def check_login(status: bool|None = Depends(is_loggined)) -> None:
     if status is None:

@@ -11,6 +11,7 @@ import re
 import logging
 from env import EXPLOIT_SOURCES_DIR
 
+
 #logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format="[EXPLOIT-FARM][%(asctime)s] >> [%(levelname)s][%(name)s]:\t%(message)s", datefmt="%d/%m/%Y %H:%M:%S")
 crypto = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -172,6 +173,5 @@ async def pubsub_flush(pubsub):
     flushed = True
     while flushed is not None:
         flushed = await pubsub.get_message(ignore_subscribe_messages=True, timeout=0)
-
 
     

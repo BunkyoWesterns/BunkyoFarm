@@ -8,7 +8,7 @@ import { notifications, Notifications } from '@mantine/notifications';
 import { LoadingOverlay, MantineProvider, Title } from '@mantine/core';
 import { LoginProvider } from '@/components/LoginProvider';
 import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { useGlobalStore } from './utils/stores';
+import { useGlobalStore, useTokenStore } from './utils/stores';
 import { statusQuery } from './utils/queries';
 import { HomePage } from './components/screens/HomePage';
 import { MainLayout } from './components/MainLayout';
@@ -20,7 +20,8 @@ import { useDebouncedCallback } from '@mantine/hooks';
 export default function App() {
 
     const queryClient = useQueryClient()
-    const { setErrorMessage } = useGlobalStore()
+    const { setErrorMessage, loading:loadingStatus } = useGlobalStore()
+    const { loginToken } = useTokenStore()
 
     const debouncedCalls = DEBOUNCED_SOCKET_IO_CHANNELS.map((channel) => (
         useDebouncedCallback(() => {
@@ -49,6 +50,7 @@ export default function App() {
                 color: "red"
             })
         });
+        
         let first_time = true
         socket_io.on("connect", () => {
             if (socket_io.connected) {
@@ -62,7 +64,6 @@ export default function App() {
                         color: "blue",
                         icon: "🚀",
                     })
-
                 }
             }
             first_time = false
@@ -75,7 +76,12 @@ export default function App() {
         }
     }, [])
 
-    const loadingStatus = useGlobalStore((store) => store.loading)
+
+    useEffect(() => {
+        socket_io.auth = { token: loginToken }
+        socket_io.disconnect()
+        socket_io.connect()
+    }, [loginToken])
 
     const status = statusQuery()
 

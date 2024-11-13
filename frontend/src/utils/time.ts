@@ -33,7 +33,7 @@ export const durationToString = (duration: Duration): string => {
     if (duration.milliseconds() > 0 && duration.seconds() === 0) {
         result.push(`${duration.milliseconds()} ms`)
     }
-    if (result.length === 0) result.push(`0 ms`)
+    if (result.length === 0) result.push(`0 s`)
     return result.join(", ")
 }
 

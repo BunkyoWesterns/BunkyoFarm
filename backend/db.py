@@ -48,8 +48,9 @@ class redis_channels:
     submitter = "submitter"
     stats = "stats"
     config = "config"
+    password_change = "password_change"
     
-REDIS_CHANNEL_LIST = [
+REDIS_CHANNEL_PUBLISH_LIST = [
     "client",
     "attack_group",
     "exploit",
@@ -290,6 +291,7 @@ async def regen_app_secret():
             )
         )
         await redis_conn.delete("APP_SECRET")
+        await redis_conn.publish(redis_channels.password_change, "update")
 
 APP_SECRET = get_dbenv_func("APP_SECRET", new_app_secret, value_cached=True)
 SERVER_ID = get_dbenv_func("SERVER_ID", uuid4, value_cached=True)
@@ -339,7 +341,6 @@ async def _dbtransaction():
     async with dbsession() as session:
         yield session
         await session.commit()
-
 
 DBSession = Annotated[AsyncSession, Depends(_dbtransaction)]
 

@@ -235,13 +235,13 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
         <Divider my="md" />
         <Title order={2}><u>Authentication</u></Title>
         <Space h="md" />
-        {(editMode && !status.data?.config?.AUTHENTICATION_REQUIRED)?<>
+        {editMode?<>
             <Alert
                 color="yellow"
                 title="Warning"
                 icon={<TiWarning />}
             >
-                Enabling the authentication will trigger the stop of all the running exploits, you can run them again manually (the password will be required at that time)
+                Enabling the authentication or changing the password will trigger the stop of all the running exploits, you can run them again manually (the new password will be required at that time)
             </Alert>
             <Space h="md" />
         </>:null}

@@ -9,6 +9,12 @@ class ExploitStatus(Enum):
     active = 'active'
     disabled = 'disabled'
 
+class AuthStatus(Enum):
+    ok = "ok"
+    nologin = "nologin"
+    wrong = "wrong"
+    invalid = "invalid"
+
 class FlagStatus(Enum):
     ok = 'ok'
     wait = 'wait'
