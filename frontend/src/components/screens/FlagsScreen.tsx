@@ -65,10 +65,13 @@ export const FlagsScreen = () => {
                     </Box>
                 </Table.Td>
                 <Table.Td>
-                    <Box>
-                        {item.status_text?.slice(0,submitterTextLimit)??"No response from submitter"}{(item.status_text?.length??0)>submitterTextLimit?<> <u>[...]</u></>:null}
-                        <FaInfoCircle onClick={()=>setViewStatusText(item.status_text??"No response from submitter")} style={{marginTop: 4, cursor:"pointer", float:"right"}}/>
-                        <br />Submitted At: {item.last_submission_at?getDateFormatted(item.last_submission_at):"never"}
+                    <Box display="flex">
+                        <Box>
+                            {item.status_text?.slice(0,submitterTextLimit)??"No response from submitter"}{(item.status_text?.length??0)>submitterTextLimit?<> <u>[...]</u></>:null} 
+                            <br />Submitted At: {item.last_submission_at?getDateFormatted(item.last_submission_at):"never"}
+                        </Box>
+                        <Space w="xs" />
+                        <FaInfoCircle onClick={()=>setViewStatusText(item.status_text??"No response from submitter")} style={{marginTop: 4, cursor:"pointer"}}/>
                         {/* item.submit_attempts + item.last_submission_at -> Status include number of tries if != 1 and last submission if failed */}
                     </Box>
                 </Table.Td>
@@ -183,7 +186,7 @@ export const FlagsScreen = () => {
                             <Table.Th style={thStyle}>Service</Table.Th>
                             <Table.Th style={thStyle}>Team</Table.Th>
                             <Table.Th style={thStyle}><Box display="flex" style={{alignItems: "center"}}>Execution<Space w="sm" /><HiCursorClick /></Box></Table.Th>
-                            <Table.Th style={thStyle}>Response</Table.Th>
+                            <Table.Th style={thStyle}><Box display="flex" style={{alignItems: "center"}}>response<Space w="sm" /><HiCursorClick /></Box></Table.Th>
                             <Table.Th style={thStyle} className="center-flex">Status</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
