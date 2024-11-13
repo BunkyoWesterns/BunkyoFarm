@@ -254,12 +254,16 @@ def dummy_decorator(func):
 
 class g:
     caching_dict = {}
-    
+
+def new_app_secret():
+    return secrets.token_hex(32)
+
 def get_dbenv_func(var_name: str, default_func:Callable|None = None, value_cached:bool=False):
     async def FUNC() -> str:
         if value_cached:
-            if var_name in g.caching_dict:
-                return g.caching_dict[var_name]
+            cached_value = await redis_conn.get("APP_SECRET")
+            if cached_value:
+                return cached_value
         async with dbtransaction() as db:   
             value = (await db.scalars(sqla.select(Env.value).where(Env.key == var_name))).one_or_none()
             if value is None:
@@ -270,11 +274,24 @@ def get_dbenv_func(var_name: str, default_func:Callable|None = None, value_cache
                     .returning(Env.value)
                 )
             if value_cached:
-                g.caching_dict[var_name] = value
+                await redis_conn.set("APP_SECRET", value)
             return value
     return FUNC
 
-APP_SECRET = get_dbenv_func("APP_SECRET", lambda: secrets.token_hex(32), value_cached=True)
+async def regen_app_secret():
+    async with dbtransaction() as db:
+        new_secret = new_app_secret()
+        await db.execute(
+            sqla.insert(Env)
+            .values(key="APP_SECRET", value=new_secret)
+            .on_conflict_do_update(
+                index_elements=[Env.key],
+                set_={"value": new_secret}
+            )
+        )
+        await redis_conn.delete("APP_SECRET")
+
+APP_SECRET = get_dbenv_func("APP_SECRET", new_app_secret, value_cached=True)
 SERVER_ID = get_dbenv_func("SERVER_ID", uuid4, value_cached=True)
 SUBMITTER_ERROR_OUTPUT = get_dbenv_func("SUBMITTER_ERROR_OUTPUT", lambda: "")
 SUBMITTER_WARNING_OUTPUT = get_dbenv_func("SUBMITTER_WARNING_OUTPUT", lambda: "")

@@ -23,7 +23,8 @@ from typing import Dict
 from pydantic import ValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
-from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team, Submitter, sqla, redis_conn, redis_channels
+from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team
+from db import Submitter, sqla, redis_conn, redis_channels, regen_app_secret
 from skio import sio_server
 from utils.query import get_messages_array
 from models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
@@ -222,6 +223,7 @@ async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
 async def set_status(data: Dict[str, str|int|None], db: DBSession):
     """ Set some configuration values, you can set the values to change only """
     config = await Configuration.get_from_db()
+    change_secret = False
     for key in data.keys():
         if key not in Configuration.keys():
             raise HTTPException(400, f"Invalid key {key}")
@@ -237,11 +239,14 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
             if len(str(data[key])) < 8:
                 raise HTTPException(400, "Password too short (at least 8 chars)")
             data[key] = crypto.hash(data[key])
+            change_secret = True
 
     config = Configuration.model_validate(config.model_dump() | data)
     await config.write_on_db()
     config.PASSWORD_HASH = "********" if config.PASSWORD_HASH else None
     await db.commit()
+    if change_secret:
+        await regen_app_secret()
     await redis_conn.publish(redis_channels.config, "update")
     return {"status": ResponseStatus.OK, "message": "The configuration has been updated", "response": config.model_dump()}
 
