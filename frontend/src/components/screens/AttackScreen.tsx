@@ -26,7 +26,7 @@ export const AttackScreen = () => {
     const getExploitName = useExploitSolver()
     const teamMapping = useTeamMapping()
     const getClientName = useClientSolver()
-    const errorTextLimit = 60
+    const errorTextLimit = 130
 
     const [attackDetailId, setAttackDetailId] = useState<number|null>(null)
 
@@ -59,7 +59,7 @@ export const AttackScreen = () => {
                 <Table.Td>
                     <Box>time: {executionTime?secondDurationToString(executionTime):"unknown execution time"}<br />by {getClientName(item.executed_by)}</Box>
                 </Table.Td>
-                <Table.Td>{item.output?.slice(0,errorTextLimit)??"No errors"}{item.output?.length??0>errorTextLimit?<> <u>[...]</u></>:null}<br />{item.flags.length} flags got</Table.Td>
+                <Table.Td>{item.output?.slice(0,errorTextLimit)??"No errors"}{(item.output?.length??0)>errorTextLimit?<> <u>[...]</u></>:null}<br />{item.flags.length} flags got</Table.Td>
                 <Table.Td><AttackStatusIcon status={item.status} /></Table.Td>
             </Table.Tr>
         })

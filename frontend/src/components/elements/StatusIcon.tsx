@@ -44,7 +44,7 @@ export const flagStatusTable = {
         name: "All",
         color: "white",
         icon: FaAsterisk,
-        label: "All attacks"
+        label: "All flags"
     }
 }
 

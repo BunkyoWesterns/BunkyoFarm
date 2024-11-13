@@ -1,6 +1,6 @@
 import { flagsQuery, statsQuery, useClientSolver, useExploitSolver, useServiceSolverByExploitId, useTeamMapping, useTeamSolver } from "@/utils/queries";
-import { Box, Button, Divider, Loader, MantineStyleProp, Pagination, ScrollArea, Space, Table } from "@mantine/core";
-import { useMemo, useState } from "react";
+import { Alert, Box, Button, Divider, Loader, MantineStyleProp, Modal, Pagination, ScrollArea, Space, Table, Title } from "@mantine/core";
+import { useMemo, useRef, useState } from "react";
 import { DonutChart } from '@mantine/charts';
 import { FaKeyboard } from "react-icons/fa";
 import { TbReload } from "react-icons/tb";
@@ -18,6 +18,7 @@ import { AttackExecutionDetailsModal } from "@/components/modals/AttackExecution
 import { HiCursorClick } from "react-icons/hi";
 import { FaInfoCircle } from "react-icons/fa";
 import { calcAttackDuration } from "@/utils";
+import { BsCardText } from "react-icons/bs";
 
 export const FlagsScreen = () => {
 
@@ -29,6 +30,8 @@ export const FlagsScreen = () => {
     const getExploitName = useExploitSolver()
     const getClientName = useClientSolver()
     const [manualSubmissionModal, setManualSubmissionModal] = useState<boolean>(false)
+    const [viewStatusText, setViewStatusText] = useState<string|undefined>()
+    const scollRef = useRef<any>()
 
     const [attackDetailId, setAttackDetailId] = useState<number|null>(null)
 
@@ -43,14 +46,15 @@ export const FlagsScreen = () => {
     const totFlags = flagsStats.data?.globals.flags.tot??0
     const totalPages = flags.data?.pages??0
     const isEmpty = flags.data?.items.length==0
-    const thStyle: MantineStyleProp = { fontWeight: "bolder", fontSize: "130%", textTransform: "uppercase" }    
-
+    const thStyle: MantineStyleProp = { fontWeight: "bolder", fontSize: "130%", textTransform: "uppercase" }
+    const submitterTextLimit = 130
+    
     const tableData = useMemo(() => {
         return (flags.data?.items??[]).map((item) => {
             const executionTime = calcAttackDuration(item.attack)
             return <Table.Tr key={item.id}>
                 <Table.Td><Box>{item.id}</Box></Table.Td>
-                <Table.Td><Box style={{fontWeight: "bolder"}}>{item.flag}</Box></Table.Td> 
+                <Table.Td><Box style={{fontWeight: "bolder"}}>{item.flag}</Box></Table.Td>
                 <Table.Td><Box><Box style={{fontWeight: "bolder"}}>{getServiceName(item.attack.exploit)}</Box>using {getExploitName(item.attack.exploit)} exploit</Box></Table.Td>
                 <Table.Td><Box><span style={{fontWeight: "bolder"}}>{getTeamName(item.attack.target)}</span><br />{item.attack.target?teamMapping[item.attack.target]?.host:null}</Box></Table.Td>
                 <Table.Td>
@@ -62,7 +66,9 @@ export const FlagsScreen = () => {
                 </Table.Td>
                 <Table.Td>
                     <Box>
-                        {item.status_text??"No response from submitter"}<br />Submitted At: {item.last_submission_at?getDateFormatted(item.last_submission_at):"never"}
+                        {item.status_text?.slice(0,submitterTextLimit)??"No response from submitter"}{(item.status_text?.length??0)>submitterTextLimit?<> <u>[...]</u></>:null}
+                        <FaInfoCircle onClick={()=>setViewStatusText(item.status_text??"No response from submitter")} style={{marginTop: 4, cursor:"pointer", float:"right"}}/>
+                        <br />Submitted At: {item.last_submission_at?getDateFormatted(item.last_submission_at):"never"}
                         {/* item.submit_attempts + item.last_submission_at -> Status include number of tries if != 1 and last submission if failed */}
                     </Box>
                 </Table.Td>
@@ -190,8 +196,18 @@ export const FlagsScreen = () => {
             <Space h="xl" />
             <Pagination total={totalPages} color="red" radius="md" value={page} onChange={setPage} />
         </Box>
-        <ManualSubmissionModal opened={manualSubmissionModal} close={() => setManualSubmissionModal(false)} />
         <Space h="xl" /><Space h="xl" />
+        <ManualSubmissionModal opened={manualSubmissionModal} close={() => setManualSubmissionModal(false)} />
         {attackDetailId==null?null:<AttackExecutionDetailsModal opened={true} close={()=>setAttackDetailId(null)} attackId={attackDetailId} />}
+        <Modal size="xl" opened={viewStatusText!=undefined} onClose={()=>setViewStatusText(undefined)} title="Submission status text" centered>
+            <Space w="md" ref={scollRef} />
+            <Alert icon={<BsCardText />} title={<Title order={4}>Submitter logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}}>
+                <ScrollArea.Autosize mah={400} >
+                    <Box style={{whiteSpace:"pre"}} w={(scollRef.current?.getBoundingClientRect().width-60)+"px"}>
+                        {viewStatusText}
+                    </Box>
+                </ScrollArea.Autosize> 
+            </Alert>
+        </Modal>
     </Box>
 }

@@ -5,7 +5,7 @@ from exploitfarm import get_host, random_str
 from pwn import *
 
 host = get_host()
-
+#TEST
 simulate_random_crash = True
 simulate_work = False
 simulate_connection = False

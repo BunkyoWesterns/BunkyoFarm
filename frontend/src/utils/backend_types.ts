@@ -201,6 +201,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/exploits/{exploit_id}/stopped": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exploit Stopped */
+        post: operations["exploit_stopped_api_exploits__exploit_id__stopped_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/exploits/submit": {
         parameters: {
             query?: never;
@@ -210,8 +227,8 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Exploit Submit */
-        post: operations["exploit_submit_api_exploits_submit_post"];
+        /** Exploit Submit Manual */
+        post: operations["exploit_submit_manual_api_exploits_submit_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -758,6 +775,8 @@ export interface components {
             output?: string | null;
             /** Executed By */
             executed_by?: string | null;
+            /** Source Hash */
+            source_hash?: string | null;
             /** Target */
             target?: number | null;
             /** Flags */
@@ -851,6 +870,15 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** MessageResponse */
+        MessageResponse: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: unknown | null;
+        };
         /** MessageResponse[Any] */
         MessageResponse_Any_: {
             /** @default ok */
@@ -884,6 +912,17 @@ export interface components {
             message?: string | null;
             /** Response */
             response?: Record<string, never> | null;
+        };
+        /** MessageResponse[Dict[str, Dict[str, Any]]] */
+        MessageResponse_Dict_str__Dict_str__Any___: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            /** Response */
+            response?: {
+                [key: string]: Record<string, never>;
+            } | null;
         };
         /** MessageResponse[Dict[str, int]] */
         MessageResponse_Dict_str__int__: {
@@ -937,14 +976,6 @@ export interface components {
             /** Message */
             message?: string | null;
             response?: components["schemas"]["SubmitterDTO"] | null;
-        };
-        /** MessageResponse[SubmitterKargs] */
-        MessageResponse_SubmitterKargs_: {
-            /** @default ok */
-            status: components["schemas"]["ResponseStatus"];
-            /** Message */
-            message?: string | null;
-            response?: components["schemas"]["SubmitterKargs"] | null;
         };
         /** MessageResponse[TeamDTO] */
         MessageResponse_TeamDTO_: {
@@ -1070,8 +1101,13 @@ export interface components {
             name: string;
             /** Code */
             code: string;
-            /** @default {} */
-            kargs: components["schemas"]["SubmitterKargs"];
+            /**
+             * Kargs
+             * @default {}
+             */
+            kargs: {
+                [key: string]: Record<string, never>;
+            };
             /**
              * Created At
              * Format: date-time
@@ -1091,9 +1127,6 @@ export interface components {
         SubmitterInfoForm: {
             /** Code */
             code: string;
-        };
-        SubmitterKargs: {
-            [key: string]: Record<string, never>;
         };
         /** TeamAddForm */
         TeamAddForm: {
@@ -1296,7 +1329,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MessageResponse_SubmitterKargs_"];
+                    "application/json": components["schemas"]["MessageResponse_Dict_str__Dict_str__Any___"];
                 };
             };
             /** @description Validation error */
@@ -1702,7 +1735,38 @@ export interface operations {
             };
         };
     };
-    exploit_submit_api_exploits_submit_post: {
+    exploit_stopped_api_exploits__exploit_id__stopped_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                exploit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    exploit_submit_manual_api_exploits_submit_post: {
         parameters: {
             query?: never;
             header?: never;

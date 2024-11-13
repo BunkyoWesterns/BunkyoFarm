@@ -1,4 +1,4 @@
-import { attacksQuery, useClientSolver, useExtendedExploitSolver, useTeamSolver } from "@/utils/queries";
+import { attacksQuery, exploitsSourcesQuery, useClientSolver, useExtendedExploitSolver, useTeamSolver } from "@/utils/queries";
 import { useGlobalStore } from "@/utils/stores";
 import { Alert, Box, Modal, ScrollArea, Space, Title } from "@mantine/core"
 import { showNotification } from "@mantine/notifications";
@@ -14,6 +14,7 @@ import { MdTimerOff } from "react-icons/md";
 import { FaPersonRunning } from "react-icons/fa6";
 import { calcAttackDuration } from "@/utils";
 import { BsCardText } from "react-icons/bs";
+import { ExploitSourceCard } from "../elements/ExploitSourceCard";
 
 export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>void, attackId:number }) => {
 
@@ -21,6 +22,9 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
 
     const attackQuery = attacksQuery(1, { id: props.attackId })
     const attack = attackQuery.data?.items[0]??null
+    const sourceQuery = exploitsSourcesQuery(attack?.exploit??undefined)
+    const usedSource = sourceQuery.data?.find((src) => src.id == attack?.exploit_source)??null
+    const isUsedSourceLatest = sourceQuery.data?.length??0 > 0 ? sourceQuery.data?.[0]?.id == usedSource?.id : false
     const setLoading = useGlobalStore((store) => store.setLoader)
     const clientSolver = useClientSolver()
     const teamSolver = useTeamSolver()
@@ -84,6 +88,8 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
                     </Box>
                 </ScrollArea.Autosize> 
             </Alert>
+
+            {usedSource?<ExploitSourceCard src={usedSource} latest={isUsedSourceLatest} viewOnly />:null}
 
         </Box>:null}
         
