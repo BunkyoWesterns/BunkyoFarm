@@ -15,6 +15,10 @@ class AuthStatus(Enum):
     wrong = "wrong"
     invalid = "invalid"
 
+class GroupStatus(Enum):
+    active = 'active'
+    unactive = 'unactive'
+
 class FlagStatus(Enum):
     ok = 'ok'
     wait = 'wait'

@@ -85,7 +85,10 @@ Il progetto è composto principalmente da un server centrale (nello specifico un
     	\centering
     	\includegraphics[width=0.8\textwidth]{general_layout.png}
 	\end{figure}
-\subsubsection{Backend}
+	\begin{figure}[H]
+    	\centering
+    	\includegraphics[width=0.8\textwidth]{Architecture.png}
+	\end{figure}\subsubsection{Backend}
 Il backend sarà il core del progetto poiché conterrà tutta la logica per il coordinamento dei vari client che invieranno il risultato degli attacchi, dovrà gestire i dati ed elaborarli al fine di renderli facilmente fruibili dai client, inoltre conterrà la logica e si occuperà della gestione del submitting delle flag al gameserver seguendo i requisiti indicati in fase di setup.
 \subsubsection{Frontend}
 La visualizzazione avanzata dello stato di ExploitFarm è invece affidata alla parte frontend del webserver che dovrà permettere un facile accesso ai dati presenti sul server, offrendoli tramite strumenti di analisi come grafici che devono essere mirati sulle esigenze decisionali che possono emergere durante una competizione Attack Defence. Inoltre dovrà segnalare e rendere facilmente e tempestivamente nota la presenza di eventuali errori di qualsiasi tipo sull'intera infrastruttura permettendone un'intervento quanto più immediato da parte del team.
@@ -99,20 +102,44 @@ Infine un'ultima parte fondamentale in tutto il progetto è il client che deve e
     	\centering
     	\includegraphics[width=0.6\textwidth]{xfarm-start-cmd.png}
 	\end{figure}
-\subsection{Specifica dei requisiti}
-\subsubsection{Setup}
-Il setup di ExploitFarm dalla sua installazione alla conclusione della sua configurazione deve essere di facile ed intuitivo utilizzo e di semplice finalizzazione. Al fine di perseguire questo obiettivo, la tecnologia per l'avvio del progetto è Docker, che ne permette facilmente di avviare un postgres e server redis dedicati e isolati. Inoltre è possibile avviare exploitfarm tramite un one-command, che avvierà il progetto da un repository pubblico con il container pre-buildato. Una volta avviato la configurazione iniziale dovrà essere compilabile ed eseguita sia tramite un'interfaccia web che tramite una automizzazione che è possibile scrivere tramite la libreria python associata al progetto.
-\subsubsection{Dinamicità delle configurazioni}
-Tutte le configurazioni nella fase di setup devono essere modificabili e automaticamente aggiornate su tutti i client e in tutte le componenti del backend stesso, in modo da evitare interruzioni brusche degli attacchi, permettendo la continuità dell'esecuzione dei client e quindi dispendi di tempo nella riconfigurazione del sistema.
-\subsubsection{Gestione Exploit}
-I sorgenti degli attacchi devono poter essere facilmente condivisibili e avviabili anche da altri utenti. Inoltre è richiesto anche tenere traccia delle versioni dell'attacco di modo da permetterne la segnalazione di vecchie versioni, aggiornamento di nuove versioni in maniera automatica in caso di attacchi condivisi (definiti in seguito), e analisi post-gara.
-\subsubsection{Esecuzione Attacchi}
-Gli attacchi devono essere parallelizzati ed eseguiti tenendo conto delle risorse libere nel sistema: in caso il sistema arrivi in trashing o il processore sia saturo, il client deve ribilanciare automaticamente il quantitativo di attacchi eseguiti al fine di non mandare il sistema in blocco.
-\subsubsection{Analisi statistiche e visualizzazione}
-Il sistema deve disporre di una interfaccia sempre aggiornata e facile da visionare per il monitoraggio delle flag in arrivo, degli attacchi eseguiti, che permetta la visualizzazione degli errori in caso di attacchi crashati o non funzionanti, di selezionare e filtrare i dati in base a dei parametri di ricerca e infine disporre di una serie di grafici che mostrino l'andamento degli attacchi durante la gara, di modo da permetterne una visione immediata.
-\subsubsection{Gestione di attacchi distribuiti}
+\subsection{Specifica dei requisiti (FURPS+)}
+
+\subsubsection{Functionality}
+\paragraph{Esecuzione Attacchi}\mbox{}\\
+Il sistema deve essere in grado di eseguire un attacco scritto in qualsiasi linguaggio che rispetti determinati requisiti e prenda in input i dati necessari ad eseguire l'accatto, e li esegui in maniera coordinata monitorandone l'esecuzione e raccogliendo tutte le informazioni che potrebbero essere necessarie per analizzare la singola esecuzione dell'attacco. Gli attacchi dovranno essere inoltre coordinati per essere eseguiti seguendo un determinato criterio di scheduling configurato sul server
+\paragraph{Submission delle flag}\mbox{}\\
+Il sistema deve essere in grado di raccogliere da tutti gli attacchi e filtrare le flag duplicate, e inviare queste seguendo i limiti imposti dal gameserver, tramite le configurazioni disponibili che ne devono permettere una gestione flessibile. Inoltre per allggerire il carico, il sistema deve anche automaticamente far scadere le flag che non soddisfano i requisiti di consegna per il gameserver.
+\paragraph{Gestione di attacchi distribuiti}\mbox{}\\
 In caso di exploit con un carico computazionale e di memoria non indifferente come nel caso di alcuni attacchi criptografici o di attacchi che necessitano l'elaborazione di media, ExploitFarm deve disporre di un sistema per creare dei gruppi di client che eseguono lo stesso attacco ma i cui team da attaccare siano distribuiti in maniera bilanciata e basata sulla potenza computazionale dei client nel gruppo.
-\subsubsection{Use-Case diagram}
+\paragraph{Gestione Exploit}\mbox{}\\
+I sorgenti degli attacchi devono poter essere facilmente condivisibili e avviabili anche da altri utenti. Inoltre è richiesto anche tenere traccia delle versioni dell'attacco di modo da permetterne la segnalazione di vecchie versioni, aggiornamento di nuove versioni in maniera automatica in caso di attacchi condivisi (definiti in seguito), e analisi post-gara.
+\subsubsection{Usability}
+\paragraph{Setup}\mbox{}\\
+Il setup di ExploitFarm dalla sua installazione alla conclusione della sua configurazione deve essere di facile ed intuitivo utilizzo e di semplice finalizzazione. Al fine di perseguire questo obiettivo, la tecnologia per l'avvio del progetto è Docker, che ne permette facilmente di avviare un postgres e server redis dedicati e isolati. Inoltre è possibile avviare exploitfarm tramite un one-command, che avvierà il progetto da un repository pubblico con il container pre-buildato. Una volta avviato la configurazione iniziale dovrà essere compilabile ed eseguita sia tramite un'interfaccia web che tramite una automizzazione che è possibile scrivere tramite la libreria python associata al progetto.
+\paragraph{Analisi statistiche e visualizzazione}\mbox{}\\
+Il sistema deve disporre di una interfaccia sempre aggiornata e facile da visionare per il monitoraggio delle flag in arrivo, degli attacchi eseguiti, che permetta la visualizzazione degli errori in caso di attacchi crashati o non funzionanti, di selezionare e filtrare i dati in base a dei parametri di ricerca e infine disporre di una serie di grafici che mostrino l'andamento degli attacchi durante la gara, di modo da permetterne una visione immediata.
+\subsubsection{Reliability}
+\paragraph{Dinamicità delle configurazioni}\mbox{}\\
+Tutte le configurazioni nella fase di setup devono essere modificabili e automaticamente aggiornate su tutti i client e in tutte le componenti del backend stesso, in modo da evitare interruzioni brusche degli attacchi, permettendo la continuità dell'esecuzione dei client e quindi dispendi di tempo nella riconfigurazione del sistema.
+\paragraph{Error handling e managment}\mbox{}\\
+Se a causa di errori rilevabili c'è un errore nel sistema rilevabile, il sistema deve prontamente notificare su tutti i client l'errore/warning includendo tutte le informazioni utili a rilevarne l'origine, la motivazione  e quindi velocizzando la risoluzione del problema.
+\paragraph{Resilienza del sistema}\mbox{}\\
+Il sistema deve tentare in tutti i modi di impedire il riavvio ne tantomeno la chiusura degli exploit, e quindi anche a fronte di errori nei limiti di fattibilità continuare ad eseguire gli attacchi e consegnare le flag al gameserver. Ad esempio in caso il server vada offline gli attacker devono continuare ad accumulare flag fino a che il gameserver non tornerà online, e in caso di riavvio degli exploit mantenere la coda salvata per essere inviata successivamente. L'obiettivo deve essere non perdere flag ottenute e cercare di consegnarle al gameserver il prima possibile.
+\subsubsection{Performance}
+\paragraph{Bilancio dei processi nell'esecuzione di un attacco}\mbox{}\\
+Gli attacchi devono essere parallelizzati ed eseguiti tenendo conto delle risorse libere nel sistema: in caso il sistema arrivi in trashing o il processore sia saturo, il client deve ribilanciare automaticamente il quantitativo di attacchi eseguiti al fine di non mandare il sistema in blocco. Cioè deve avvenire anche negli attacchi distribuiti.
+\subsubsection{Supportability}
+\paragraph{Adattabilità}\mbox{}\\
+Il sistema deve al limite di quanto possibile lasciare liberi gli utilizzatori di personalizzare ogni sua parte in modo dal renderlo adattabile a ogni CTF attack defence possibilmente senza modificare il source code del server o del client stesso. Inoltre gli attacchi devono poter essere scritti in qualsiasi linguaggio (nonostante tutta l'infrastruttura verti su python)
+\paragraph{Portabilità e avvio}\mbox{}\\
+L'avvio del server deve essere rapido e semplice da configurare, inoltre deve facilmente adattarsi a più macchine e deve risultare semplice il passaggio di tutti i dati in un altro server, pertanto la migrazione deve essere quanto più intuitiva e rapida possibile.
+\subsubsection{+}
+\paragraph{Versioning}\mbox{}\\
+Si utilizza un versioning a 3 cifre le quali sono la prima per la major release, che comporta dei cambiamenti stutturali al programma con possibile conseguente rottura di vecchi client, La seconda cifra indica la feature release che non influenza o provoca danni alle altre funzionalità ma è solo un'implementazione integrativa e non distruttiva, mentre l'ultimo numero indica la patch di quella versione in cui vengono risolti bug e crash inaspettati per le nuove funzionalità ma non solo.
+Viene fatta eccezione per le versioni con major 0. che sono consideranti ancora in sviluppo e non stabili, pertanto in queste versioni potrebbe verificarsi anche un cambio di API nelle feature release.
+\paragraph{Licenza}\mbox{}\\
+Il progetto è open-source rilasciato con licenza GPL-3
+\paragraph{Use-Case diagram}\mbox{}\\
     \begin{figure}[H]
     	\centering
     	\includegraphics[width=1\textwidth]{general_use_case.png}

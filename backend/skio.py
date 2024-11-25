@@ -11,6 +11,11 @@ from models.config import Configuration
 from models.enums import ExploitStatus
 from utils.auth import login_validation, AuthStatus
 from socketio.exceptions import ConnectionRefusedError
+from models.groups import JoinRequest, LeaveRequest
+from models.response import MessageResponse, ResponseStatus
+from db import AttackGroup, sqla
+from utils import register_event
+
 class StopLoop(Exception):
     pass
 
@@ -24,9 +29,29 @@ sio_server = socketio.AsyncServer(
     transports=["websocket"],
 )
 
+"""
+TODO list:
+- Capire come gesire i processi che devono gestire il gruppo:
+    - come li avvio? - start-group:group_id
+    - come li termino? - stop-group:group_id
+- Gestione di client:
+    - al join inviamo una richiesta al client con le specifiche per l'attacco (timeout e commit)
+    - quando questi si aggiornano mandiamo un boradcast delle stesse informazioni nella room associata
+- Gestione cambio dimensione queue:
+    - ???
+- Gestione cambio source:
+    - ???
+- Gestione messaggi di conclusione degli exploit
+- Gestione messaggi di reject per l'avvio di un attacco
+- Gestione messaggi di errore (generici)
+-     
+
+"""
+
 class g:
     task_list = []
-
+    room_task_list = []
+    
 async def check_login(token: str) -> None:
     status = await login_validation(token)
     if status == AuthStatus.ok:
@@ -43,6 +68,26 @@ async def sio_connect(sid, environ, auth):
 @sio_server.on("disconnect")
 async def sio_disconnect(sid):
     await redis_conn.lrem("sid_list", 0, sid)
+
+@register_event(sio_server, "leave-group", LeaveRequest, MessageResponse)
+async def leave_group(sid, leave_req: LeaveRequest):
+    await asyncio.gather(
+        redis_conn.delete(*(await redis_conn.keys(f"group:{leave_req.group_id}:client:{leave_req.client}:*"))),
+        redis_conn.srem(f"group:{leave_req.group_id}:members", leave_req.client),
+        sio_server.leave_room(sid, f"group:{leave_req.group_id}:room")
+    )
+    return {"message": "left", "status": ResponseStatus.OK}
+    
+@register_event(sio_server, "join-group", JoinRequest, MessageResponse)
+async def join_group(sid, join_req: JoinRequest):
+    if not await redis_conn.get(f"group:{join_req.group_id}"):
+        return {"status": ResponseStatus.ERROR, "message": "Group not found"}
+    await asyncio.gather(
+        redis_conn.set(f"group:{join_req.group_id}:client:{join_req.client}:sid", sid),
+        redis_conn.set(f"group:{join_req.group_id}:client:{join_req.client}:queue", join_req.queue_size),
+        sio_server.enter_room(sid, f"group:{join_req.group_id}:room")
+    )
+    return {"message": "joined", "status": ResponseStatus.OK}
 
 async def disconnect_all():
     while True:
@@ -92,14 +137,48 @@ async def check_exploits_disabled():
                 await redis_conn.publish(redis_channels.exploit, "update")
             await asyncio.sleep(5)
 
+async def group_task(group_id: str):
+    while True:
+        await asyncio.sleep(5)
+
+def generate_group_task(group_id: str):
+    task = asyncio.create_task(group_task(group_id))
+    g.room_task_list.append({
+        "group_id": group_id,
+        "task": asyncio.create_task(group_task(group_id))
+    })
+    return task
+
+async def group_changes_listener():
+    async with dbtransaction() as db:
+        pre_existing_groups = (await db.scalars(sqla.select(AttackGroup))).all()
+        for ele in pre_existing_groups:
+            await redis_conn.set(f"group:{ele.id}", True)
+            generate_group_task(ele.id)
+        async with redis_conn.pubsub() as pubsub:
+            await pubsub.subscribe(redis_channels.attack_group)
+            while True:
+                message:str = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+                if message:
+                    if message.startswith("add:"):
+                        group_id = message.split(":")[1]
+                        generate_group_task(group_id)
+                    if message.startswith("delete:"):
+                        group_id = message.split(":")[1]
+                        for ele in list(filter(lambda ele: ele["group_id"] == group_id, g.room_task_list)):
+                            ele["task"].cancel()
+                            g.room_task_list.remove(ele)
+
 async def tasks_init():
     try:
         await connect_db()
         await generate_listener_tasks()
         pwd_change = asyncio.create_task(password_change_listener())
         check_disab = asyncio.create_task(check_exploits_disabled())
+        cng_listener = asyncio.create_task(group_changes_listener())
         logging.info("SocketIO manager started")
-        await asyncio.gather(*g.task_list, check_disab, pwd_change)
+        await asyncio.gather(*g.task_list, check_disab, pwd_change, cng_listener)
+        await asyncio.gather(*g.room_task_list)
     except KeyboardInterrupt:
         pass
     finally:

@@ -74,7 +74,7 @@ ClientID = str
 ExploitID = UUID
 ServiceID = UUID
 TeamID = int
-AttackGroupID = int
+AttackGroupID = UUID
 ExploitSourceID = UUID
 AttackExecutionID = int
 FlagID = int
@@ -87,13 +87,6 @@ class Env(SQLModel, table=True):
     
     key:    EnvKey      = Field(primary_key=True)
     value:  str | None  = Field(sqla.String(1024*1024))
-
-
-class ClientAttackLink(SQLModel, table=True):
-    __tablename__ = "client_attack_links"
-    
-    client_id:          ClientID          = Field(default=None, foreign_key="clients.id", primary_key=True, ondelete="CASCADE")
-    attack_group_id:    AttackGroupID     = Field(default=None, foreign_key="attack_groups.id", primary_key=True, ondelete="CASCADE")
 
 
 MANUAL_CLIENT_ID = "manual"
@@ -130,9 +123,9 @@ class Client(SQLModel, table=True):
     created_at:             DateTime                = Field(sa_column=datetime_now_sql())
     
     exploits_created:       List["Exploit"]         = Relationship(back_populates="created_by")
-    attack_groups:          List["AttackGroup"]     = Relationship(link_model=ClientAttackLink)
     pushed_exploit_sources: List["ExploitSource"]   = Relationship(back_populates="pushed_by")
     attacks_executions:     List["AttackExecution"] = Relationship(back_populates="executed_by")
+    created_groups:         List["AttackGroup"]     = Relationship(back_populates="created_by")
 
 class Service(SQLModel, table=True):
     __tablename__ = "services"
@@ -174,13 +167,13 @@ class Team(SQLModel, table=True):
 class AttackGroup(SQLModel, table=True):
     __tablename__ = "attack_groups"
     
-    id:             AttackGroupID       = Field(primary_key=True)
+    id:             AttackGroupID       = Field(primary_key=True, default=uuid4)
     name:           str
-    last_attack:    DateTime | None     = Field(sa_column=datetime_now_sql(now=False))
     created_at:     DateTime            = Field(sa_column=datetime_now_sql())
+    created_by_id:  ClientID | None     = Field(foreign_key="clients.id", ondelete="SET NULL")
+    created_by:     Client | None       = Relationship(back_populates="created_groups")
     exploit_id:     ExploitID           = Field(foreign_key="exploits.id", ondelete="CASCADE")
     exploit:        Exploit             = Relationship(back_populates="groups")
-    clients:        List["Client"]      = Relationship(link_model=ClientAttackLink, back_populates="attack_groups")
     
     executions:     List["AttackExecution"] = Relationship(back_populates="executed_by_group")
 

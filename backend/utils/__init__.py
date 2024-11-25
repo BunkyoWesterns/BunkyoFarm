@@ -10,6 +10,10 @@ from pydantic import BaseModel
 import re
 import logging
 from env import EXPLOIT_SOURCES_DIR
+from functools import wraps
+from pydantic import ValidationError
+from socketio import AsyncServer
+from models.response import MessageResponse, ResponseStatus
 
 
 #logging.getLogger().setLevel(logging.DEBUG)
@@ -174,4 +178,42 @@ async def pubsub_flush(pubsub):
     while flushed is not None:
         flushed = await pubsub.get_message(ignore_subscribe_messages=True, timeout=0)
 
-    
+
+def register_event(sio_server: AsyncServer, event_name: str, model: BaseModel, response_model: BaseModel|None = None):
+    def decorator(func):
+        @sio_server.on(event_name)  # Automatically registers the event
+        @wraps(func)
+        async def wrapper(sid, data):
+            try:
+                # Parse and validate incoming data
+                parsed_data = model.model_validate(data)
+            except ValidationError as exc:
+                return json_like(
+                        MessageResponse(
+                            status=ResponseStatus.INVALID,
+                            message=f"Invalid {event_name} request",
+                            response=list(exc.errors())
+                        )
+                    )
+            
+            # Call the original function with the parsed data
+            result = await func(sid, parsed_data)
+            # If a response model is provided, validate the output
+            if response_model:
+                try:
+                    parsed_result = response_model.model_validate(result)
+                except ValidationError as exc:
+                    return json_like(
+                            MessageResponse(
+                                status=ResponseStatus.INVALID,
+                                message=f"Invalid {event_name} response",
+                                response=list(exc.errors())
+                            )
+                        )
+            else:
+                parsed_result = result
+            # Emit the validated result
+            if result:
+                return parsed_result
+        return wrapper
+    return decorator

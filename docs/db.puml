@@ -10,7 +10,7 @@ entity "**Env**" as env {
 }
 
 entity "**Exploit**" as exploit{
-    id : number
+    id : UUID
     --
     name: string
     language: string [enum]
@@ -41,14 +41,14 @@ entity "**Attack-Execution**" as attack{
 }
 
 entity "**Client**" as client{
-    id: number
+    id: string
     --
     name: string
     address: string
 }
 
 entity "**Service**" as service{
-    id : number
+    id : UUID
     --
     name: string
 }
@@ -71,7 +71,7 @@ entity "**Submitter**" as submitter{
 }
 
 entity "**Exploit-Source**" as exploit_source{
-    hash: string
+    hash: UUID
     --
     pushed_at: date
     os: string
@@ -80,10 +80,9 @@ entity "**Exploit-Source**" as exploit_source{
 }
 
 entity "**Attack-Group**" as attack_group{
-    id: number
+    id: UUID
     --
     name: string
-    last_attack: date
     created_at: date
 }
     
@@ -97,7 +96,7 @@ attack ||--o{ flag
 exploit ||--o{ exploit_source
 attack_group ||--o{ attack
 exploit ||--o{ attack_group
-client }|--o{ attack_group
+client }|--o{ attack_group : done using redis
 attack }o--o| exploit_source
 exploit_source }o--o| client
 

@@ -1,0 +1,24 @@
+@startuml architecture
+
+
+node Server as server
+
+
+database Databases as databases {
+    database "PostgreSQL" as db
+    database "Redis" as redis
+}
+
+storage "Clients (0..N)" {
+    node "XFarm Client" as xfarm
+    node "Frontend" as frontend
+}
+
+
+server <-> db
+server <-> redis
+
+server --> xfarm
+server --> frontend
+
+@enduml

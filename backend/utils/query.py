@@ -1,4 +1,5 @@
 from db import Exploit, AttackExecution, redis_conn, redis_keys
+from db import AttackGroup
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.config import Configuration, SetupStatus
 from sqlalchemy.orm import aliased
@@ -27,7 +28,7 @@ def calc_max_timeout_exploit(config: Configuration) -> int:
             max_timeout += max(config.LOOP_ATTACK_DELAY, config.TICK_DURATION)
     return max_timeout
 
-async def get_exploits_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tuple[Exploit, AttackExecution]]]:
+async def get_exploits_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tuple[Exploit, AttackExecution|None]]]:
     attack_exec, attack_exec_2 = aliased(AttackExecution), aliased(AttackExecution)
     
     stmt = (
@@ -70,6 +71,23 @@ async def detailed_exploit_status(config: Configuration, latest_attack: AttackEx
             exploit_status = ExploitStatus.disabled
     
     return exploit_status, reason
+
+async def get_groups_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tuple[Exploit, AttackExecution|None]]]:
+    attack_exec, attack_exec_2 = aliased(AttackExecution), aliased(AttackExecution)
+    
+    stmt = (
+        sqla.select(AttackGroup, attack_exec)
+        .outerjoin(
+            attack_exec,
+            attack_exec.id == (
+                sqla.select(attack_exec_2.id)
+                    .where(attack_exec_2.executed_by_group_id == AttackGroup.id)
+                    .order_by(attack_exec_2.received_at.desc())
+                    .limit(1)
+            ).correlate(AttackGroup).scalar_subquery()
+        )
+    )
+    return (await db.execute(stmt)).all()
 
 async def _get_messages_array():
     """ This function will recognize problems, dangerous situations and errors detected by the system, and collect them in a list """
