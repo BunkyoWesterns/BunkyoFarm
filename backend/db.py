@@ -164,19 +164,6 @@ class Team(SQLModel, table=True):
     
     attacks_executions: List["AttackExecution"] = Relationship(back_populates="target")
 
-class AttackGroup(SQLModel, table=True):
-    __tablename__ = "attack_groups"
-    
-    id:             AttackGroupID       = Field(primary_key=True, default=uuid4)
-    name:           str
-    created_at:     DateTime            = Field(sa_column=datetime_now_sql())
-    created_by_id:  ClientID | None     = Field(foreign_key="clients.id", ondelete="SET NULL")
-    created_by:     Client | None       = Relationship(back_populates="created_groups")
-    exploit_id:     ExploitID           = Field(foreign_key="exploits.id", ondelete="CASCADE")
-    exploit:        Exploit             = Relationship(back_populates="groups")
-    
-    executions:     List["AttackExecution"] = Relationship(back_populates="executed_by_group")
-
 class ExploitSource(SQLModel, table=True):
     __tablename__ = "exploit_sources"
     
@@ -192,7 +179,23 @@ class ExploitSource(SQLModel, table=True):
     exploit_id:     ExploitID                   = Field(foreign_key="exploits.id", ondelete="CASCADE")
     exploit:        "Exploit"                   = Relationship(back_populates="sources")
     
+    executed_by_group: List["AttackGroup"]       = Relationship(back_populates="commit")
     executions: List["AttackExecution"]         = Relationship(back_populates="exploit_source")
+
+class AttackGroup(SQLModel, table=True):
+    __tablename__ = "attack_groups"
+    
+    id:             AttackGroupID               = Field(primary_key=True, default=uuid4)
+    name:           str
+    created_at:     DateTime                    = Field(sa_column=datetime_now_sql())
+    created_by_id:  ClientID | None             = Field(foreign_key="clients.id", ondelete="SET NULL")
+    created_by:     Client | None               = Relationship(back_populates="created_groups")
+    exploit_id:     ExploitID                   = Field(foreign_key="exploits.id", ondelete="CASCADE")
+    exploit:        Exploit                     = Relationship(back_populates="groups")
+    commit_id:     ExploitSourceID | None      = Field(foreign_key="exploit_sources.id", ondelete="SET NULL")
+    commit:         ExploitSource | None        = Relationship(back_populates="executed_by_group")
+    
+    executions:     List["AttackExecution"]     = Relationship(back_populates="executed_by_group")
 
 class AttackExecution(SQLModel, table=True):
     __tablename__ = "attack_executions"

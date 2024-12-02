@@ -15,6 +15,7 @@ from models.groups import JoinRequest, LeaveRequest
 from models.response import MessageResponse, ResponseStatus
 from db import AttackGroup, sqla
 from utils import register_event
+import time
 
 class StopLoop(Exception):
     pass
@@ -153,13 +154,14 @@ async def group_changes_listener():
     async with dbtransaction() as db:
         pre_existing_groups = (await db.scalars(sqla.select(AttackGroup))).all()
         for ele in pre_existing_groups:
-            await redis_conn.set(f"group:{ele.id}", True)
+            await redis_conn.set(f"group:{ele.id}", 1)
             generate_group_task(ele.id)
         async with redis_conn.pubsub() as pubsub:
             await pubsub.subscribe(redis_channels.attack_group)
             while True:
-                message:str = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
+                message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
                 if message:
+                    message = message["data"].decode()
                     if message.startswith("add:"):
                         group_id = message.split(":")[1]
                         generate_group_task(group_id)
@@ -194,6 +196,7 @@ def inital_setup():
             except Exception as e:
                 traceback.print_exc()
                 logging.exception(f"SocketIO loop failed: {e}, restarting loop")
+                time.sleep(10)
     except (KeyboardInterrupt, StopLoop):
         logging.info("SocketIO stopped by KeyboardInterrupt")
 

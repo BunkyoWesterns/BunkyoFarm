@@ -72,7 +72,7 @@ async def detailed_exploit_status(config: Configuration, latest_attack: AttackEx
     
     return exploit_status, reason
 
-async def get_groups_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tuple[Exploit, AttackExecution|None]]]:
+async def get_groups_with_latest_attack(db: AsyncSession) -> List[sqla.Row[Tuple[AttackGroup, AttackExecution|None]]]:
     attack_exec, attack_exec_2 = aliased(AttackExecution), aliased(AttackExecution)
     
     stmt = (

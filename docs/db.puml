@@ -99,5 +99,6 @@ exploit ||--o{ attack_group
 client }|--o{ attack_group : done using redis
 attack }o--o| exploit_source
 exploit_source }o--o| client
+attack_group }o--o| exploit_source : null means 'latest'
 
 @enduml
