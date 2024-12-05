@@ -9,7 +9,7 @@ uvloop==0.21.0
 fastapi-pagination==0.12.31
 pyjwt==2.9.0
 dirhash==0.5.0
-python-multipart==0.0.12
+python-multipart==0.0.19
 sqlalchemy[asyncio]==2.0.36
 sqlmodel==0.0.22
 redis==5.2.0

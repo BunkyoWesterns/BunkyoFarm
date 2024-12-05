@@ -220,6 +220,7 @@ Contestualizziamo il problema periodicamente, analizzandone il processo per 1 ti
 	\item $T_R$ Tick/Round time (Tempo definito nel setup relativo alla durata di un round)
 	\item $T_K$ Timeout associato agli attacchi (Kill time)
 	\item $T_{C,j}$ Tempo effettivamente consumato per il j-esimo attacco (per il j-esimo team)
+	\item $T_{T,j}$ Ultimo tempo di timeout calcolato per il j-esimo attacco (per il j-esimo team)
 	
 \end{itemize}
 \paragraph{Valutazione della potenza computazionale di ogni client}\mbox{}\\
@@ -250,7 +251,7 @@ Definiamo dei nuovi valori di tempo:
 	\item $T_{L, i}$: Tempo di left dell' i-esimo client: Questo tempo vale il tempo rimanente lasciato non in esecuzione  dalla fine del tick del j-client che esce dal gruppo. Se il j-esimo client non è uscito dal gruppo questo tick questo valore vale 0
 	\item $T_{LJ, i} = T_{J,i}-T_{l,i}$: Tempo di left/join per client (definisce il guadagno totale dato dai left e join di un singolo client).
 	\item $T_{LJ} = \sum_{i} T_{LJ,j} Q_i$: Tempo totale di left/join (definisce in totale il tempo guadagnato/perso a causa delle operazioni di join e left dei client)
-	\item $T_{G, j} = T_R - T_{C, j}$: Tempo di guadagno per attacco
+	\item $T_{G, j} = T_{T,j} - T_{C, j}$: Tempo di guadagno per attacco
 	\item $T_G = \sum_{j} T_{G,j}$: Tempo di guadagno totale
 	\item $T_{VB} = \sum_{i} Q_i T_R$: (tempo virtualmente disponibile di base) interpretabile come il tempo totale disponibile di esecuzione su un core singolo per tick, calcolato all'inizio del tick.
 	\item $T_{V} = T_{VB} + T_G + T_{LJ}$: Tempo virtualmente disponibile
