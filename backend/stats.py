@@ -61,7 +61,6 @@ def create_tick(tick:int, start_time:datetime, end_time:datetime) -> dict:
 async def reset_stats():
     if not g.config:
         g.config = await Configuration.get_from_db()
-    print("Stats Proc: ----- RESETTING STATS -----")
     g.stats = {
         "last_flag_id": 0,
         "last_attack_id": 0,
