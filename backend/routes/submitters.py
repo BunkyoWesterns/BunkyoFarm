@@ -2,8 +2,8 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 import re
 from db import Submitter, DBSession, redis_conn, redis_channels
-from models.submitter import SubmitterDTO, SubmitterAddForm, SubmitterEditForm, SubmitterInfoForm, SubmitterKargs
-from models.response import MessageResponse, MessageResponseInvalidError
+from exploitfarm.models.submitter import SubmitterDTO, SubmitterAddForm, SubmitterEditForm, SubmitterInfoForm, SubmitterKargs
+from exploitfarm.models.response import MessageResponse, MessageResponseInvalidError
 from models.config import Configuration
 from typing import Dict, Any
 from utils import json_like, extract_submit, has_submit_signature, get_additional_args, type_check_annotation

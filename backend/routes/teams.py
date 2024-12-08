@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter
 import asyncio
 from db import Team, DBSession, sqla, TeamID, redis_channels, redis_conn
-from models.teams import TeamDTO, TeamAddForm, TeamEditForm
+from exploitfarm.models.teams import TeamDTO, TeamAddForm, TeamEditForm
 from utils import json_like
-from models.response import MessageResponse
+from exploitfarm.models.response import MessageResponse
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
 

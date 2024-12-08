@@ -1,10 +1,10 @@
-from models.client import ClientDTO, ClientAddForm, ClientEditForm
-from models.response import MessageResponse
+from exploitfarm.models.client import ClientDTO, ClientAddForm, ClientEditForm
+from exploitfarm.models.response import MessageResponse
 from typing import List
 from fastapi import APIRouter, HTTPException
 from utils import json_like
 from db import Client, DBSession, sqla, MANUAL_CLIENT_ID
-from db import client_id_hashing, check_client_id_hashing
+from exploitfarm.models.dbtypes import client_id_hashing, check_client_id_hashing
 from db import redis_channels, redis_conn
 from db import ClientID, UnHashedClientID
 

@@ -1,6 +1,6 @@
 
-from models.flags import FlagDTO, AttackExecutionDTO, FlagStats
-from models.enums import FlagStatus, AttackExecutionStatus
+from exploitfarm.models.flags import FlagDTO, AttackExecutionDTO, FlagStats
+from exploitfarm.models.enums import FlagStatus, AttackExecutionStatus
 from fastapi import APIRouter
 from fastapi_pagination import Page, add_pagination
 from fastapi_pagination.ext.sqlalchemy import paginate

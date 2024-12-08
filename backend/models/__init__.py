@@ -1,1 +1,1 @@
-from models.response import *  # noqa: F403
+from exploitfarm.models.response import *  # noqa: F403

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import requests
-from exploitfarm import FlagStatus
+from exploitfarm.models.enums import FlagStatus
 
 RESPONSES = {
     FlagStatus.timeout: ['timeout', 'too old', 'expired'],
@@ -26,8 +26,10 @@ def submit(flags, token:str = None, http_timeout:int=30, url:str="http://10.10.0
             
             response = item['msg']
             response = response.split("]")
-            if len(response) > 1: response = response[1]
-            else: response = response[0]
+            if len(response) > 1:
+                response = response[1]
+            else:
+                response = response[0]
             
             response_lower = response.strip().lower()
             for status, substrings in RESPONSES.items():

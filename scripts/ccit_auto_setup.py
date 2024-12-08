@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 import requests
-from exploitfarm import *
-from exploitfarm.model import AttackMode
+from exploitfarm.models.enums import AttackMode
 from dateutil.parser import parse as date_parser
 from rich import print
 from os.path import join as pjoin
 from os.path import dirname
 from typer import confirm
+from exploitfarm import get_config
 
 CCIT_SERVER = "10.10.0.1"
 

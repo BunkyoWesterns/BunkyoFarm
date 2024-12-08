@@ -3,14 +3,14 @@ from pydantic import BaseModel, AwareDatetime, model_validator
 from typing_extensions import Self
 from functools import cache
 from pydantic import NonNegativeInt, PositiveInt
-from models.submitter import SubmitterDTO
+from exploitfarm.models.submitter import SubmitterDTO
 import re
 import env
-from models.teams import TeamDTO
-from models.service import ServiceDTO
-from models.response import MessageInfo
+from exploitfarm.models.teams import TeamDTO
+from exploitfarm.models.service import ServiceDTO
+from exploitfarm.models.response import MessageInfo
 from typing import List
-from models.enums import AttackMode, SetupStatus
+from exploitfarm.models.enums import AttackMode, SetupStatus
 from db import SubmitterID, Env, dbtransaction, sqla, AttackExecution, AttackExecutionStatus
 
 class Configuration(BaseModel):

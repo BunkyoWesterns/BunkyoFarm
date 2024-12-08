@@ -13,7 +13,7 @@ from utils import pubsub_flush
 from utils.query import create_or_update_env
 from models.config import Configuration, SetupStatus
 from db import dbtransaction
-from models.enums import FlagStatus
+from exploitfarm.models.enums import FlagStatus
 
 class StopLoop(Exception):
     pass

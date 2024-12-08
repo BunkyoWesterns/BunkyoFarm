@@ -4,13 +4,10 @@ import asyncio
 import sqla
 import time
 import sqlalchemy.exc
-from pydantic import BaseModel
-from typing import Dict, Any, Annotated, List
-from typing import Union, Callable
-from uuid import UUID, uuid4
+from typing import Dict, Annotated, List
+from typing import Callable
+from uuid import uuid4
 from env import RESET_DB_DANGEROUS
-from hashlib import sha256
-from pydantic import BeforeValidator
 from fastapi import Depends
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -18,20 +15,20 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine, AsyncConnection
 from sqlmodel import Field, SQLModel, Relationship
 from sqlalchemy.dialects.postgresql import JSONB
-from datetime import datetime
 import redis.asyncio as redis
 from env import DEBUG
-from models.enums import Language, AttackExecutionStatus, FlagStatus
+from exploitfarm.models.enums import Language, AttackExecutionStatus, FlagStatus
+from exploitfarm.models.dbtypes import EnvKey, ClientID, ExploitID
+from exploitfarm.models.dbtypes import ServiceID, TeamID, AttackGroupID
+from exploitfarm.models.dbtypes import ExploitSourceID, AttackExecutionID
+from exploitfarm.models.dbtypes import FlagID, SubmitterID
+from exploitfarm.models.dbtypes import DateTime, UnHashedClientID
+
+# made available for import
+UnHashedClientID = UnHashedClientID
 
 def datetime_now_sql(index:bool = False, now:bool = True) -> sqla.Column:
     return sqla.Column(sqla.DateTime(timezone=True), server_default=sqla.func.now() if now else None, index=index)
-
-def extract_id_from_dict(x: Any) -> Any:
-    if isinstance(x, dict):
-        return x["id"]
-    if isinstance(x, BaseModel):
-        return x.id
-    return x
 
 redis_conn = redis.Redis(
     host='localhost' if DEBUG else 'redis', port=6379
@@ -67,52 +64,17 @@ REDIS_CHANNEL_PUBLISH_LIST = [
 class redis_keys:
     stats = "stats"
 
+MANUAL_CLIENT_ID = "manual"
+
 # IDs types
 
-EnvKey = str
-ClientID = str
-ExploitID = UUID
-ServiceID = UUID
-TeamID = int
-AttackGroupID = UUID
-ExploitSourceID = UUID
-AttackExecutionID = int
-FlagID = int
-SubmitterID = int
 
-DateTime = datetime
 
 class Env(SQLModel, table=True):
     __tablename__ = "envs"
     
     key:    EnvKey      = Field(primary_key=True)
     value:  str | None  = Field(sqla.String(1024*1024))
-
-
-MANUAL_CLIENT_ID = "manual"
-
-def client_id_hashing(client_id: Any) -> ClientID:
-    if isinstance(client_id, Union[dict, BaseModel]):
-        client_id = extract_id_from_dict(client_id)
-        if isinstance(client_id, dict):
-            raise ValueError("Invalid client_id")
-    try:
-        if not isinstance(client_id, UUID):
-            client_id = UUID(client_id)
-    except Exception:
-        return str(client_id)
-    return "sha256-"+sha256(str(client_id).lower().encode()).hexdigest().lower()
-
-def check_client_id_hashing(client_id: ClientID) -> bool:
-    return client_id.startswith("sha256-")
-
-def verify_and_parse_uuid(value: str) -> UUID:
-    try:
-        return client_id_hashing(UUID(value))
-    except Exception:
-        raise ValueError("Invalid UUID")
-
-UnHashedClientID = Annotated[str, BeforeValidator(verify_and_parse_uuid)]
 
 # Auto hashing client_id if ClientID is a UnHashedClientID
 class Client(SQLModel, table=True):

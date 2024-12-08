@@ -13,7 +13,7 @@ from env import EXPLOIT_SOURCES_DIR
 from functools import wraps
 from pydantic import ValidationError
 from socketio import AsyncServer
-from models.response import MessageResponse, ResponseStatus
+from exploitfarm.models.response import MessageResponse, ResponseStatus
 
 
 #logging.getLogger().setLevel(logging.DEBUG)

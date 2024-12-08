@@ -2,7 +2,7 @@ from models.config import Configuration
 from db import APP_SECRET
 from env import JWT_ALGORITHM
 import jwt
-from models.enums import AuthStatus
+from exploitfarm.models.enums import AuthStatus
 
 async def login_validation(token: str|None) -> AuthStatus:
     

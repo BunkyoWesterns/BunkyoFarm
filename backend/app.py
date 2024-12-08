@@ -27,7 +27,7 @@ from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, 
 from db import Submitter, sqla, redis_conn, redis_channels, regen_app_secret
 from skio import sio_server
 from utils.query import get_messages_array
-from models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
+from exploitfarm.models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
 from typing import Any
 from models.config import Configuration, SetupStatus, StatusAPI
 from utils import json_like, crypto

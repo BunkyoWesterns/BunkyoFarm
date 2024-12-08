@@ -1,6 +1,6 @@
-from models.groups import GroupDTO, AddGroupForm, EditGroupForm
-from models.response import MessageResponse
-from models.enums import GroupStatus
+from exploitfarm.models.groups import GroupDTO, AddGroupForm, EditGroupForm
+from exploitfarm.models.response import MessageResponse
+from exploitfarm.models.enums import GroupStatus
 from typing import List
 from fastapi import APIRouter, HTTPException
 from utils import json_like

@@ -8,11 +8,11 @@ from multiprocessing import Process
 from db import close_db, redis_conn, REDIS_CHANNEL_PUBLISH_LIST, connect_db, dbtransaction, redis_channels
 from utils.query import get_exploits_with_latest_attack, detailed_exploit_status
 from models.config import Configuration
-from models.enums import ExploitStatus
+from exploitfarm.models.enums import ExploitStatus
 from utils.auth import login_validation, AuthStatus
 from socketio.exceptions import ConnectionRefusedError
-from models.groups import JoinRequest, LeaveRequest
-from models.response import MessageResponse, ResponseStatus
+from exploitfarm.models.groups import JoinRequest, LeaveRequest
+from exploitfarm.models.response import MessageResponse, ResponseStatus
 from db import AttackGroup, sqla
 from utils import register_event
 import time

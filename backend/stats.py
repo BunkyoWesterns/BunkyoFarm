@@ -14,7 +14,7 @@ from utils.query import set_stats
 from sqlalchemy.orm import defer, selectinload
 from utils import pubsub_flush
 from models.config import Configuration
-from models.enums import FlagStatus
+from exploitfarm.models.enums import FlagStatus
 
 
 class StopLoop(Exception):
