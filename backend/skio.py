@@ -11,10 +11,11 @@ from models.config import Configuration
 from exploitfarm.models.enums import ExploitStatus
 from utils.auth import login_validation, AuthStatus
 from socketio.exceptions import ConnectionRefusedError
-from exploitfarm.models.groups import JoinRequest, LeaveRequest
+from exploitfarm.models.groups import JoinRequest, LeaveRequest, GroupEventRequestType, GroupRequestEvent
 from exploitfarm.models.response import MessageResponse, ResponseStatus
+from exploitfarm.models.groups import JoinRequestResponse, GroupResponseEvent, GroupEventResponseType
 from db import AttackGroup, sqla
-from utils import register_event
+from utils import register_event, json_like, datetime_now
 import time
 
 class StopLoop(Exception):
@@ -70,6 +71,13 @@ async def sio_connect(sid, environ, auth):
 async def sio_disconnect(sid):
     await redis_conn.lrem("sid_list", 0, sid)
 
+@register_event(sio_server, "event-group", GroupResponseEvent, MessageResponse)
+async def event_group(sid, response_req: GroupResponseEvent):
+    match response_req.event:
+        case GroupEventResponseType.ATTACK_ENDED:
+            pass # TODO implement me pls
+    return {"message": "left", "status": ResponseStatus.OK}
+
 @register_event(sio_server, "leave-group", LeaveRequest, MessageResponse)
 async def leave_group(sid, leave_req: LeaveRequest):
     await asyncio.gather(
@@ -79,16 +87,17 @@ async def leave_group(sid, leave_req: LeaveRequest):
     )
     return {"message": "left", "status": ResponseStatus.OK}
     
-@register_event(sio_server, "join-group", JoinRequest, MessageResponse)
+@register_event(sio_server, "join-group", JoinRequest, MessageResponse[JoinRequestResponse])
 async def join_group(sid, join_req: JoinRequest):
     if not await redis_conn.get(f"group:{join_req.group_id}"):
         return {"status": ResponseStatus.ERROR, "message": "Group not found"}
     await asyncio.gather(
         redis_conn.set(f"group:{join_req.group_id}:client:{join_req.client}:sid", sid),
-        redis_conn.set(f"group:{join_req.group_id}:client:{join_req.client}:queue", join_req.queue_size),
+        redis_conn.set(f"group:{join_req.group_id}:client:{join_req.client}:queue", int(join_req.queue_size)),
         sio_server.enter_room(sid, f"group:{join_req.group_id}:room")
     )
-    return {"message": "joined", "status": ResponseStatus.OK}
+    #TODO send real info
+    return {"message": "joined", "status": ResponseStatus.OK, "response": {"timeout": 5, "deadline": datetime_now()}}
 
 async def disconnect_all():
     while True:
@@ -140,13 +149,29 @@ async def check_exploits_disabled():
 
 async def group_task(group_id: str):
     while True:
-        await asyncio.sleep(5)
+        try:
+            await sio_server.send(
+                json_like(GroupRequestEvent(
+                    event=GroupEventRequestType.DYNAMIC_TIMEOUT,
+                    group=group_id,
+                    data={
+                        "timeout": 5
+                    }
+                )),
+                room=f"group:{group_id}:room"
+            )
+            await asyncio.sleep(5)
+        except Exception as e:
+            logging.exception(f"Error in group task for group {group_id}: {e}")
+            traceback.print_exc()
+            await asyncio.sleep(5)
 
 def generate_group_task(group_id: str):
+    group_id = str(group_id)
     task = asyncio.create_task(group_task(group_id))
     g.room_task_list.append({
         "group_id": group_id,
-        "task": asyncio.create_task(group_task(group_id))
+        "task": task
     })
     return task
 

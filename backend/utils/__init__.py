@@ -14,7 +14,7 @@ from functools import wraps
 from pydantic import ValidationError
 from socketio import AsyncServer
 from exploitfarm.models.response import MessageResponse, ResponseStatus
-
+from exploitfarm.utils import json_like
 
 #logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format="[EXPLOIT-FARM][%(asctime)s] >> [%(levelname)s][%(name)s]:\t%(message)s", datefmt="%d/%m/%Y %H:%M:%S")
@@ -145,23 +145,6 @@ def load_routers(app: FastAPI|APIRouter):
             raise Exception(f"Error loading router {route} in every route has to be defined a 'router' APIRouter from fastapi!")
         app.include_router(router)
 
-def _json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json"):
-    res = obj.model_dump(mode=mode, exclude_unset=not unset)
-    if convert_keys:
-        for from_k, to_k in convert_keys.items():
-            if from_k in res:
-                res[to_k] = res.pop(from_k)
-    if exclude:
-        for ele in exclude:
-            if ele in res:
-                del res[ele]
-    return res
-
-def json_like(obj: BaseModel|List[BaseModel], unset=False, convert_keys:dict[str, str]=None, exclude:list[str]=None, mode:str="json") -> dict:
-    if isinstance(obj, list):
-        return [_json_like(ele, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode) for ele in obj]
-    return _json_like(obj, unset=unset, convert_keys=convert_keys, exclude=exclude, mode=mode)
-
 def _extract_values_by_regex(regex:str|bytes, text:str|list[str|bytes]):
     matcher = re.compile(regex if isinstance(regex, bytes) else regex.encode())
     if isinstance(text, str):
@@ -203,17 +186,20 @@ def register_event(sio_server: AsyncServer, event_name: str, model: BaseModel, r
                 try:
                     parsed_result = response_model.model_validate(result)
                 except ValidationError as exc:
+                    traceback.print_exc()
                     return json_like(
                             MessageResponse(
-                                status=ResponseStatus.INVALID,
-                                message=f"Invalid {event_name} response",
+                                status=ResponseStatus.ERROR,
+                                message=f"SERVER ERROR: Invalid {event_name} response",
                                 response=list(exc.errors())
                             )
                         )
             else:
                 parsed_result = result
             # Emit the validated result
-            if result:
+            if parsed_result:
+                if isinstance(parsed_result, BaseModel):
+                    return json_like(parsed_result)
                 return parsed_result
         return wrapper
     return decorator

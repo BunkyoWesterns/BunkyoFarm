@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import time, random
+import time
+import random
 from exploitfarm import get_host, random_str
-from pwn import *
+from pwn import remote
 
 host = get_host()
 #TEST

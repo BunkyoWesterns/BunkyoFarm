@@ -273,6 +273,8 @@ async def init_db():
                     if RESET_DB_DANGEROUS:
                         print("!!! Resetting database !!!")
                         await conn.run_sync(SQLModel.metadata.drop_all)
+                        async for key in redis_conn.scan_iter('*'):
+                            await redis_conn.delete(key)
                     await conn.run_sync(SQLModel.metadata.create_all)
                 await db_init_script()
                 print("Database initialized.")

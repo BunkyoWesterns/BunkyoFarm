@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse, sys, os, multiprocessing, subprocess
+import argparse
+import sys
+import os
+import multiprocessing
+import subprocess
 
 pref = "\033["
 reset = f"{pref}0m"
@@ -27,7 +31,6 @@ if os.path.isfile("./Dockerfile"):
             g.build = True
 
 #Terminal colors
-
 class colors:
     black = "30m"
     red = "31m"
@@ -43,7 +46,7 @@ def dict_to_yaml(data, indent_spaces:int=4, base_indent:int=0, additional_spaces
     spaces = ' '*((indent_spaces*base_indent)+additional_spaces)
     if isinstance(data, dict):
         for key, value in data.items():
-            if not add_text_on_dict is None:
+            if add_text_on_dict is not None:
                 spaces_len = len(spaces)-len(add_text_on_dict)
                 spaces = (' '*max(spaces_len, 0))+add_text_on_dict
                 add_text_on_dict = None
@@ -113,21 +116,21 @@ def gen_args(args_to_parse: list[str]|None = None):
     parser_restart = subcommands.add_parser('restart', help=f'Restart {g.name}')
     parser_restart.add_argument('--logs', required=False, action="store_true", help=f'Show {g.name} logs', default=False)
     
-    parser_volume = subcommands.add_parser('volume', help=f'Volume manager')
-    parser_volume.add_argument('--save', required=False, action="store_true", help=f'Save current volume settings', default=None)
-    parser_volume.add_argument('--load', required=False, action="store_true", help=f'Load saved volume settings', default=None)
+    parser_volume = subcommands.add_parser('volume', help='Volume manager')
+    parser_volume.add_argument('--save', required=False, action="store_true", help='Save current volume settings', default=None)
+    parser_volume.add_argument('--load', required=False, action="store_true", help='Load saved volume settings', default=None)
     parser_volume.add_argument('--clear', required=False, action="store_true", help=f'Delete docker volume associated to {g.name} resetting all the settings', default=False)
-    parser_volume.add_argument('--tar-file', '-f', required=False, help=f'File where save or load the volumes', default="exploitfarm-volumes.tar.gz")
+    parser_volume.add_argument('--tar-file', '-f', required=False, help='File where save or load the volumes', default="exploitfarm-volumes.tar.gz")
     
     args = parser.parse_args(args=args_to_parse)
     
-    if not "clear" in args:
+    if "clear" not in args:
         args.clear = False
     
-    if not "threads" in args or args.threads < 1:
+    if "threads" not in args or args.threads < 1:
         args.threads = multiprocessing.cpu_count()
     
-    if not "port" in args or args.port < 1:
+    if "port" not in args or args.port < 1:
         args.port = 5050
     
     if args.command is None:
@@ -255,11 +258,11 @@ def main():
                 elif not args.save and not args.load:
                     puts("You must specify --save or --load", color=colors.red)
                     exit()
-                if args.save == True:
+                if args.save is True:
                     if not volume_exists():
                         puts(f"{g.name} volume not found!", color=colors.red)
                         exit()
-                if args.load == True:
+                if args.load is True:
                     if check_already_running():
                         puts(f"Stop first {g.name} before loading volumes!", color=colors.red)
                         exit()
@@ -277,7 +280,7 @@ def main():
                         cmd_check(f"docker cp {os.path.abspath(target_file)} {g.volume_manager_conatiner}:/exploitfarm-volumes.tar.gz", print_output=True)
                         cmd_check(f"docker exec {g.volume_manager_conatiner} sh -c 'tar -xvf /exploitfarm-volumes.tar.gz'", print_output=True)
                     elif args.clear:
-                        puts(f"Deleting volumes", color=colors.green)
+                        puts("Deleting volumes", color=colors.green)
                         delete_volumes()
                 finally:
                     composecmd("down", g.composefile)
