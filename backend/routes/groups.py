@@ -19,15 +19,15 @@ async def group_get(db: DBSession):
     groups = await get_groups_with_latest_attack(db)
     async def result(result: sqla.Row[Tuple[AttackGroup, AttackExecution]]):
         group, latest_attack = result.tuple()
-        memebers = await redis_conn.smembers(f"group:{group.id}:members")
+        members = await redis_conn.smembers(f"group:{group.id}:members")
         status = GroupStatus.active
-        if memebers is None or len(memebers) == 0:
+        if members is None or len(members) == 0:
             status = GroupStatus.unactive
-            memebers = set()
+            members = set()
         return GroupDTO(
             **json_like(group, mode="python", unset=True),
             last_attack_at=latest_attack.received_at if latest_attack else None,
-            memebers=memebers,
+            members=members,
             status=status
         )
     return await asyncio.gather(*[result(ele) for ele in groups])
@@ -53,9 +53,6 @@ async def delete_group(group_id: AttackGroupID, db: DBSession):
     )).one_or_none()
     if not result:
         raise HTTPException(404, "Group not found")
-    to_delete = await redis_conn.keys(f"group:{result.id}:*")
-    if len(to_delete) > 0:
-        await redis_conn.delete(*to_delete)
     await db.commit()
     await redis_conn.publish(redis_channels.attack_group, f"delete:{result.id}")
     return { "message": "Client deleted successfully", "response": json_like(result, unset=True) }

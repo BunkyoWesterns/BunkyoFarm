@@ -63,7 +63,7 @@ async def detailed_exploit_status(config: Configuration, latest_attack: AttackEx
     else:
         exploit_status = ExploitStatus.active
     
-    last_exploit_stop = await redis_conn.get(f"last_exploit_{latest_attack.exploit_id}_stopped")
+    last_exploit_stop = await redis_conn.get(f"exploit:{latest_attack.exploit_id}:stopped")
     if last_exploit_stop:
         last_exploit_stop = pickle.loads(last_exploit_stop)
         if last_exploit_stop > latest_attack.received_at:

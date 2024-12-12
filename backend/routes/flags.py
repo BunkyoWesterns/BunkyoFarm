@@ -14,7 +14,7 @@ from fastapi_pagination.utils import create_pydantic_model
 from utils.query import get_stats
 from db import UnHashedClientID, Flag, sqla, AttackExecution, DBSession
 from db import FlagID, TeamID, ExploitID, AttackExecutionID, ClientID
-from stats import complete_stats
+from workers.stats import complete_stats
 from sqlalchemy.orm import selectinload
 
 T = TypeVar("T")

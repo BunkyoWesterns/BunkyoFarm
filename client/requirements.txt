@@ -5,7 +5,7 @@ python-dateutil==2.9.0.post0
 pydantic >= 2
 typing-extensions >= 4.7.1
 fasteners==0.19
-textual==0.63.2
+textual==0.89.1
 toml==0.10.2
 psutil==6.0.0
 dirhash==0.5.0

@@ -15,7 +15,8 @@ from sqlalchemy.orm import defer, selectinload
 from utils import pubsub_flush
 from models.config import Configuration
 from exploitfarm.models.enums import FlagStatus
-
+from utils.query import get_exploits_with_latest_attack, detailed_exploit_status
+from exploitfarm.models.enums import ExploitStatus
 
 class StopLoop(Exception):
     pass
@@ -268,6 +269,27 @@ async def stats_update_task():
                 if message is not None:
                     g.update_needed = True
 
+
+async def check_exploits_disabled():
+    disabled_exploits = set([])
+    async with dbtransaction() as db:
+        while True:
+            trigger_update = False
+            data = await get_exploits_with_latest_attack(db)
+            config = await Configuration.get_from_db()
+            for ele in data:
+                expl, attack = ele.tuple()
+                current_status, reason = await detailed_exploit_status(config, attack)
+                if current_status == ExploitStatus.disabled and expl.id not in disabled_exploits:
+                    disabled_exploits.add(expl.id)
+                    trigger_update = reason != "stopped"
+                elif current_status != ExploitStatus.disabled and expl.id in disabled_exploits:
+                    disabled_exploits.remove(expl.id)
+            if trigger_update:
+                await db.commit()
+                await redis_conn.publish(redis_channels.exploit, "update")
+            await asyncio.sleep(5)
+
 #Loop based process with a half of a second of delay
 async def tasks_init():
     try:
@@ -280,7 +302,8 @@ async def tasks_init():
         update_task = asyncio.create_task(update_config_task())
         stats_task = asyncio.create_task(stats_update_task())
         stats_cleaner = asyncio.create_task(stats_cleaner_task())
-        await asyncio.gather(update_task, stats_task, stats_cleaner)
+        exploit_status_checker = asyncio.create_task(check_exploits_disabled())
+        await asyncio.gather(update_task, stats_task, stats_cleaner, exploit_status_checker)
     except KeyboardInterrupt:
         pass
     finally:

@@ -13,9 +13,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from submitter import run_submitter_daemon
-from stats import run_stats_daemon
-from skio import run_skio_daemon
 from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
 from fastapi.responses import FileResponse
 from utils import datetime_now, load_routers
@@ -25,13 +22,15 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from db import connect_db, close_db, init_db, APP_SECRET, SERVER_ID, DBSession, Service, Team
 from db import Submitter, sqla, redis_conn, redis_channels, regen_app_secret
-from skio import sio_server
+from workers.skio import sio_server
 from utils.query import get_messages_array
 from exploitfarm.models.response import MessageResponse, MessageResponseInvalidError, ResponseStatus
 from typing import Any
 from models.config import Configuration, SetupStatus, StatusAPI
 from utils import json_like, crypto
 from utils.auth import login_validation, AuthStatus
+from workers import run_workers, terminate_workers
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
 
@@ -270,11 +269,7 @@ if __name__ == '__main__':
     os.environ["TZ"] = "Etc/UTC"
     time.tzset()
     asyncio.run(init_db())
-    procs = [
-        run_submitter_daemon(),
-        run_stats_daemon(),
-        run_skio_daemon()
-    ]
+    run_workers()
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
@@ -283,7 +278,5 @@ if __name__ == '__main__':
         access_log=True,
         workers=env.NTHREADS
     )
-    for proc in procs:
-        proc.terminate()
-        proc.join()
+    terminate_workers()
         

@@ -152,5 +152,5 @@ async def test_submitter(submitter_id: SubmitterID, data: List[str], db: DBSessi
         data = [re.findall(config.FLAG_REGEX, ele) for ele in data]
         #Flatten the list
         data = [item for sublist in data for item in sublist]
-    from submitter import submit_task_fork
+    from workers.submitter import submit_task_fork
     return { "message": "submitter task executed", "response": submit_task_fork(submitter, data, config.SUBMITTER_TIMEOUT) }
