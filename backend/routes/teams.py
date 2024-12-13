@@ -17,7 +17,7 @@ async def team_get(db: DBSession):
 async def team_new(data: List[TeamAddForm], db: DBSession):
     stmt = sqla.insert(Team).values([json_like(ele) for ele in data]).returning(Team)
     teams = (await db.scalars(stmt)).all()
-    await redis_conn.publish(redis_channels.submitter, "update")
+    await redis_conn.publish(redis_channels.team, "update")
     return { "message": "Teams created successfully", "response": json_like(teams, unset=True) }
 
 @router.post("/delete", response_model=MessageResponse[List[TeamDTO]])
@@ -25,7 +25,7 @@ async def team_delete_list(data: List[TeamID], db: DBSession):
     stsm = sqla.delete(Team).where(Team.id.in_(data)).returning(Team)
     teams = (await db.scalars(stsm)).all()
     await db.commit()
-    await redis_conn.publish(redis_channels.submitter, "update")
+    await redis_conn.publish(redis_channels.team, "update")
     return { "message": "Teams deleted successfully", "response": json_like(teams, unset=True) }
 
 @router.delete("/{team_id}", response_model=MessageResponse[TeamDTO])
@@ -33,7 +33,7 @@ async def team_delete(team_id: TeamID, db: DBSession):
     stmt = sqla.delete(Team).where(Team.id == team_id).returning(Team)
     team = (await db.scalars(stmt)).one()
     await db.commit()
-    await redis_conn.publish(redis_channels.submitter, "update")
+    await redis_conn.publish(redis_channels.team, "update")
     return { "message": "Team deleted successfully", "response": json_like(team, unset=True) }
 
 @router.put("", response_model=MessageResponse[List[TeamEditForm]])
@@ -48,6 +48,6 @@ async def team_edit_list(data: List[TeamEditForm], db: DBSession):
     teams = [o.one_or_none() for o in await asyncio.gather(*[db.scalars(ele) for ele in updates_queries])]
     teams = [team for team in teams if team is not None]
     await db.commit()
-    await redis_conn.publish(redis_channels.submitter, "update")
+    await redis_conn.publish(redis_channels.team, "update")
     return { "message": "Teams updated successfully", "response": json_like(teams, unset=True) }
 

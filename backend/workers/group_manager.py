@@ -273,7 +273,6 @@ class GroupAttackManager:
                     await self.recalculate_timeout(trigger_skio_update=True, reset_virtual_time=True)
                 
                 teams_to_exec = [ele for ele in self.attack_target_table.values() if not ele.executed and ele.assigned_to is None]
-                
                 if len(teams_to_exec) == 0:
                     return
                 
@@ -289,28 +288,29 @@ class GroupAttackManager:
                     return # No more client available, waiting
 
                 # 1st assign phase: multiple attack assignment
-                for prio, client in client_status:
-                    if prio < 1:
-                        break # Will be eventually handled in the next assign phase
-                    for _ in range(math.floor(prio)):
+                while client_status[0][0] >= 1 and len(teams_to_exec) > 0:
+                    for prio, client in client_status:
+                        if prio < 1:
+                            break # Will be eventually handled in the next assign phase
+                        for _ in range(math.floor(prio)):
+                            team_to_attack = teams_to_exec.pop()
+                            client.assign(team_to_attack)
+                            await self.trigger_attack_start_no_lock(client.client_id, team_to_attack.data)
+                            if len(teams_to_exec) == 0:
+                                return
+                    client_status = await self.calc_client_status()
+                
+                # 2nd assign phase: single attack assignment
+                while client_status[0][0] > 0 and len(teams_to_exec) > 0:
+                    for prio, client in client_status:
+                        if prio == 0:
+                            break # No more client available
                         team_to_attack = teams_to_exec.pop()
                         client.assign(team_to_attack)
                         await self.trigger_attack_start_no_lock(client.client_id, team_to_attack.data)
                         if len(teams_to_exec) == 0:
                             return
-                
-                client_status = await self.calc_client_status()
-                
-                # 2nd assign phase: single attack assignment
-                
-                for prio, client in client_status:
-                    if prio == 0:
-                        break # No more client available
-                    team_to_attack = teams_to_exec.pop()
-                    client.assign(team_to_attack)
-                    await self.trigger_attack_start_no_lock(client.client_id, team_to_attack.data)
-                    if len(teams_to_exec) == 0:
-                        return
+                    client_status = await self.calc_client_status()
                 
                 # Can't assign all the attacks, waiting for attacks to end
     
@@ -578,10 +578,10 @@ async def generate_config_update_tasks():
                 message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=None)
                 if message:
                     await update_teams_info()
-        g.task_list.extend([
-            asyncio.create_task(listener_config_update()),
-            asyncio.create_task(listener_teams_update())
-        ])
+    g.task_list.extend([
+        asyncio.create_task(listener_config_update()),
+        asyncio.create_task(listener_teams_update())
+    ])
 
 async def tasks_init():
     try:
