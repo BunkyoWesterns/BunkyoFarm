@@ -11,6 +11,7 @@ from typing import Tuple
 from utils.query import get_groups_with_latest_attack
 import asyncio
 from db import AttackExecution
+from models.config import Configuration, SetupStatus
 
 router = APIRouter(prefix="/groups", tags=["Attack Groups"])
 
@@ -34,12 +35,15 @@ async def group_get(db: DBSession):
 
 @router.post("", response_model=MessageResponse[GroupDTO])
 async def new_group(data: AddGroupForm, db: DBSession):
+    config = await Configuration.get_from_db()
+    # This is useful to avoid unexpected errors causing to start a group without a setup
+    if config.SETUP_STATUS == SetupStatus.SETUP:
+        raise HTTPException(400, "Setup is not completed, can't create groups")
     group = (await db.scalars(
         sqla.insert(AttackGroup)
             .values(data.db_data())
             .returning(AttackGroup)
     )).one()
-    await redis_conn.set(f"group:{group.id}", 1)
     await db.commit()
     await redis_conn.publish(redis_channels.attack_group, f"add:{group.id}")
     return { "message": "Group created successfully", "response": json_like(group, unset=True) }

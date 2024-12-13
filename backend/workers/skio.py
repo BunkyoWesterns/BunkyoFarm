@@ -42,7 +42,7 @@ async def check_login(token: str) -> None:
 @sio_server.on("connect")
 async def sio_connect(sid, environ, auth):
     await check_login(auth.get("token"))
-    await redis_conn.lpush("sid_list", sid)
+    await redis_conn.sadd("sid_list", sid)
 
 @sio_server.on("disconnect")
 async def sio_disconnect(sid):
@@ -51,7 +51,7 @@ async def sio_disconnect(sid):
         group = group.decode()
     if isinstance(client, bytes):
         client = client.decode()
-    await redis_conn.lrem("sid_list", 0, sid)
+    await redis_conn.srem("sid_list", 0, sid)
     if group and client:
         await redis_call(redis_conn, "leave-group", sid, group, client)
 
@@ -65,7 +65,7 @@ async def join_group(sid, join_req: JoinRequest):
 
 async def disconnect_all():
     while True:
-        sids = await redis_conn.lpop("sid_list", count=100)
+        sids = await redis_conn.spop("sid_list", count=100)
         if sids is None or len(sids) == 0:
             break
         for sid in sids:
