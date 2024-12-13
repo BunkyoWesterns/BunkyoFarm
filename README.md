@@ -6,7 +6,7 @@
 
 ## What is ExploitFarm?
 
-Exploit Farm is an attack distributed platform that allows you to easly (share `in the future`) and execute exploits in a distributed way in A/D competitions.
+Exploit Farm is an attack distributed platform that allows you to easly share and execute exploits in a distributed way in A/D competitions.
 The aim of this attacker is to provide an easy way to replicate attacks and submitting flags to the competition platform, collecting as many data from attacks as possible to 
 allow players to analyze and improve their exploits and have a clear view of the attack status, and where them could fails.
 
@@ -99,7 +99,7 @@ NOTES:
 Install the client with the following command:
 
 ```bash
-pip3 install -U exploitfarm && xfarm --install-completion
+pip3 install -U xfarm && xfarm --install-completion
 ```
 
 On windows remember to use `python -m xfarm` instead of `xfarm`.
@@ -142,7 +142,7 @@ xfarm start
 This will start the TUI and replicate the attack to all the teams registered on exploitfarm server.
 if the TUI is heavy for your system, you can use `xfarm -I start`to start the exploit showing only the logs in the output.
 
-xfarm start will by default use `cpu_count*10` thread pool to manage the attacks, and apply an execution timeout based on the time available for the attack allowing all teams to be attacked, and limit the workers to execute if the RAM goes over the 95% of use to avoid `trashing` on the system (in this case the attack timeout will decreese). If you have some problems with the ram usage, is highly recommended to `zram` on linux to compress the ram and avoid trashing.
+xfarm start will by default use `cpu_count*10` thread pool to manage the attacks and apply an execution timeout based on the time available for the attack allowing all teams to be attacked. For problems with the ram usage, is highly recommended to use `zram` on linux to compress the ram to avoid trashing.
 
 If you write the exploit on python you can use also exploitfarm library. Is highly recommended to use `from exploitfarm import *`, this will set the print python function by default to flush=True.
 
@@ -179,12 +179,9 @@ try_tcp_connection(
 
 ```
 
+See advanced features of exploitfarm in the xfarm PyPi page [here](./client/README.md)
 
-### Next Points/Bugs/Features:
-
-XFARM CLIENT:
-
-- xfarm fix close on windows
+All the docs you can find on [docs](docs) folder is writter for a university project at [Polytechnic of Bari](https://www.poliba.it) of [Domingo Dirutigliano](https://domy.sh) and are in italian except the plantuml generated images. That documentation was realized for the 1.0.0 release of exploitfarm where all the initial features were implemented.
 
 ---
 

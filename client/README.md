@@ -1,194 +1,322 @@
-# Exploit Farm python library
+# ExploitFarm Python Library and CLI
 
-ExploitFarm is a flag submitter and attack manager for Attack-Defense CTFs.
-The project is composed by a client and a server thats cooperates to manage the attacks and the flags.
-The design is directly inspired by [destructive farm](https://gitbub.com/DestructiveVoice/DestructiveFarm) but completely rewritten and feature rich.
-Find more information about this project on [exploitfarm](https://github.com/pwnzer0tt1/exploitfarm) github page and our team page [Pwnzer0tt1](https://pwnzer0tt1.it/)
+**ExploitFarm** is an advanced tool designed to manage exploits and flag submissions in Attack-Defense CTF competitions. It combines a Python library with a command-line interface (CLI), providing flexibility and efficiency for managing CTF tasks. This documentation provides a comprehensive overview of its features, installation, and usage.
 
-This library is used to interact with the Exploit Farm APIs.
+---
 
-## Installation
+## **Key Features**
+
+- **Multi-Threaded Execution**: Utilize a pool of worker threads for efficient exploit execution.
+
+- **Exploit Management**: Initialize, push, pull, and version control exploit source code.
+
+- **Attack Groups**: Collaborate and manage group-based attacks.
+
+- **Integrated Status Monitoring**: View real-time server and current execution statuses.
+
+---
+
+## **Installation**
+
+Install ExploitFarm via pip:
 
 ```bash
-pip3 install -U exploitfarm && xfarm --install-completion
+pip3 install -U xfarm && xfarm --install-completion
 ```
 
-## Usage
+For Windows, use:
+
+```bash
+python -m xfarm
+```
+
+**Prerequisites**:
+
+- Python 3.8+
+- Compatible with Linux, macOS, and Windows.
+- Ensure you have `pip` installed.
+
+---
+
+## **Getting Started**
+
+ExploitFarm provides both programmatic and CLI access to its features.
+
+### **Programmatic API**
+
+The Python library allows developers to integrate ExploitFarm functionality into their scripts:
 
 ```python
-import time, random
+import random
 from exploitfarm import *
 
-#Exploit example
-host = get_host() #This should usually contains the ip of the team to attack
+host = get_host()  # Retrieves the server host (from environment variables or configuration)
+print(f"Connected to {host}")
 
-print(f"Hello {host}! This text should contain a lot of flags!")
-
-flags =[random_str(32)+"=" for _ in range(100)]
-
-print(f"Submitting {len(flags)} flags: {', 'f.join(flags)}")
+flags = [random_str(32) + "=" for _ in range(10)]
+print(f"Submitting flags: {flags}")
+submit_flags(flags)
 ```
 
-## Functions
+### **Command-Line Interface (CLI)**
 
-```python
-from exploifarm import *
+The CLI is the primary way to interact with ExploitFarm for exploit and attack management.
 
-get_host() #Gets you the XFARM_HOST environment variable
-Prio #Enum with high, normal and low values to set the priority of the process
-nicenessify(priority=Prio.low) #Set the priority of the process (xfarm will set the priority of the process to low by default allowing strange behaviour on the system)
-get_config() #Get the configuration of the client
-random_str(
-    length:int|None = None,
-    length_range:int = (8,12),
-    numbers:bool = True,
-    lower:bool = True,
-    upper:bool = True,
-    specials:bool = False,
-    exclude:str = "",
-    include:str = ""
-) #Generate a random string with the specified parameters (usefull to anonymize the exploit)
+#### **CLI Syntax**
 
-session(
-    random_agent:bool = True,
-    additional_agents:list = [],
-    additional_headers:dict = {},
-    user_agent:str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/
-) #Create a session with the specified headers (random_agent will set a random user agent)
-try_tcp_connection(
-    address:str,           #Address to connect
-    timeout:float|None = 3 #Timeout of the connection
-) -> tuple[bool, str|None] #Try to connect to the address with a tcp connection
-```
-
-When you import the library, the `print` function is replaced with a version that flushes the output. This is useful if in some cases the exploit is killed before the output is flushed.
-
-## xFarm CLI
-
-Exploit farm has a CLI command (xFarm) that gives you different features to interact with the server and for starting exploits.
-Some parts of the managment of the exploit are inspired and in some part copied from [destructive farm](https://github.com/DestructiveVoice/DestructiveFarm), but with a lot of improvements and an amazing Terminal UI based on [textual](https://textual.textualize.io/).
-
-## Main Commands
-
-
-### `init`
-
-Initiate a new exploit folder.
-This command will create a new exploit folder with the necessary files and directories, in the folder there will be a config.toml file with all the information needed to run your exploit, you can change some of these options if needed.
-
-**Syntax:**
 ```bash
-xFarm exploit init [OPTIONS]
+xfarm [COMMAND] [OPTIONS]
 ```
 
-**Options:**
-- `--edit`: Edit the exploit configuration.
-- `--name`: The name of the exploit.
-- `--service`: The service of the exploit.
-- `--language`: The language of the exploit.
+Use `--help` to view available commands and options:
 
-after you created the exploit you can run it with the start command.
-
-### `start`
-
-Start the exploit.
-
-**Syntax:**
 ```bash
-xFarm start [OPTIONS] PATH
+xfarm --help
 ```
 
-**Options:**
-- `PATH`: The path of the exploit (default: `.`).
-- `--pool_size`: Number of workers to start (default: `50`).
-- `--submit_pool_timeout`: Timeout for the submit pool to wait for new attack results and send flags (default: `3`).
-- `--server_status_refresh_period`: Period to refresh the server status (default: `5`).
-- `--test`: Test the exploit.
-- `--test_timeout`: Timeout for the test (default: `10`).
+---
 
+## **Detailed CLI Documentation**
 
-## Other Commands
+### **Global Options**
 
-### `config`
+These options are applicable to all commands:
 
-Configure client settings.
+- `-h`, `--help`: Display help information for a command.
+- `-I`, `--no-interactive`: Disable interactive configuration mode (default: interactive).
+- `-v`, `--version`: Show the version of the ExploitFarm client.
 
-**Syntax:**
+---
+
+### **Primary Commands**
+
+#### **Start Exploit**
+
+Run an exploit from the specified path:
+
 ```bash
-xFarm config [OPTIONS]
+xfarm start [OPTIONS] PATH
 ```
 
-Here will be shown a tui requiring server address and port, and a nickname for the client. All this information are needed to connect to the server and required if missing in every command is required.
+**Options**:
 
-### `reset`
+- `PATH`: The directory containing the exploit (default: current directory).
+- `--pool-size, -p`: Fixed size for the thread pool (default: `10 * CPU cores`).
+- `--submit-pool-timeout`: Timeout (in seconds) for the submission pool (default: 3).
+- `--test, -t`: Test the exploit without submission.
+- `--test-timeout`: Timeout for exploit testing (default: 30 seconds).
+- `--no-auto-push, -n`: Prevent automatic source push.
+- `--push-message, -m`: Custom message for the source push.
 
-Reset client settings.
+**Example**:
 
-**Syntax:**
 ```bash
-xFarm config reset
+xfarm start ./my_exploit --pool-size 20 --test
 ```
 
-**Description:**
-- Prompts for confirmation before resetting.
-- Resets the client's settings to default values.
+---
 
-### `login`
+#### **Status**
 
-Log in to the server.
+Retrieve the status of the server or specific components:
 
-**Syntax:**
 ```bash
-xFarm config login [OPTIONS]
+xfarm status [WHAT]
 ```
 
-The login will be always required if needed automatically in every command.
+**Options**:
 
-**Options:**
-- `--password`: The user's password.
+- `WHAT`: Specify the status type (default: `status`). Available options include:
+  - `status`: General server status.
+  - `submitters`: Submission system details.
+  - `services`: Active services.
+  - `exploits`: Exploit statuses.
+  - `flags`: Flag submission statistics.
+  - `teams`: Team information.
+  - `clients`: Client configuration details.
+
+**Example**:
+
+```bash
+xfarm status exploits
+```
+
+---
+
+### **Configuration Commands**
+
+#### **Edit Configuration**
+
+Edit client settings:
+
+```bash
+xfarm config edit [OPTIONS]
+```
+
+**Options**:
+
+- `--address`: Server address.
+- `--port`: Server port.
+- `--nickname`: Client nickname.
+- `--https`: Use HTTPS (default: False).
+
+**Example** (no interactive mode):
+
+```bash
+xfarm -I config edit --address example.com --port 443 --https --nickname
+```
+
+#### **Reset Configuration**
+
+Reset all client settings to their default values:
+
+```bash
+xfarm config reset
+```
+
+---
+
+#### **Login**
+
+Authenticate with the server:
+
+```bash
+xfarm config login [OPTIONS]
+```
+
+**Options**:
+
+- `--password`: Provide the password directly.
 - `--stdin`: Read the password from stdin.
 
-### `logout`
+#### **Logout**
 
-Log out from the server.
+Logout from the server:
 
-**Syntax:**
 ```bash
-xFarm config logout
+xfarm config logout
 ```
 
-**Description:**
-- Removes the server's authentication key from the client config.
+---
 
-### `submitter_test`
+### **Exploit Management Commands**
 
-Test a submitter.
+#### **Initialize Exploit**
 
-**Syntax:**
+Set up a new exploit project:
+
 ```bash
-xFarm submitter_test [OPTIONS] PATH OUTPUT
+xfarm exploit init [OPTIONS]
 ```
 
-**Options:**
-- `PATH`: Path to the submitter Python script.
-- `--kwargs`: Submitter keyword arguments (in JSON format).
-- `OUTPUT`: Text containing flags according to the server's REGEX.
+**Options**:
 
-### `status`
+- `--edit, -e`: Edit the configuration interactively.
+- `--name`: Exploit name.
+- `--service`: Associated service UUID.
+- `--language`: Programming language.
 
-Get the server status.
+#### **Push Exploit**
 
-**Syntax:**
+Upload the exploit source code to the server:
+
 ```bash
-xFarm status [OPTIONS] [WHAT]
+xfarm exploit push [OPTIONS]
 ```
 
-**Options:**
-- `WHAT`: Type of server information (default: `status`).
+**Options**:
 
-## Global Options
+- `--message, -m`: Commit message.
+- `--force, -f`: Force push even with an old commit has the same source.
 
-The CLI supports a global option for interactive mode.
+#### **Retrieve Exploit Information**
 
-- `--no-interactive`: Disables interactive configuration mode.
-In interactive mode, a "semi-graphical" terminal interface will open, allowing you to enter data interactively.
+Get details about the exploit source:
+
+```bash
+xfarm exploit info [OPTIONS]
+```
+
+**Options**:
+
+- `--raw, -r`: Display raw JSON response.
+
+#### **Update Exploit**
+
+Update to the latest commit:
+
+```bash
+xfarm exploit update [OPTIONS]
+```
+
+**Options**:
+
+- `--force, -f`: Force update.
+
+#### **Download Exploit**
+
+Download the exploit source:
+
+```bash
+xfarm exploit download [OPTIONS]
+```
+
+**Options**:
+
+- `--folder, -f`: Specify target folder.
+- `--commit-uuid`: Commit ID (default: latest).
+
+---
+
+### **Attack Group Commands**
+
+#### **Create Attack Group**
+
+Create a new group for collaborative attacks (and also join in it if in interactive mode):
+
+```bash
+xfarm group create [OPTIONS]
+```
+
+**Options**:
+
+- `--name`: Group name.
+- `--current-commit`: Use the current exploit commit.
+- `--submit-pool-timeout`: Timeout for submission pooling.
+
+#### **Join Attack Group**
+
+Join an existing attack group:
+
+```bash
+xfarm group join [OPTIONS]
+```
+
+**Options**:
+
+- `--group`: Group ID.
+- `--queue`: Queue number for the group.
+- `--trigger-start`: Start the attack after joining.
+
+---
+
+## **Environment Variables**
+
+Environment variables can simplify configuration:
+
+- `XFARM_HOST`: Server address.
+- `XFARM_PORT`: Server port.
+- `XFARM_INTERACTIVE`: Enable or disable interactive mode.
+
+---
+
+## **Best Practices**
+
+1. Use `--test` to verify exploits before running them in production.
+2. Regularly push changes to the server for version control (they are auto-pushed on attack start anyway).
+3. Collaborate using attack groups for efficient resource utilization if the attack is heavy to execute.
+
+---
+
+For further assistance, visit the [GitHub repository](https://github.com/pwnzer0tt1/exploitfarm) or consult the community resources.
+
