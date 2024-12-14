@@ -98,6 +98,11 @@ def current_tick_calc():
         raise Exception("Attack not started yet")
     return math.floor((this_time - start_time).total_seconds() / g.configuration.TICK_DURATION)
 
+async def set_exploit_stopped(exploit_id: str):
+    redis_key = f"exploit:{exploit_id}:stopped"
+    await redis_conn.set(redis_key, pickle.dumps(datetime_now() + timedelta(seconds=5))) # 5 seconds for submitting the remaining flags
+    await redis_conn.publish(redis_channels.exploit, "update")
+
 def calc_round_time_available():
     #Needed to calculate the initial time based on attack schedule logic
     this_time = datetime_now()
@@ -282,6 +287,7 @@ class GroupAttackManager:
                 
                 if len(client_status) == 0:
                     if self.running:
+                        await set_exploit_stopped(self.group.exploit_id)
                         self.running = False
                     return # No client available, need someone to join
                 
@@ -336,8 +342,8 @@ class GroupAttackManager:
     async def handle_request(self, request: GroupResponseEvent):
         match request.event:
             case GroupEventResponseType.SET_RUNNING_STATUS:
-                if request.data["running"] is False:
-                    await redis_conn.set(f"exploit:{self.group.exploit_id}:stopped", pickle.dumps(datetime_now()))
+                if not request.data["running"]:
+                    await set_exploit_stopped(self.group.exploit_id)
                 self.running = request.data["running"]
                 await self.send_running_status()
                 await self.loop_reset()

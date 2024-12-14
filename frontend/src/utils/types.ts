@@ -11,6 +11,7 @@ export type AttackExecutionRestricted = components["schemas"]["FlagDTOAttackDeta
 export type Clinet = components["schemas"]["ClientDTO"]
 export type Service = components["schemas"]["ServiceDTO"]
 export type Exploit = components["schemas"]["ExploitDTO"]
+export type AttackGroup = components["schemas"]["GroupDTO"]
 export type Language = components["schemas"]["Language"]
 export type ExploitSource = components["schemas"]["ExploitSourceDTO"]
 export const LanguageList = ["python", "java", "javascript", "typescript", "c#", "c++", "php", "r", "kotlin", "go", "ruby", "rust", "lua", "dart", "perl", "haskell", "other"]

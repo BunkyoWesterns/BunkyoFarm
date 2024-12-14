@@ -408,6 +408,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Group Get */
+        get: operations["group_get_api_groups_get"];
+        put?: never;
+        /** New Group */
+        post: operations["new_group_api_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/groups/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Client Edit */
+        put: operations["client_edit_api_groups__group_id__put"];
+        post?: never;
+        /** Delete Group */
+        delete: operations["delete_group_api_groups__group_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/clients": {
         parameters: {
             query?: never;
@@ -488,6 +524,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AddGroupForm */
+        AddGroupForm: {
+            /** Name */
+            name: string;
+            /** Exploit */
+            exploit: string;
+            /** Created By */
+            created_by: string;
+            /**
+             * Commit
+             * @default latest
+             */
+            commit: string | "latest";
+        };
         /** AttackExecutionDTO */
         AttackExecutionDTO: {
             /** Id */
@@ -510,6 +560,8 @@ export interface components {
             exploit?: string | null;
             /** Executed By */
             executed_by?: string | null;
+            /** Executed By Group */
+            executed_by_group?: string | null;
             /** Flags */
             flags: components["schemas"]["FlagDTOSmall"][];
             /** Exploit Source */
@@ -665,6 +717,11 @@ export interface components {
             /** Pages */
             pages?: number | null;
         };
+        /** EditGroupForm */
+        EditGroupForm: {
+            /** Name */
+            name: string;
+        };
         /** ExploitAddForm */
         ExploitAddForm: {
             /**
@@ -712,7 +769,7 @@ export interface components {
             /** Last Execution By */
             last_execution_by?: string | null;
             /** Last Execution Group By */
-            last_execution_group_by?: number | null;
+            last_execution_group_by?: string | null;
             /** Last Source */
             last_source?: string | null;
         };
@@ -779,6 +836,8 @@ export interface components {
             source_hash?: string | null;
             /** Target */
             target?: number | null;
+            /** Executed By Group */
+            executed_by_group?: string | null;
             /** Flags */
             flags: string[];
         };
@@ -820,6 +879,8 @@ export interface components {
             exploit?: string | null;
             /** Executed By */
             executed_by?: string | null;
+            /** Executed By Group */
+            executed_by_group?: string | null;
             /** Exploit Source */
             exploit_source?: string | null;
         };
@@ -849,6 +910,40 @@ export interface components {
          * @enum {string}
          */
         FlagStatus: "ok" | "wait" | "timeout" | "invalid";
+        /** GroupDTO */
+        GroupDTO: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Members
+             * @default []
+             */
+            members: string[];
+            /**
+             * Exploit
+             * Format: uuid
+             */
+            exploit: string;
+            /** Last Attack At */
+            last_attack_at?: string | null;
+            /** @default inactive */
+            status: components["schemas"]["GroupStatus"];
+            /**
+             * Commit
+             * @default latest
+             */
+            commit: string | "latest";
+        };
+        /**
+         * GroupStatus
+         * @enum {string}
+         */
+        GroupStatus: "active" | "inactive";
         /**
          * Language
          * @enum {string}
@@ -942,6 +1037,14 @@ export interface components {
             /** Message */
             message?: string | null;
             response?: components["schemas"]["ExploitDTO"] | null;
+        };
+        /** MessageResponse[GroupDTO] */
+        MessageResponse_GroupDTO_: {
+            /** @default ok */
+            status: components["schemas"]["ResponseStatus"];
+            /** Message */
+            message?: string | null;
+            response?: components["schemas"]["GroupDTO"] | null;
         };
         /** MessageResponse[List[TeamDTO]] */
         MessageResponse_List_TeamDTO__: {
@@ -2227,6 +2330,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MessageResponse_TeamDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    group_get_api_groups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDTO"][];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    new_group_api_groups_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddGroupForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_GroupDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    client_edit_api_groups__group_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditGroupForm"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_GroupDTO_"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Any_"];
+                };
+            };
+        };
+    };
+    delete_group_api_groups__group_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_GroupDTO_"];
                 };
             };
             /** @description Validation error */

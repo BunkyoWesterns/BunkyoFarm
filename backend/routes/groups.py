@@ -23,7 +23,7 @@ async def group_get(db: DBSession):
         members = await redis_conn.smembers(f"group:{group.id}:members")
         status = GroupStatus.active
         if members is None or len(members) == 0:
-            status = GroupStatus.unactive
+            status = GroupStatus.inactive
             members = set()
         return GroupDTO(
             **json_like(group, mode="python", unset=True),

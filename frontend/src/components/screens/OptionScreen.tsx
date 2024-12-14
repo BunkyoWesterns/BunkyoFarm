@@ -7,6 +7,7 @@ import { AddEditServiceModal } from "../modals/AddEditServiceModal";
 import { useState } from "react";
 import { useSettingsStore } from "@/utils/stores";
 import { notifications } from "@mantine/notifications";
+import { GroupTable } from "../tables/GroupTable";
 
 export const OptionScreen = () => {
 
@@ -18,19 +19,24 @@ export const OptionScreen = () => {
         </Title>
         <Space h="md" />
         <ExploitTable />
-        <Space h="xl" />
+        <Title order={2}>
+            Attack Groups
+        </Title>
+        <Space h="md" />
+        <GroupTable />
+        <Space h="md" />
         <Title order={2} display="flex" style={{alignItems: "center"}}>
             <span>Services</span><Box style={{flexGrow:1}} /><AddButton onClick={()=>setAddNewServiceModalOpen(true)} />
         </Title>
         <Space h="md" />
         <ServiceTable />
-        <Space h="xl" />
+        <Space h="md" />
         <Title order={2}>
             Clients
         </Title>
         <Space h="md" />
         <ClientTable />
-        <Space h="xl" />
+        <Space h="md" />
         <ViewOptionEditor />
         <AddEditServiceModal open={addNewServiceModalOpen} onClose={()=>setAddNewServiceModalOpen(false)} />
     </Container>

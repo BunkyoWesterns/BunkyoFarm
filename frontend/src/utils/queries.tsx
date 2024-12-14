@@ -158,6 +158,18 @@ export const statsQuery = () => useQuery({
     queryFn: async () => await getRequest("/flags/stats") as Stats
 })
 
+export const groupsQuery = () => useQuery({
+    queryKey: ["groups"],
+    queryFn: async () => await getRequest("/groups") as paths["/api/groups"]["get"]["responses"][200]["content"]["application/json"]
+})
+
+export const editGroup = async (groupId: string, values:{[k:string]:any}) => {
+    return await putRequest("/groups/"+groupId, { body: values }) as paths["/api/groups/{group_id}"]["put"]["responses"][200]["content"]["application/json"]
+}
+
+export const deleteGroup = async (groupId: string) => {
+    return await deleteRequest("/groups/"+groupId) as paths["/api/groups/{group_id}"]["delete"]["responses"][200]["content"]["application/json"]
+}
 
 export const useServiceMapping = () => {
     const status = statusQuery()
@@ -193,6 +205,15 @@ export const useClientMapping = () => {
         if (cl == null || cl.length == 0) return {}
         return cl.reduce((acc, val) => ({...acc, ...val}), {})
     }, [clients.isFetching])
+}
+
+export const useGroupMapping = () => {
+    const groups = groupsQuery()
+    return useMemo(() => {
+        const gr = groups.data?.map((group) => ({[group.id]: group}))
+        if (gr == null || gr.length == 0) return {}
+        return gr.reduce((acc, val) => ({...acc, ...val}), {})
+    }, [groups.isFetching])
 }
 
 export const useServiceSolver = () => {
@@ -247,6 +268,16 @@ export const useClientSolver = () => {
         const client = clients[id]
         if (client == null) return `Client ${id}`
         return client.name
+    }
+}
+
+export const useGroupSolver = () => {
+    const groups = useGroupMapping()
+    return (id?:string|null) => {
+        if (id == null) return "Unknown"
+        const group = groups[id]
+        if (group == null) return `Group ${id}`
+        return group.name
     }
 }
 

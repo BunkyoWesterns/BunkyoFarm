@@ -50,7 +50,7 @@ export const sockIoChannelToQueryKeys = (channel:string):string[][] => {
             ]
         case "attack_group":
             return [
-                ["attacks"]
+                ["groups"],
             ]
         case "exploit":
             return [

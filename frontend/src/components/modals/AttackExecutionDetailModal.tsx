@@ -1,4 +1,4 @@
-import { attacksQuery, exploitsSourcesQuery, useClientSolver, useExtendedExploitSolver, useTeamSolver } from "@/utils/queries";
+import { attacksQuery, exploitsSourcesQuery, useClientSolver, useExtendedExploitSolver, useGroupSolver, useTeamSolver } from "@/utils/queries";
 import { useGlobalStore } from "@/utils/stores";
 import { Alert, Box, Modal, ScrollArea, Space, Title } from "@mantine/core"
 import { showNotification } from "@mantine/notifications";
@@ -27,6 +27,7 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
     const isUsedSourceLatest = sourceQuery.data?.length??0 > 0 ? sourceQuery.data?.[0]?.id == usedSource?.id : false
     const setLoading = useGlobalStore((store) => store.setLoader)
     const clientSolver = useClientSolver()
+    const groupSolver = useGroupSolver()
     const teamSolver = useTeamSolver()
     const extendedExploitSolver = useExtendedExploitSolver()
     const scollRef = useRef<any>()
@@ -51,6 +52,12 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
                 <Box display="flex" style={{alignItems: "center", width: boxWidth}}><FaUser /><Space w="xs" />Executed by<Space w="xs" /></Box>
                 <b>{clientSolver(attack.executed_by)}</b>
             </Box>
+            {attack.executed_by_group?<Box display="flex">
+                <Box display="flex" style={{alignItems: "center", width: boxWidth}}><FaUser /><Space w="xs" />Executed by group<Space w="xs" /></Box>
+                <b>{groupSolver(attack.executed_by_group)}</b>
+            </Box>:null
+
+            }
             <Box display="flex">
                 <Box display="flex" style={{alignItems: "center", width: boxWidth}}><ImTarget /><Space w="xs" />Target Team<Space w="xs" /></Box>
                 <b>{teamSolver(attack.target)}</b>
