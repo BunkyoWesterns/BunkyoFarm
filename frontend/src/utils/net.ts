@@ -29,7 +29,8 @@ export const SOCKET_IO_CHANNELS = [
     "exploit_source",
     "submitter",
     "stats",
-    "config"
+    "config",
+    "error_warning"
 ]
 
 export const DEBOUNCED_SOCKET_IO_CHANNELS = [
@@ -42,6 +43,10 @@ export const sockIoChannelToQueryKeys = (channel:string):string[][] => {
         case "client":
             return [
                 ["clients"]
+            ]
+        case "error_warning":
+            return [
+                ["status"]
             ]
         case "attack_group":
             return [

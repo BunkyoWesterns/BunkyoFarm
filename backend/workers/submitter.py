@@ -49,7 +49,7 @@ async def err_warn_event_update():
     if g.error_was_generated or g.first_time_config_triggered or (not g.error_was_generated and g.last_time_error_was_generated):
         g.error_was_generated = False
         g.first_time_config_triggered = True
-        await redis_conn.publish(redis_channels.config, "update")
+        await redis_conn.publish(redis_channels.error_warning, "update")
     g.last_time_error_was_generated = g.error_was_generated
 
 def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict: dict):

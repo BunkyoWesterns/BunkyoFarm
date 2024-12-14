@@ -46,20 +46,21 @@ class redis_channels:
     stats = "stats"
     config = "config"
     password_change = "password_change"
+    error_warning = "error_warning"
     
 REDIS_CHANNEL_PUBLISH_LIST = [
-    "client",
-    "attack_group",
-    "exploit",
-    "service",
-    "team",
-    "attack_execution",
-    "exploit_source",
-    "submitter",
-    "stats",
-    "config"
+    redis_channels.client,
+    redis_channels.attack_group,
+    redis_channels.exploit,
+    redis_channels.service,
+    redis_channels.team,
+    redis_channels.attack_execution,
+    redis_channels.exploit_source,
+    redis_channels.submitter,
+    redis_channels.stats,
+    redis_channels.config,
+    redis_channels.error_warning
 ]
-    
 
 class redis_keys:
     stats = "stats"
