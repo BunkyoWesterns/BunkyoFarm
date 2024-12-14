@@ -6,7 +6,6 @@ from db import connect_db, redis_channels
 from db import dbtransaction, sqla
 import math
 from asyncio import Queue
-from dateutil import parser as dtparser
 from dataclasses import dataclass
 from datetime import timedelta, datetime
 from exploitfarm.models.enums import AttackMode
@@ -66,9 +65,10 @@ class ClinetAttackerStatus:
         target.assigned_to = self.client_id
         self.attack_start_time = datetime_now()
     
-    def end(self, target: "AttackTargetStatus"):
+    def end(self, target: "AttackTargetStatus", n_flags: int = 0):
         self.used_queues -= 1
         target.executed = True
+        target.n_flags += n_flags
     
     def reset(self):
         self.used_queues = 0
@@ -85,6 +85,7 @@ class AttackTargetStatus:
     data: dict
     executed: bool = False
     assigned_to: str|None = None
+    n_flags: int = 0
     
     def reset(self):
         self.executed = False
@@ -229,15 +230,13 @@ class GroupAttackManager:
         )
         self.source_pull_required = False
     
-    async def recalculate_timeout(self, trigger_skio_update: bool = False, update_on_redis: bool = True, reset_virtual_time: bool = False):
+    async def recalculate_timeout(self, trigger_skio_update: bool = False, reset_virtual_time: bool = False):
         if reset_virtual_time:
             self.current_virtual_time = sum(ele.queue_size*self.tot_time_available for ele in self.client_table.values())
         if len(g.teams) == 0:
             self.timeout = 0
         else:
             self.timeout = max(min(math.ceil(self.current_virtual_time / len(g.teams)), g.configuration.TICK_DURATION), 0)
-        if update_on_redis:
-            await self.write_data()
         if trigger_skio_update:
             self.last_timeout_sent = 0
             await self.timeout_update_handle()
@@ -276,12 +275,14 @@ class GroupAttackManager:
                 if len(teams_to_exec) == 0:
                     return
                 
+                # Prioritize the teams where we got more flags
+                teams_to_exec.sort(key=lambda x: x.n_flags)
+                
                 client_status = await self.calc_client_status()
                 
                 if len(client_status) == 0:
                     if self.running:
                         self.running = False
-                        await self.write_data()
                     return # No client available, need someone to join
                 
                 if client_status[0][0] == 0:
@@ -318,10 +319,8 @@ class GroupAttackManager:
         if self.latest_source_required:
             latest_source = await get_latest_exploit_source(self.group.exploit_id)
             self.exploit_source_id = latest_source.id
-        await self.write_data()
         while True:
             try:
-                await self.fetch_data()
                 if self.running:
                     await self.timeout_update_handle()
                     await self.attack_run_actions()
@@ -334,30 +333,12 @@ class GroupAttackManager:
     def trigger_next_loop(self, data="trigger"):
         self.queue.put_nowait(data)
     
-    async def write_data(self):
-        await redis_conn.mset({
-            f"group:{self.group_id}:running": 1 if self.running else 0,
-            f"group:{self.group_id}:timeout": self.timeout,
-            f"group:{self.group_id}:deadline": self.deadline.isoformat(),
-        })
-    
-    async def fetch_data(self):
-        running, timeout, deadline = await redis_conn.mget(
-            f"group:{self.group_id}:running",
-            f"group:{self.group_id}:timeout",
-            f"group:{self.group_id}:deadline"
-        )
-        self.running = int(running) != 0
-        self.timeout = int(timeout)
-        self.deadline = dtparser.parse(deadline)
-    
     async def handle_request(self, request: GroupResponseEvent):
         match request.event:
             case GroupEventResponseType.SET_RUNNING_STATUS:
                 if request.data["running"] is False:
                     await redis_conn.set(f"exploit:{self.group.exploit_id}:stopped", pickle.dumps(datetime_now()))
                 self.running = request.data["running"]
-                await self.write_data()
                 await self.send_running_status()
                 await self.loop_reset()
             case GroupEventResponseType.ATTACK_ENDED:
@@ -367,7 +348,7 @@ class GroupAttackManager:
                         target = self.attack_target_table[request.data["target"]]
                         client = self.client_table[request.client]
                         # End the attack
-                        client.end(target)
+                        client.end(target, request.data.get("n_flags", 0))
                 # Add the earned time to the virtual time
                 time_used = client.delta_from_start()
                 self.current_virtual_time += self.timeout - time_used.total_seconds()
@@ -390,6 +371,7 @@ class GroupAttackManager:
         self.current_virtual_time += self.delta_until_deadline() * queue_size
         await self.recalculate_timeout(trigger_skio_update=True)
         self.trigger_next_loop()
+        return self.timeout, self.deadline, self.running
     
     async def handle_commit_change(self):
         if self.latest_source_required:
@@ -502,7 +484,7 @@ async def leave_group(sid:str, group: str, client: str):
 async def event_group(sid: str, response_req: GroupResponseEvent):
     async with g.attack_manager_lock:
         await g.group_attack_managers[str(response_req.group_id)].handle_request(response_req)
-    return {"message": "left", "status": ResponseStatus.OK}
+    return {"message": "handled", "status": ResponseStatus.OK}
 
 @rpc_redis.call_handler("join-group")
 async def join_group(sid, join_req: JoinRequest):
@@ -513,7 +495,6 @@ async def join_group(sid, join_req: JoinRequest):
     
     await asyncio.gather(
         redis_conn.mset({
-            f"group:{join_req.group_id}:client:{join_req.client}:queue": int(join_req.queue_size),
             f"group:{join_req.group_id}:client:{join_req.client}:sid": sid,
             f"sid:{sid}:group": str(join_req.group_id),
             f"sid:{sid}:client": join_req.client
@@ -528,12 +509,7 @@ async def join_group(sid, join_req: JoinRequest):
             except Exception as e:
                 logging.exception(f"Error in group task generation: {e}")
                 return {"status": ResponseStatus.ERROR, "message": f"Error in group task generation: {e}"}
-        await g.group_attack_managers[str(join_req.group_id)].handle_join(str(join_req.client), sid, join_req.queue_size)
-    timeout, deadline, running = await redis_conn.mget(
-        f"group:{join_req.group_id}:timeout",
-        f"group:{join_req.group_id}:deadline",
-        f"group:{join_req.group_id}:running"
-    )
+        timeout, deadline, running = await g.group_attack_managers[str(join_req.group_id)].handle_join(str(join_req.client), sid, join_req.queue_size)
     await redis_conn.publish(redis_channels.attack_group, "join")
     return {"message": "joined", "status": ResponseStatus.OK, "response": {
         "timeout": timeout,
