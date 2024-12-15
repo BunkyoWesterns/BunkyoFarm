@@ -59,10 +59,12 @@
 \newpage
 
 \section{Introduzione}
+\subsection{Preambolo}
+	Il seguente progetto è stato realizzato per essere utilizzato nelle competizioni Capture the flag (CTF) in modalità attack defence. Questa tipologia di competizioni è organizzata progetti come \href{https://cyberchallenge.it/}{CyberChallenge} mirati alla formazione di esperti in cybersecurity, progetto di in cui svolgo il ruolo di istruttore al Politecnico di Bari, ma anche da team internazionali di CTF, citando per esempio la \href{https://2024.faustctf.net/}{Faust CTF}. La competizione si svolge tra diversi team di cybersecurity, ogni team ha un server con alcuni servizi avviati che sono uguali per tutti i team. I seguenti servizi hanno delle vulnerabilità al loro interno che permettono l'estrapolazione di informazioni normalmente non accessibili. Al centro di tutta la competizione c'è l'infrastruttura di gara che si occupa di collegare le varie macchine e team alla rete di gara e di offrire i servizi del gameserver. Il gameserver è un elemento fondamentali in queste competizioni poiché è l'elemento responsabile della verifica del normale funzionamento dei servizi di tutti i team, ed è anche il responsabile del conteggio dei punteggi. La competizione è divisa in slot temporali chiamati round o tick di durata fissa (solitamente circa 2 minuti) in cui avvengono delle azioni ripetitive dall'inizio alla fine della competizione stessa. Ogni tick infatti il gameserver esegue dei controlli sull'operatività dei servizi e inserisce i "dati sensibili" da rubare che sono le flag. Le flag sono dei valori alfanumerici di un formato fisso, ben definito e riconoscibile (differente da gara a gara) di natura randomica che rappresenta l'informazione sensibile da rubare e proteggere. Ogni team quindi riceverà per ogni servizio, nello specifico per ogni Flag Store 1 flag per ogni tick, l'obiettivo del team è sfruttare le vulnerabilità dei servizi per rubare le flag agli altri team e consegnarle al gameserver che a quel punto assegnerà dei punti extra al team che è riuscito ad ottenere le flag e penalizzerà il team che non ha protetto le flag, e quindi per lo stesso meccanismo il team deve anche proteggere il servizio provando a chiudere le vulnerabilità evitando che altri team possano rubare le loro flag mantenendo il servizio funzionante. In queste competizioni il calcolo del punteggio che dipende strettamente dalle scelte degli organizzatori tende sempre a penalizzare pesantemente quei team che non rendono disponibili e funzionanti i servizi, di modo da rendere necessaria e di prima importanza la piena operatività del servizio stesso. Inoltre non è possibile riconoscere e distringuere i bot che visitano la pagina dai bot che attaccano degli altri team, e questo è possibile tramite un operazione di anonimizzazione del traffico tramite ad esempio un SNAT integrato dagli organizzatori a questo fine.
 \subsection{Descrizione generale}
-	"Exploitfarm" è un software completamente dedicato alle competizioni CTF Attack/Defence, che si occupa principalmente di gestire la fase di attacco e ti tutto quello che conseguentemente questa fase richiede per essere eseguita correttamente, al fine di semplificare e velocizzare gli attacchi.\\
+	"Exploitfarm" è un software specializzato per le competizioni CTF Attack/Defence, che si occupa principalmente di gestire la fase di attacco e ti tutto quello che conseguentemente questa fase richiede per essere eseguita correttamente, al fine di semplificare e velocizzare gli attacchi.\\
 	In generale Exploitfarm si occupa di attaccare in parallelo una serie di team (attacker) e di raccogliere ed inviare seguendo i criteri e limitazioni indicate per la competizione che si sta svolgendo le flag al gameserver (submitter).
-\subsection{Obiettivi}
+\subsection{Obiettivi generali del progetto}
 \begin{itemize}
     \item Setup e installazione facile, veloce, personalizzabile e facilmente automizzabile
     \item Gestione delle risorse per gli attacchi dinamica e reattiva
@@ -78,9 +80,116 @@
 Gli attacker attualmente esistenti sono spesso incompleti, difficili da configurare e da completarne il setup, facilmente inclini ad errori che spesso comportano una perdita di tempo aggiuntiva, non hanno alcun tipo di gestione del carico supportato dalla macchina che esegue gli attacchi, non memorizza o espone alcun dato statistico sull'andamento degli attacchi ed infine non gestisce la condivisione degli exploit stessi.\\
 Date le forti lacune presenti in software simili già esistenti, ho ritenuto opportuno la creazione di un'alternativa agli attacker attualmente esistenti.\\
 \textbf{NOTA}: "ExploitFarm" è liberamente ispirato ad un altro attacker molto famoso chiamato \href{https://github.com/DestructiveVoice/DestructiveFarm}{DestructiveFarm}, ma ne condivide a livello di codice unicamente delle piccole porzioni del suo client "start\_xploit.py" a loro volta modificate ed adattate, in alcune parti riscritte e riprogettate completamente date le netti differenze di requisiti dei progetti.
+
+\section{Project Managment}
+La gestione del progetto è principalmente plan-driven con un approccio però che si avvicina allo "scrum" per progettazione e organizzazione dei task (organizzate in un backlog di user-stories). Il progetto di per se è già in una fase di sviluppo avanzata, pertanto la gestione del progetto riguarderà l'aggiunta della feature per l'avvio di singoli attacchi distribuiti tra più client.
+\subsection{Gestione generale}
+L'approccio scelto per lo sviluppo delle nuove funzionalità è basato sullo "scrum" con un approccio tendenzialmente plan-driven dati i tempi brevi assegnati per il progetto stesso. Sono assenti le riunioni giornaliere e tutta l'attività si dividerà in soli 2 sprint per l'integrazione di 2 macro-funzionalità.
+Sempre a causa di tempi ristretti, i test non sono previsti, ma unicamente micro test durante lo sviluppo stesso per verificarne il funzionamento.
+\subsection{Kanban (github)}
+Il progetto è interamente condiviso e gestito su github, grazie alla funzionalità dei progetti di cui si sfrutta il backlog che permette di gestire le user-stories con tag, ordini di priorità e direttamente associabili ai branch in cui si esegue l'attività di sviluppo, per questo molto integrato con lo sviluppo stesso.
+Il kanban finale è disponibile al seguente link
+	\href{https://github.com/orgs/Pwnzer0tt1/projects/1}{QUI} e inoltre è anche possibile visualizzare le modifiche eseguite sul progetto dall'inizio di questa fase di sviluppo al seguente link \href{https://github.com/Pwnzer0tt1/exploitfarm/compare/0be4b22b0676dede1836719639ae2edc3a508504...c9f8c3c28bd88ca35072ffe24f16c19e4b27c2e9}{QUI}
+	\begin{figure}[H]
+    	\centering
+    	\includegraphics[width=0.6\textwidth]{backlog.png}
+	\end{figure}
+\subsection{Scheduling}
+Sono definite 3 fasi principali nel progetto:
+\begin{itemize}
+    \item Brainstorming, definizione dei requisiti tecnici e documentazione
+    \item 1* Milestone/Sprint: gestione degli exploit
+    \item Technical features: From polling to event driven updates + switching to sqlalchemy
+    \item 2* Milestone/Sprint: gestione dei gruppi di client per gli attacchi condivisi
+\end{itemize}
+Le fasi sono definite proprio per la necessità di progettare lo sviluppo stesso dei nuovi requisiti, e dalla mancanza della feature di gestione degli exploit necessaria allo sviluppo della seconda milestone.
+L'inizio del progetto con la prima fase è iniziata il 03-10-2024, la consegna è fissata per il 20-12-2024.
+	\begin{figure}[H]
+		\centering
+    	\includegraphics[width=1\textwidth]{scheduling.png}
+	\end{figure}
+\subsection{COCOMO Analysis}
+Il modello COCOMO utilizzato per la stima è quello del Post-architecture model dato che la fase in sviluppo è una fase di implementazione di feature con un progetto di base già pre-ingegnerizzato (Con size stimata di 2k righe di codice).
+   \[ E = A \times Size^B \times \prod_{i=1}^{n} EM_i \]
+   Con:
+   \[ B = 0.91 + 0.01 \times \sum Scale Factors \]
+   \begin{itemize}
+   		\item A = 2.94 (tipico per Post-Architecture COCOMO)
+		\item $Size \simeq 2k$ righe di codice
+   \end{itemize}
+\subsubsection{Effort Multipliers}
+Si utilizzerà un subset dei 17 moltiplicatori previsti per COCOMO post-architecture.
+\begin{itemize}
+	\item RELY = 1.26 (Very High)
+	\item DATA = 1.00 (Nominal)
+	\item CPLX = 1.17 (High)
+	\item RUSE = 0.95 (Low)
+	\item DOCU = 1.00 (Nominal)
+	\item TIME = 1.29 (Very High)
+	\item PVOL = 1.00 (Nominal)
+	\item PCAP = 0.88 (High)
+	\item TOOL = 0.90 (High)
+	\item SITE = 1.00 (Nominal)
+	\item SCED = 1.00 (Nominal)
+\end{itemize}
+	\[
+		\prod_{i=1}^{n} EM_i = 1.431
+	\]
+\subsubsection{Scale Factors}
+\begin{itemize}
+	\item PREC = 1.24 (Very High)
+	\item FLEX = 1.01 (Very High)
+	\item RESL = 4.24 (Nominal)
+	\item TEAM = 1.0 (No team, not used)
+	\item PMAT = 1.56 (Very High)
+\end{itemize}
+   \[ B = 0.91 + 0.01 \times \sum Scale Factors = 0.99 \]
+\subsubsection{Risultato Finale}
+   \[ E = A \times Size^B \times \prod_{i=1}^{n} EM_i = 8.36 \]
+\subsubsection{Duration}
+   \[ C = 3.67 \]
+   \[ D = 0.28 + 0.2 \times (B - 0.91) = 0.296 \]
+   \[ T = C \times E^D = 6.8 (mesi) \]
+   Tuttavia assumendo gli obiettivi del progetto, è intuitivo comprendere come la stima eseguita è eccessiva rispetto al reale tempo necessario al raggiungimento dell'obiettivo.
+\subsection{Risk Managment and Analysis}
+\subsubsection{Stima dell'effort e requisiti}
+Durante lo sviluppo c'è la possibilità nascano nuove esigenze date da limitazioni tecniche attualmente presenti nel progetto: per attutire i danni possibili generati dalla nascita di nuovi requisiti o anche alla sottostima del tempo necessario, è necessario iniziare al più presto dalla data schedulata l'effettiva data di inizio dello sviluppo di modo da permettere l'allocazione di più slot temporali ad una determinata user-story nello sviluppo prima che possa terminare la deadline di consegna, punto critico nel progetto. Il livello di rischio associato è "Moderato".
+\subsubsection{Rilascio di versioni non totalmente funzionanti}
+C'è la possibilità che a causa di modifiche a diverse parti del progetto, si possano presentare bug in parti non direttamente inerenti ma collegate alla parte di software modificata. Per ovviare a questo problema è utile eseguire in maniera atomizzata prima della pubblicazione della release dei test automatici che verificano il funzionamento corretto della piattaforma. Nonostante il rischio si classificato come Medio, date le scadenze strette non è prevista attualmente la scrittura di test automatizzati.
+\subsubsection{Rischio di rendere la piattaforma complessa gestire}
+Il progetto ha grandi requisiti e grandi ambizioni a livello di funzionalità che tuttavia dopo essere sviluppate possono risultare complesse nel loro utilizzo anche per gli utenti target che sono classicamente utenti esperti. Andando in questa direzione potremmo perdere uno degli obiettivi del progetto, cioè quello di facile utilizzo, autorizzazione e setup. Il rischio è medio elevato e potrebbe comportare lo sviluppo di parti della piattaforma che necessitano un completo refactoring o riscrittura in seguito. Per evitare questo rischio è necessario un confronto esterno con altri giocatori CTF per avere opinioni esterne, quindi opinioni esenti del bias dello sviluppatore del progetto, che sviluppandone le funzionalità non si rende conto di eventuali funzionalità complesse da utilizzare. Questo permetterebbe una rivisitazione e progettazione migliore del progetto.
+\subsection{Release Managment}
+Le release di ExploitFarm avvengono tramite github con una catena di building automatica del container di exploitfarm che contiene frontend compilato e backend, automaticamente rilasciato e pubblicato su gihtub packages che ne rilascia il download pubblico.
+Inoltre per l'esecuzione di exploitfarm è disponibile uno script che genera dinamicamente un docker compose e lo avvia utilizzando i container pullati dai repository online, e inoltre si assicura che la versione avviata di exploitfarm sia l'ultima disponibile.
+\subsection{Modello di Business}
+Il progetto di per se nasce come progetto totalmente opensource, quindi non a scopo di lucro. Tuttavia un possibile approccio di Business adottabile liberamente ispirato a quello di un'altra importante piattaforma opensource per le competizioni CTF Jeopardy (\href{https://github.com/CTFd/CTFd}{CTFd}) è quello di continuare ad offrire una piattaforma completamente opensource e gratuita ma di offrire a pagamento un deploy di ExploitFarm con eventuali client attaccanti hostati (con dimensioni del server adattabili e scalati anche in base al costo e al peso dell'exploit) di modo da rendere immediato l'accesso all'attacker, anche con eventuali supporti rapidi alla connessione a VPN della gara, o al bridging da uno dei PC del team della rete di gara se non sono presenti connessioni VPN.
+\subsection{Analisi SWOT}
+\subsubsection{S: Punti di forza}
+\begin{itemize}
+	\item Unicità sulle funzionalità
+	\item Interfaccia innovativa
+	\item Setup Semplice
+	\item TUI
+	\item Statistiche
+\end{itemize}
+\subsubsection{W: Punti di debolezza}
+\begin{itemize}
+	\item Elevata complessità
+	\item Centralizzato (SPOF)
+\end{itemize}
+\subsubsection{O: Opportunità}
+\begin{itemize}
+	\item Pubblicizzazione
+	\item Aggiunta di test automatici
+\end{itemize}
+\subsubsection{T: Minaccie}
+\begin{itemize}
+	\item Impossibilità di mantenere il progetto a fronte di una grande complessità da gestire
+\end{itemize}
+
 \section{Specifiche}
-\subsection{Composizione del progetto}
-Il progetto è composto principalmente da un server centrale (nello specifico un web server) che coordinerà una serie di client sia frontend (web) che tramite una CLI. La parte di coordinamento, di submitting e gestione dei dati è affidata al server.
+\subsection{Architettura del progetto}
+Il progetto è composto principalmente da un server centrale (nello specifico un web server) che coordinerà una serie di client sia frontend (web) che tramite una CLI. La parte di coordinamento, di submitting e gestione dei dati è affidata al server. Il modello è un modello client server dove tuttavia alcuni client cioè i client da terminale svolgono un ruolo fondamentale per il funzionamento del progetto stesso e comunicano tramite comunicazioni bilaterali grazie alle websocket. Pertanto il progetto pur avendo di base una architettura client-server, intrinsecamente implementa alcune sue parti con architetture ad eventi e peer-to-peer
     \begin{figure}[H]
     	\centering
     	\includegraphics[width=0.8\textwidth]{general_layout.png}
@@ -88,16 +197,39 @@ Il progetto è composto principalmente da un server centrale (nello specifico un
 	\begin{figure}[H]
     	\centering
     	\includegraphics[width=0.8\textwidth]{Architecture.png}
-	\end{figure}\subsubsection{Backend}
+	\end{figure}
+\subsubsection{Backend}
 Il backend sarà il core del progetto poiché conterrà tutta la logica per il coordinamento dei vari client che invieranno il risultato degli attacchi, dovrà gestire i dati ed elaborarli al fine di renderli facilmente fruibili dai client, inoltre conterrà la logica e si occuperà della gestione del submitting delle flag al gameserver seguendo i requisiti indicati in fase di setup.
+\\Tecnologie utilizzate:
+	\begin{itemize}
+		\item FastAPI (wsgi, sviluppo backend)
+		\item Postgres (Database SQL)
+		\item Redis (Caching e gestione multiprocesso del backend)
+		\item Sqlachemy + SqlModel (ORM per postgres)
+		\item Socket.IO (Comunicazione backend via Websocket ad eventi con rpc)
+	\end{itemize}
 \subsubsection{Frontend}
 La visualizzazione avanzata dello stato di ExploitFarm è invece affidata alla parte frontend del webserver che dovrà permettere un facile accesso ai dati presenti sul server, offrendoli tramite strumenti di analisi come grafici che devono essere mirati sulle esigenze decisionali che possono emergere durante una competizione Attack Defence. Inoltre dovrà segnalare e rendere facilmente e tempestivamente nota la presenza di eventuali errori di qualsiasi tipo sull'intera infrastruttura permettendone un'intervento quanto più immediato da parte del team.
+\\Tecnologie utilizzate:
+	\begin{itemize}
+		\item React (Sviluppo della SPA)
+		\item Mantine UI (Per l'interfaccia)
+		\item React Query (Gestione richieste caching e state frontend)
+		\item Zustand (Gestione dei token e global state)
+		\item Socket.IO (Comunicazione backend via Websocket ad eventi con rpc)
+	\end{itemize}
     \begin{figure}[H]
     	\centering
     	\includegraphics[width=0.8\textwidth]{exploitfarm-web.png}
 	\end{figure}
 \subsubsection{CLI (xfarm)}
 Infine un'ultima parte fondamentale in tutto il progetto è il client che deve essere eseguito preferibilmente su macchine diverse da quella che offre il server, che si occupa dell'esecuzione stessa degli attacchi, della creazione del progetto dell'attacco, del monitoraggio (parziale) dell'attacco stesso. Anche il client stesso dovrà avere un'interfaccia in questo caso TUI intuitiva e veloce da utilizzare che deve rendere immediato e facile l'avvio dell'attacco e l'inserimento dei dati richiesti per l'esecuzione dell'attacco stesso.
+\\Tecnologie utilizzate:
+	\begin{itemize}
+		\item Typer (per lo sviluppo della CLI)
+		\item Textual (per lo sviluppo della TUI interattiva)
+		\item Socket.IO (Comunicazione backend via Websocket ad eventi con rpc)
+	\end{itemize}
     \begin{figure}[H]
     	\centering
     	\includegraphics[width=0.6\textwidth]{xfarm-start-cmd.png}
@@ -259,113 +391,25 @@ Definiamo dei nuovi valori di tempo:
 Il tempo virtualmente disponibile tiene conto dei tempi guadagnati grazie alla veloce esecuzione di alcuni attacchi, permettendo di ridistribuire questo tempo tra gli altri processi. Questo tempo può incrementare o diminuire durante l'esecuzione anche in base all' abbandono o al join di nuovi client, pertanto si presta utile al calcolo del timeout flessibilmente a quelle che sono le disponibilità istante per istante.\\\\
 Tramite questo tempo definiamo infine il timeout $T_K = \frac{T_V}{N_T}$
 Anch'esso varia in base al numero di team che potrebbe variare durante l'esecuzione.
-
-\section{Project Managment}
-La gestione del progetto è principalmente plan-driven con un approccio però che si avvicina allo "scrum" per progettazione e organizzazione dei task (organizzate in un backlog di user-stories). Il progetto di per se è già in una fase di sviluppo avanzata, pertanto la gestione del progetto riguarderà l'aggiunta della feature per l'avvio di singoli attacchi distribuiti tra più client.
-\subsection{Gestione generale}
-L'approccio scelto per lo sviluppo delle nuove funzionalità è basato sullo "scrum" con un approccio tendenzialmente plan-driven dati i tempi brevi assegnati per il progetto stesso. Sono assenti le riunioni giornaliere e tutta l'attività si dividerà in soli 2 sprint per l'integrazione di 2 macro-funzionalità.
-Sempre a causa di tempi ristretti, i test non sono previsti, ma unicamente micro test durante lo sviluppo stesso per verificarne il funzionamento.
-\subsection{Kanban (github)}
-Il progetto è interamente condiviso e gestito su github, grazie alla funzionalità dei progetti di cui si sfrutta il backlog che permette di gestire le user-stories con tag, ordini di priorità e direttamente associabili ai branch in cui si esegue l'attività di sviluppo, per questo molto integrato con lo sviluppo stesso.
-	\begin{figure}[H]
-    	\centering
-    	\includegraphics[width=0.6\textwidth]{backlog.png}
-	\end{figure}
-\subsection{Scheduling}
-Sono definite 3 fasi principali nel progetto:
-\begin{itemize}
-    \item Brainstorming, definizione dei requisiti tecnici e documentazione
-    \item 1* Milestone/Sprint: gestione degli exploit
-    \item Technical features: From polling to event driven updates + switching to sqlalchemy
-    \item 2* Milestone/Sprint: gestione dei gruppi di client per gli attacchi condivisi
-\end{itemize}
-Le fasi sono definite proprio per la necessità di progettare lo sviluppo stesso dei nuovi requisiti, e dalla mancanza della feature di gestione degli exploit necessaria allo sviluppo della seconda milestone.
-L'inizio del progetto con la prima fase è iniziata il 03-10-2024, la consegna è fissata per il 20-12-2024.
-	\begin{figure}[H]
-		\centering
-    	\includegraphics[width=1\textwidth]{scheduling.png}
-	\end{figure}
-\subsection{COCOMO Analysis}
-Il modello COCOMO utilizzato per la stima è quello del Post-architecture model dato che la fase in sviluppo è una fase di implementazione di feature con un progetto di base già pre-ingegnerizzato (Con size stimata di 2k righe di codice).
-   \[ E = A \times Size^B \times \prod_{i=1}^{n} EM_i \]
-   Con:
-   \[ B = 0.91 + 0.01 \times \sum Scale Factors \]
-   \begin{itemize}
-   		\item A = 2.94 (tipico per Post-Architecture COCOMO)
-		\item $Size \simeq 2k$ righe di codice
-   \end{itemize}
-\subsubsection{Effort Multipliers}
-Si utilizzerà un subset dei 17 moltiplicatori previsti per COCOMO post-architecture.
-\begin{itemize}
-	\item RELY = 1.26 (Very High)
-	\item DATA = 1.00 (Nominal)
-	\item CPLX = 1.17 (High)
-	\item RUSE = 0.95 (Low)
-	\item DOCU = 1.00 (Nominal)
-	\item TIME = 1.29 (Very High)
-	\item PVOL = 1.00 (Nominal)
-	\item PCAP = 0.88 (High)
-	\item TOOL = 0.90 (High)
-	\item SITE = 1.00 (Nominal)
-	\item SCED = 1.00 (Nominal)
-\end{itemize}
-	\[
-		\prod_{i=1}^{n} EM_i = 1.431
-	\]
-\subsubsection{Scale Factors}
-\begin{itemize}
-	\item PREC = 1.24 (Very High)
-	\item FLEX = 1.01 (Very High)
-	\item RESL = 4.24 (Nominal)
-	\item TEAM = 1.0 (No team, not used)
-	\item PMAT = 1.56 (Very High)
-\end{itemize}
-   \[ B = 0.91 + 0.01 \times \sum Scale Factors = 0.99 \]
-\subsubsection{Risultato Finale}
-   \[ E = A \times Size^B \times \prod_{i=1}^{n} EM_i = 8.36 \]
-\subsubsection{Duration}
-   \[ C = 3.67 \]
-   \[ D = 0.28 + 0.2 \times (B - 0.91) = 0.296 \]
-   \[ T = C \times E^D = 6.8 (mesi) \]
-   Tuttavia assumendo gli obiettivi del progetto, è intuitivo comprendere come la stima eseguita è eccessiva rispetto al reale tempo necessario al raggiungimento dell'obiettivo.
-\subsection{Risk Managment and Analysis}
-\subsubsection{Stima dell'effort e requisiti}
-Durante lo sviluppo c'è la possibilità nascano nuove esigenze date da limitazioni tecniche attualmente presenti nel progetto: per attutire i danni possibili generati dalla nascita di nuovi requisiti o anche alla sottostima del tempo necessario, è necessario iniziare al più presto dalla data schedulata l'effettiva data di inizio dello sviluppo di modo da permettere l'allocazione di più slot temporali ad una determinata user-story nello sviluppo prima che possa terminare la deadline di consegna, punto critico nel progetto. Il livello di rischio associato è "Moderato".
-\subsubsection{Rilascio di versioni non totalmente funzionanti}
-C'è la possibilità che a causa di modifiche a diverse parti del progetto, si possano presentare bug in parti non direttamente inerenti ma collegate alla parte di software modificata. Per ovviare a questo problema è utile eseguire in maniera atomizzata prima della pubblicazione della release dei test automatici che verificano il funzionamento corretto della piattaforma. Nonostante il rischio si classificato come Medio, date le scadenze strette non è prevista attualmente la scrittura di test automatizzati.
-\subsubsection{Rischio di rendere la piattaforma complessa gestire}
-Il progetto ha grandi requisiti e grandi ambizioni a livello di funzionalità che tuttavia dopo essere sviluppate possono risultare complesse nel loro utilizzo anche per gli utenti target che sono classicamente utenti esperti. Andando in questa direzione potremmo perdere uno degli obiettivi del progetto, cioè quello di facile utilizzo, autorizzazione e setup. Il rischio è medio elevato e potrebbe comportare lo sviluppo di parti della piattaforma che necessitano un completo refactoring o riscrittura in seguito. Per evitare questo rischio è necessario un confronto esterno con altri giocatori CTF per avere opinioni esterne, quindi opinioni esenti del bias dello sviluppatore del progetto, che sviluppandone le funzionalità non si rende conto di eventuali funzionalità complesse da utilizzare. Questo permetterebbe una rivisitazione e progettazione migliore del progetto.
-\subsection{Release Managment}
-Le release di ExploitFarm avvengono tramite github con una catena di building automatica del container di exploitfarm che contiene frontend compilato e backend, automaticamente rilasciato e pubblicato su gihtub packages che ne rilascia il download pubblico.
-Inoltre per l'esecuzione di exploitfarm è disponibile uno script che genera dinamicamente un docker compose e lo avvia utilizzando i container pullati dai repository online, e inoltre si assicura che la versione avviata di exploitfarm sia l'ultima disponibile.
-\subsection{Modello di Business}
-Il progetto di per se nasce come progetto totalmente opensource, quindi non a scopo di lucro. Tuttavia un possibile approccio di Business adottabile liberamente ispirato a quello di un'altra importante piattaforma opensource per le competizioni CTF Jeopardy (\href{https://github.com/CTFd/CTFd}{CTFd}) è quello di continuare ad offrire una piattaforma completamente opensource e gratuita ma di offrire a pagamento un deploy di ExploitFarm con eventuali client attaccanti hostati (con dimensioni del server adattabili e scalati anche in base al costo e al peso dell'exploit) di modo da rendere immediato l'accesso all'attacker, anche con eventuali supporti rapidi alla connessione a VPN della gara, o al bridging da uno dei PC del team della rete di gara se non sono presenti connessioni VPN.
-\section{Analisi SWOT}
-\subsection{S: Punti di forza}
-\begin{itemize}
-	\item Unicità sulle funzionalità
-	\item Interfaccia innovativa
-	\item Setup Semplice
-	\item TUI
-	\item Statistiche
-\end{itemize}
-\subsection{W: Punti di debolezza}
-\begin{itemize}
-	\item Elevata complessità
-	\item Centralizzato (SPOF)
-\end{itemize}
-\subsection{O: Opportunità}
-\begin{itemize}
-	\item Pubblicizzazione
-	\item Aggiunta di test automatici
-\end{itemize}
-\subsection{T: Minaccie}
-\begin{itemize}
-	\item Impossibilità di mantenere il progetto a fronte di una grande complessità da gestire
-\end{itemize}
-\section{Sviluppi Futuri}
+\section{Conclusioni}
+\subsection{Discussione}
+Il progetto ha dovuto subire fortissime modifiche e rallentamenti a causa di 2 problematiche emerse durante lo sviluppo stesso, tra cui l'utilizzo di un ORM che con il rilascio di python 3.13 non essendo aggiornato ha causato problematiche tecniche, e che a causa di questo è stato sostituito con l'ORM attualmente utilizzato: SqlModel sviluppato dagli stessi creatori di FastAPI e basato su SQLAlchemy che è un progetto molto più solido stabile supportato e ampiamente utilizzato rispetto a Ormar (l'ORM scelto precedentemente). Il cambio di ORM ha richiesto un refactoring totale del backend permettendo però si sviluppare query più ottimizzate rispetto al builder di query di ormar molto più limitato nelle sue funzionalità.
+Inoltre per la necessità di implementare una comunicazione realtime tra i client e il server, l'implementazione di redis e socket io ha permetto la ristrutturazione del progetto dall'utlizzo di richieste in polling che andavano a consumare risorse in continuazione e a generare traffico non utile, ad un approccio di gestione più event driven che ha reso molto più efficiente e immediatamente reattiva tutta l'interfaccia, e la comunicazione dei vari worker backend in maniera più efficiente grazie ai pubsub di redis e la cache condivisa. Inoltre è stato anche completamente ristrutturato lato client xfarm la parte di attacco ed è stata anche migliorato il calcolo del timeout sulle esecuzioni standalone riprendendo il meccanismo ideato per gli attacchi condivisi, studiato in maniera più metodica e sicuramente più efficiente di quello precedentemente utilizzato. Ne è risultato pertanto un fortissimo miglioramento della qualità del codice e ristrutturazione di alcune parti in classi che rendono il codice molto più facilmente integrabile e mantenibile rispetto a com'era strutturato prima del grande lavoro di refactoring eseguito, che è stato fondamentale per lo sviluppo delle nuove feature. Questo è stato causato anche dall'iniziale fretta necessaria allo sviluppo vista la deadline della competizione svoltasi questo luglio in cui il progetto era in uno stato intermedio e poco completo ma funzionale.
+\subsection{Considerazioni finali}
+Il progetto ha attualmente raggiungo i suoi obiettivi finali ed è attualmente alla sua versione 1.1.0, avrebbe bisogno di una fase di testing estensiva per assicurarne la stabilità nell'utilizzo reale, già parzialmente testato tramite dei test manuali eseguiti. Tuttavia è fondamentale assicurarne il completo funzionamento in delle casistiche reali che saranno possibili da eseguire nella prossima edizione di CyberChallenge durante le simulazioni delle Attack Defence per raccogliere punti di miglioramento dagli stessi partecipanti sul come rendere più intuitivo l'utilizzo, e l'individuazione di bug e ulteriori errori nelle varie parti sviluppate.
+\subsection{Sviluppi Futuri}
 \begin{itemize}
 	\item eliminare come single point of failure il server e permettere l'esecuzione di backend multipli e decentralizzati così da evitare in caso di problemi con uno dei server. La gestione di backend decentralizzati è di una complessità altissima e non strettamente necessario per gli obiettivi del progetto pertanto si lascia come sviluppo futuro.
-	\item Sviluppo dei test sulle API backend
+	\item Sviluppo dei test sulle API backend e integrarli nel rilascio delle release.
 \end{itemize}
+\subsection{Bibliografia}
+\begin{itemize}
+	\item Progetto comparato: DestructiveFarm: \href{https://github.com/DestructiveVoice/DestructiveFarm}{https://github.com/DestructiveVoice/DestructiveFarm}
+	\item CyberChallenge: \href{https://cyberchallenge.it/}{https://cyberchallenge.it/}
+	\item FaustCTF: A/D for beginners \href{https://2024.faustctf.net/information/attackdefense-for-beginners/}{https://2024.faustctf.net/information/attackdefense-for-beginners/}
+	\item Pagina Github ExploitFarm: \href{https://github.com/Pwnzer0tt1/exploitfarm}{https://github.com/Pwnzer0tt1/exploitfarm}
+	\item CTFd: \href{https://github.com/CTFd/CTFd}{https://github.com/CTFd/CTFd}
+\end{itemize}
+
+
 \end{document}
