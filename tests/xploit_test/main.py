@@ -6,7 +6,7 @@ from exploitfarm import get_host, random_str
 from pwn import remote
 
 host = get_host()
-
+# EDIT AL SORGENTE!
 simulate_random_crash = True
 simulate_work = False
 simulate_connection = False

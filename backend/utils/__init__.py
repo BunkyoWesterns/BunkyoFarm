@@ -3,6 +3,8 @@ from typing import Tuple, List, Any
 import time
 import ast
 import os
+import pickle
+from datetime import timedelta
 import traceback
 from datetime import datetime, UTC
 from fastapi import FastAPI, APIRouter
@@ -161,6 +163,12 @@ async def pubsub_flush(pubsub):
     while flushed is not None:
         flushed = await pubsub.get_message(ignore_subscribe_messages=True, timeout=0)
 
+
+async def set_exploit_stopped(exploit_id: str):
+    from db import redis_conn, redis_channels
+    redis_key = f"exploit:{exploit_id}:stopped"
+    await redis_conn.set(redis_key, pickle.dumps(datetime_now() + timedelta(seconds=5))) # 5 seconds for submitting the remaining flags and not changing the status again
+    await redis_conn.publish(redis_channels.exploit, "update")
 
 def register_event(sio_server: AsyncServer, event_name: str, model: BaseModel, response_model: BaseModel|None = None):
     def decorator(func):

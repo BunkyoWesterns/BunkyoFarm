@@ -19,7 +19,7 @@ from models.config import Configuration
 from workers.skio import sio_server
 import logging
 import traceback
-import pickle
+from utils import set_exploit_stopped
 from multiprocessing import Process
 from utils.redis_pipe import RedisCallHandler
 from exploitfarm.models.teams import TeamDTO
@@ -97,11 +97,6 @@ def current_tick_calc():
     if start_time > this_time:
         raise Exception("Attack not started yet")
     return math.floor((this_time - start_time).total_seconds() / g.configuration.TICK_DURATION)
-
-async def set_exploit_stopped(exploit_id: str):
-    redis_key = f"exploit:{exploit_id}:stopped"
-    await redis_conn.set(redis_key, pickle.dumps(datetime_now() + timedelta(seconds=5))) # 5 seconds for submitting the remaining flags
-    await redis_conn.publish(redis_channels.exploit, "update")
 
 def calc_round_time_available():
     #Needed to calculate the initial time based on attack schedule logic

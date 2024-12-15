@@ -1,6 +1,7 @@
 **/*.pyc
 db-data
 exploit-sources
+docs/pdflatex7620.fls
 .venv/
 backend/.locks/**
 **/__pycache__/
