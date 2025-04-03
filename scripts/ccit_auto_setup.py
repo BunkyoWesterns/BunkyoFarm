@@ -70,13 +70,13 @@ for ele in general_info["services"]:
 
 print(
     config.reqs.configure_server(
-        attack_mode=AttackMode.WAIT_FOR_TIME_TICK,
+        attack_mode=AttackMode.TICK_DELAY,
         submitter=submitter_id,
         attack_time_tick_delay=2,
         authentication_required=auth,
         password_hash=password,
-        start_time=date_parser(general_info["start"]),
-        end_time=date_parser(general_info["end"]),
+        start_time=date_parser(general_info["start"]) if general_info["start"] else None,
+        end_time=date_parser(general_info["end"]) if general_info["end"] else None,
         tick_duration=general_info["roundTime"],
         flag_timeout=general_info["roundTime"]*5,
         flag_regex="[A-Z0-9]{31}=",

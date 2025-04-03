@@ -31,10 +31,10 @@ export const HomePage = () => {
         const color = (lvl=="error")?"red":(lvl=="warning")?"yellow":"green"
         const icon = (lvl=="error")?<MdErrorOutline />:(lvl=="warning")?<AiOutlineWarning />:<AiOutlineInfoCircle />
         return <Fragment key={i}>
-            <Space h="lg" ref={scrollExternalRef}/>
-            <Alert icon={icon} title={title} color={color} style={{width: "100%", height:"100%", display:"flex"}}>
+            <Space h="lg" />
+            <Alert ref={scrollExternalRef} icon={icon} title={title} color={color} style={{width: "100%", height:"100%", display:"flex"}}>
                 <ScrollArea.Autosize mah={200}>
-                    <Box style={{whiteSpace:"pre"}} w={(scrollExternalRef.current?.getBoundingClientRect().width-60)+"px"}>
+                    <Box style={{whiteSpace:"pre"}} w={(scrollExternalRef.current?.getBoundingClientRect().width-70)+"px"}>
                         {message}
                     </Box>
                 </ScrollArea.Autosize> 

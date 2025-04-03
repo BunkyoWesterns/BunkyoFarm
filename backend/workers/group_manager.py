@@ -25,6 +25,7 @@ from utils.redis_pipe import RedisCallHandler
 from exploitfarm.models.teams import TeamDTO
 from asyncio import Lock
 import uuid
+import random
 
 class StopLoop(Exception):
     pass
@@ -275,8 +276,7 @@ class GroupAttackManager:
                 if len(teams_to_exec) == 0:
                     return
                 
-                # Prioritize the teams where we got more flags
-                teams_to_exec.sort(key=lambda x: x.n_flags)
+                random.shuffle(teams_to_exec)
                 
                 client_status = await self.calc_client_status()
                 

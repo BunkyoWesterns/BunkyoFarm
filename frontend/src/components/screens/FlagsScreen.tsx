@@ -31,7 +31,7 @@ export const FlagsScreen = () => {
     const getClientName = useClientSolver()
     const [manualSubmissionModal, setManualSubmissionModal] = useState<boolean>(false)
     const [viewStatusText, setViewStatusText] = useState<string|undefined>()
-    const scollRef = useRef<any>()
+    const scrollRef = useRef<any>()
 
     const [attackDetailId, setAttackDetailId] = useState<number|null>(null)
 
@@ -203,10 +203,10 @@ export const FlagsScreen = () => {
         <ManualSubmissionModal opened={manualSubmissionModal} close={() => setManualSubmissionModal(false)} />
         {attackDetailId==null?null:<AttackExecutionDetailsModal opened={true} close={()=>setAttackDetailId(null)} attackId={attackDetailId} />}
         <Modal size="xl" opened={viewStatusText!=undefined} onClose={()=>setViewStatusText(undefined)} title="Submission status text" centered>
-            <Space w="md" ref={scollRef} />
-            <Alert icon={<BsCardText />} title={<Title order={4}>Submitter logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}}>
+            <Space w="md" />
+            <Alert ref={scrollRef} icon={<BsCardText />} title={<Title order={4}>Submitter logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}}>
                 <ScrollArea.Autosize mah={400} >
-                    <Box style={{whiteSpace:"pre"}} w={(scollRef.current?.getBoundingClientRect().width-60)+"px"}>
+                    <Box style={{whiteSpace:"pre"}} w={(scrollRef.current?.getBoundingClientRect().width-70)+"px"}>
                         {viewStatusText}
                     </Box>
                 </ScrollArea.Autosize> 

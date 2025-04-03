@@ -86,11 +86,10 @@ export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>vo
                 <Box display="flex" style={{alignItems: "center", width: boxWidth}}><FaPersonRunning /><Space w="xs" />Runned for<Space w="xs" /></Box>
                 <b>{executionTime?secondDurationToString(executionTime):"unknown"}</b>
             </Box>
-            <Space h="lg" ref={scollRef} />
-            
-            <Alert icon={<BsCardText />} title={<Title order={4}>Attack logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}}>
+            <Space h="lg" />
+            <Alert icon={<BsCardText />} title={<Title order={4}>Attack logs</Title>} color="gray" style={{width: "100%", height:"100%", display:"flex"}} ref={scollRef}>
                 <ScrollArea.Autosize mah={400} >
-                    <Box style={{whiteSpace:"pre"}} w={(scollRef.current?.getBoundingClientRect().width-60)+"px"}>
+                    <Box style={{whiteSpace:"pre"}} w={(scollRef.current?.getBoundingClientRect().width-70)+"px"}>
                         {attack.output?attack.output:<u>No logs found</u>}
                     </Box>
                 </ScrollArea.Autosize> 

@@ -87,6 +87,9 @@ def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict
             filtered_results = []
             for f in list(results):
                 try:
+                    f = list(f)
+                    if isinstance(f[1], FlagStatus):
+                        f[1] = f[1].value
                     if not isinstance(f[0], str) or not isinstance(f[1], str) or not isinstance(f[2], str):
                         set_warning = True
                         print(f"WARNING: found an invalid response from submitter: the elements of every tuple must contain 3 strings, found: {type(f[0])}, {type(f[1])}, {type(f[2])}")
@@ -100,7 +103,7 @@ def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict
                     filtered_results.append(f[:3])
                 except Exception:
                     set_warning = True
-                    print("WARNING: found an invalid response from submitter: must be [(flag, status, msg), ...]")
+                    print(f"WARNING: found an invalid response from submitter: must be [(flag, status, msg), ...]\n\n{traceback.format_exc()}")
             del return_dict["error"]
             if set_warning:
                 return_dict["warning"] = True

@@ -2,11 +2,11 @@ import uvicorn
 import os
 import asyncio
 import env
-import time
 import jwt
-import socketio
 import traceback
-from asyncpg import UniqueViolationError, ForeignKeyViolationError
+import time
+import socketio
+from asyncpg.exceptions import UniqueViolationError, ForeignKeyViolationError
 from fastapi import FastAPI, HTTPException, Depends, APIRouter, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -30,6 +30,7 @@ from models.config import Configuration, SetupStatus, StatusAPI
 from utils import json_like, crypto
 from utils.auth import login_validation, AuthStatus
 from workers import run_workers, terminate_workers
+from sqlalchemy.exc import IntegrityError
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
@@ -116,6 +117,16 @@ async def foreign_key_violation_error_handler(request, exc: ForeignKeyViolationE
     except Exception:
         pass
     raise HTTPException(400, error_str)
+
+@app.exception_handler(IntegrityError)
+async def integrity_sql_error_handler(request, exc: IntegrityError):
+    origin_exc = exc.orig.__cause__
+    if isinstance(origin_exc, UniqueViolationError):
+        await unique_violation_error_handler(request, origin_exc)
+    elif isinstance(origin_exc, ForeignKeyViolationError):
+        await foreign_key_violation_error_handler(request, origin_exc)
+    else:
+        raise HTTPException(400, "Database integrity error")
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request, exc:StarletteHTTPException):

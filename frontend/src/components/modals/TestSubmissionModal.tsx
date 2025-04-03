@@ -19,7 +19,8 @@ export const TestSubmissionModal = ({ opened, close, submitterId }:{
     const [currentState, setCurrentState] = useState<"input"|"loading"|"results">("input")
     const [apiResult, setApiResult] = useState<components["schemas"]["MessageResponse_Dict_str__Any__"]|undefined>()
     const currentSubmitter = submitters.data?.find(exp => exp.id == submitterId)
-    const scrollExternalRef = useRef<any>()
+    const scrollExternalRefFirst = useRef<any>()
+    const scrollExternalRefSecond = useRef<any>()
 
     const inizialize = () => {
         setCurrentState("input")
@@ -104,7 +105,6 @@ export const TestSubmissionModal = ({ opened, close, submitterId }:{
                             {
                                 apiResult.response?.ok?<Box>
                                     <Title order={3}>Submission done correctly</Title>
-                                    <Space h="lg" ref={scrollExternalRef}/>
                                     {!isResponseValid?<u>The response recived is not a list</u>:null}
                                     {isResponseValid && flagResponse?.length == 0?<u>No flags in the list returned by the submitter</u>:null}
                                     {isResponseValid && (flagResponse?.length??0) > 0?
@@ -127,9 +127,9 @@ export const TestSubmissionModal = ({ opened, close, submitterId }:{
                                         </Table.Tbody>
                                     </Table></ScrollArea>:null}
                                     <Space h="lg" />
-                                    <Alert icon={<BsCardText />} title={<Title order={4}>Output from submitter {apiResult?.response?.warning?"(some warning has been generated!)":""}</Title>} color={apiResult?.response?.warning?"yellow":"gray"} style={{width: "100%", height:"100%", display:"flex"}}>
+                                    <Alert ref={scrollExternalRefFirst} icon={<BsCardText />} title={<Title order={4}>Output from submitter {apiResult?.response?.warning?"(some warning has been generated!)":""}</Title>} color={apiResult?.response?.warning?"yellow":"gray"} style={{width: "100%", height:"100%", display:"flex"}}>
                                         <ScrollArea.Autosize mah={400}>
-                                            <Box style={{whiteSpace:"pre"}} w={(scrollExternalRef.current?.getBoundingClientRect().width-60)+"px"}>
+                                            <Box style={{whiteSpace:"pre"}} w={(scrollExternalRefFirst.current?.getBoundingClientRect().width-70)+"px"}>
                                                 {(apiResult.response?.output??"" == "")?apiResult.response?.output:<u>No output received from submitter</u>}
                                             </Box>
                                         </ScrollArea.Autosize> 
@@ -138,10 +138,10 @@ export const TestSubmissionModal = ({ opened, close, submitterId }:{
                                 </Box>:
                                 <Box>
                                     <Title order={3}>The submitter gave an error in the submission</Title>
-                                    <Space h="lg" ref={scrollExternalRef}/>
-                                    <Alert icon={<BsCardText />} title={<Title order={4}>{apiResult.response?.error??"No error message received"}</Title>} color="red" style={{width: "100%", height:"100%", display:"flex"}}>
+                                    <Space h="lg"/>
+                                    <Alert ref={scrollExternalRefSecond} icon={<BsCardText />} title={<Title order={4}>{apiResult.response?.error??"No error message received"}</Title>} color="red" style={{width: "100%", height:"100%", display:"flex"}}>
                                         <ScrollArea.Autosize mah={400}>
-                                            <Box style={{whiteSpace:"pre"}} w={(scrollExternalRef.current?.getBoundingClientRect().width-60)+"px"}>
+                                            <Box style={{whiteSpace:"pre"}} w={(scrollExternalRefSecond.current?.getBoundingClientRect().width-70)+"px"}>
                                                 {apiResult.response?.output??<u>No output received from submitter</u>}
                                             </Box>
                                         </ScrollArea.Autosize> 
