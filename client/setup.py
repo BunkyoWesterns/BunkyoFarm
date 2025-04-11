@@ -14,7 +14,7 @@ setuptools.setup(
     author="Pwnzer0tt1",
     author_email="pwnzer0tt1@poliba.it",
     scripts=["xfarm"],
-    py_modules=["xfarm"],
+    py_modules=["exploitfarm"],
     install_requires=required,
     include_package_data=True,
     description="Exploit Farm client",
