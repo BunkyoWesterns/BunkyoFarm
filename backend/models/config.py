@@ -2,7 +2,7 @@
 from pydantic import BaseModel, AwareDatetime, model_validator
 from typing_extensions import Self
 from functools import cache
-from pydantic import NonNegativeInt, PositiveInt
+from pydantic import NonNegativeInt, PositiveInt, NonNegativeFloat
 from exploitfarm.models.submitter import SubmitterDTO
 import re
 import env
@@ -26,7 +26,7 @@ class Configuration(BaseModel):
     
     FLAG_TIMEOUT: PositiveInt|None = None
     FLAG_SUBMIT_LIMIT: PositiveInt|None = None
-    SUBMIT_DELAY: NonNegativeInt = 0
+    SUBMIT_DELAY: NonNegativeFloat = 0.0
     SUBMITTER: SubmitterID|None = None
     SUBMITTER_TIMEOUT: PositiveInt|None = 30
     

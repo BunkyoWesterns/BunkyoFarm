@@ -5,9 +5,9 @@ from exploitfarm.models.enums import FlagStatus
 
 RESPONSES = {
     FlagStatus.timeout: ['timeout', 'too old', 'expired'],
-    FlagStatus.ok: ['accepted', 'congrat'],
-    FlagStatus.invalid: ['bad', 'wrong', 'unknown', 'your own', 'not in database', 'already', 'invalid', 'nop team', 'game over', 'no such flag'],
-    FlagStatus.wait: ['try again later', 'is not up', 'game not started']
+    FlagStatus.ok: ['accepted', 'congrat', 'claimed'],
+    FlagStatus.invalid: ['too old', 'unknown', 'your own', 'already claimed', 'invalid', 'nop team', 'game over', 'no such flag'],
+    FlagStatus.wait: ['try again later', 'is not up', 'game not started', 'didn\'t terminate successfully', 'RESUBMIT', 'ERROR']
 }
 
 def submit(flags, token:str = None, http_timeout:int=30, url:str="http://10.10.0.1:8080/flags"):

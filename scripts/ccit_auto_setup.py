@@ -81,7 +81,7 @@ print(
         flag_timeout=general_info["roundTime"]*5,
         flag_regex="[A-Z0-9]{31}=",
         flag_submit_limit=500,
-        submit_delay=10,
+        submit_delay=0.1,
         submitter_timeout=30,
         set_running=True
     )

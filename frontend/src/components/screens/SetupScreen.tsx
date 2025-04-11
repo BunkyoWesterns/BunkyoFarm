@@ -48,6 +48,7 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
     const [openTeamModal, setOpenTeamModal] = useState(false)
     const [openSubmitterModal, setOpenSubmitterModal] = useState(false)
     const [infoAttackModeModal, setInfoAttackModeModal] = useState(false)
+    const [hasGeneratedError, setHasGeneratedError] = useState(false)
     const notificationsStore = useNotifications();
 
     const notificationExists = (id: string) => {
@@ -75,11 +76,24 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
     const finalConfig = useMemo<ConfigDict>(()=>({ ...((status.data?.config??{}) as ConfigDict), ...configInput }), [configInput, status.isFetching])
     const deltaConfig = useMemo<ConfigDict>(()=>{
         if (status.isFetching) return {}
-        if (lastStatusFetched !== status.data?.config ){
+        if (hasGeneratedError){
             if (notificationExists("setup-update")){
                 notifications.update({
                     id: "setup-update",
-                    title: "Setting auto-update is running",
+                    title: "Setting auto-update ERROR",
+                    message: "The setup has generated an error!!",
+                    loading: false,
+                    color: "red",
+                    autoClose: 700
+                })
+            }
+            setDisableInputs(false)
+        }else if (lastStatusFetched !== status.data?.config ){
+            if (notificationExists("setup-update")){
+                notifications.update({
+                    id: "setup-update",
+                    title: "Setting auto-update done",
+                    loading: false,
                     message: "The setup has been saved on the server",
                     autoClose: 700
                 })
@@ -107,7 +121,7 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
         })
 
         return res
-    }, [finalConfig, status.isFetching, lastStatusFetched])
+    }, [finalConfig, status.isFetching, lastStatusFetched, hasGeneratedError])
 
     const updateData = useDebouncedCallback(()=>{
         if (Object.keys(deltaConfig).length == 0 || editMode) return
@@ -121,6 +135,7 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
             autoClose: false
         })
         setLastStatusFetched((draft)=>{draft.PASSWORD_HASH = null})
+        setHasGeneratedError(false)
         setSetup(deltaConfig).then(()=>{
             setErrorSetup(null)
             if (typeof finalConfig.PASSWORD_HASH == "string" ){
@@ -128,6 +143,7 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
             }
         }).catch((e)=>{
             setErrorSetup(e.message as string)
+            setHasGeneratedError(true)
         })
     }, 2500)
 
@@ -371,7 +387,7 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
             min={0}
             style={{ width: "100%" }}
             value={finalConfig.SUBMIT_DELAY??0}
-            onChange={(e)=>setConfigInput((draft)=>{draft.SUBMIT_DELAY = parseInt(e.toString())})}
+            onChange={(e)=>setConfigInput((draft)=>{draft.SUBMIT_DELAY = parseFloat(e.toString())})}
             disabled={disableInputs}
         />
         <Divider my="md" />

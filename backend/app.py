@@ -223,7 +223,7 @@ async def get_status(db: DBSession, loggined: bool|None = Depends(is_loggined)):
     )
 
 @api.post("/setup", response_model=MessageResponse[Configuration], tags=["Status"])
-async def set_status(data: Dict[str, str|int|None], db: DBSession):
+async def set_status(data: Dict[str, Any], db: DBSession):
     """ Set some configuration values, you can set the values to change only """
     config = await Configuration.get_from_db()
     change_secret = False
@@ -243,7 +243,6 @@ async def set_status(data: Dict[str, str|int|None], db: DBSession):
                 raise HTTPException(400, "Password too short (at least 8 chars)")
             data[key] = crypto.hash(data[key])
             change_secret = True
-
     config = Configuration.model_validate(config.model_dump() | data)
     await config.write_on_db()
     config.PASSWORD_HASH = "********" if config.PASSWORD_HASH else None
