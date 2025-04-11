@@ -34,7 +34,7 @@ sh <(curl -sLf https://pwnzer0tt1.it/xfarm.sh)
 If you can't execute the bash script, you can clone this repository and execute the start.py command:
 
 ```bash
-python3 start.py
+python3 start.py start --prebuilt
 ```
 
 This will start the server and the database. The server will be available at `http://localhost:5050`, see `python3 start.py --help` for more options.

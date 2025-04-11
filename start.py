@@ -108,6 +108,7 @@ def gen_args(args_to_parse: list[str]|None = None):
     parser_start.add_argument('--threads', "-t", type=int, required=False, help='Number of threads started for each service/utility', default=-1)
     parser_start.add_argument('--port', "-p", type=int, required=False, help='Port where open the web service', default=5050)
     parser_start.add_argument('--logs', required=False, action="store_true", help=f'Show {g.name} logs', default=False)
+    parser_start.add_argument('--prebuilt', required=False, action="store_true", help='Use prebuilt docker image', default=False)
 
     #Stop Command
     parser_stop = subcommands.add_parser('stop', help=f'Stop {g.name}')
@@ -126,6 +127,9 @@ def gen_args(args_to_parse: list[str]|None = None):
     
     if "clear" not in args:
         args.clear = False
+        
+    if "prebuilt" in args and args.prebuilt:
+        g.build = False
     
     if "threads" not in args or args.threads < 1:
         args.threads = multiprocessing.cpu_count()
