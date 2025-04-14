@@ -86,7 +86,7 @@ For submission you can use only libraries installed in the docker image, some of
 - requests
 - dateutil
 
-If you need more libraries you can add them in [server/requirments.txt](server/requirements.txt) and start your own exploitfarm image with `python3 start.py start -b`.
+If you need more libraries you can add them in [server/requirments.txt](server/requirements.txt) and start your own exploitfarm image with `python3 start.py start` in the cloned repo.
 
 NOTES:
 
