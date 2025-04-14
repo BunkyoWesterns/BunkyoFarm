@@ -25,7 +25,9 @@ Other computer can install the exploitfarm client (using xfarm command) that con
 
 ### Server setup
 
-Start the server with the following command:
+First of all, you need to start the server. You don't have to change anything in the code, and the server has to be configurated during his execution, not before.
+
+You can start the server with the following command:
 
 ```bash
 sh <(curl -sLf https://pwnzer0tt1.it/xfarm.sh)
