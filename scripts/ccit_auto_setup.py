@@ -78,9 +78,8 @@ print(
         start_time=date_parser(general_info["start"]) if general_info["start"] else None,
         end_time=date_parser(general_info["end"]) if general_info["end"] else None,
         tick_duration=general_info["roundTime"],
-        flag_timeout=general_info["roundTime"]*5,
         flag_regex="[A-Z0-9]{31}=",
-        flag_submit_limit=500,
+        flag_submit_limit=2500,
         submit_delay=0.1,
         submitter_timeout=30,
         set_running=True
