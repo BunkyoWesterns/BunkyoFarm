@@ -5,11 +5,11 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="xfarm",
-    version="0.0.2",
+    version="{{VERSION_PLACEHOLDER}}",
     author="Pwnzer0tt1",
     author_email="pwnzer0tt1@poliba.it",
     py_modules=["xfarm"],
-    install_requires=["exploitfarm"],
+    install_requires=["exploitfarm=={{VERSION_PLACEHOLDER}}"],
     include_package_data=True,
     description="Exploit Farm client",
     long_description=long_description,
