@@ -168,7 +168,7 @@ random_str(
     specials:bool = False,
     exclude:str = "",
     include:str = ""
-) #Generate a random string with the specified parameters (usefull to anonymize the exploit)
+) #Generate a random string with the specified parameters (useful to anonymize the exploit)
 
 session(
     random_agent:bool = True,
@@ -181,6 +181,16 @@ try_tcp_connection(
     timeout:float|None = 3 #Timeout of the connection
 ) -> tuple[bool, str|None] #Try to connect to the address with a tcp connection
 
+# Store class for key-value storage centralized data
+store = Store()
+# Set a value
+store.set("example_key", {"example": "data"})
+# Get a value
+data = store.get("example_key")
+# Delete a key
+store.delete("example_key")
+# List all keys
+keys = store.keys()
 ```
 
 See advanced features of exploitfarm in the xfarm PyPi page [here](./client/README.md)
