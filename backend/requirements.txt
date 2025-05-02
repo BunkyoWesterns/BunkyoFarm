@@ -12,7 +12,7 @@ dirhash==0.5.0
 python-multipart==0.0.19
 sqlalchemy[asyncio]==2.0.36
 sqlmodel==0.0.22
-redis==5.2.0
+redis>=6
 python-socketio==5.11.4
 exploitfarm
 orjson

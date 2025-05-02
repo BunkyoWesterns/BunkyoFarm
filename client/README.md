@@ -58,6 +58,43 @@ print(f"Submitting flags: {flags}")
 submit_flags(flags)
 ```
 
+#### **Store Class**
+
+The `Store` class provides a key-value storage system for exploits, allowing you to save and retrieve centralized data during execution.
+
+```python
+from exploitfarm import Store
+
+store = Store()
+
+# Set a value
+store.set("example_key", {"example": "data"})
+
+# Get a value
+data = store.get("example_key")
+print(data)
+
+# Delete a key
+store.delete("example_key")
+
+# List all keys
+keys = store.keys()
+print(keys)
+```
+
+**Methods**:
+
+- `get(key: str, timeout: int = HTTP_TIMEOUT) -> bytes`: Retrieve a value by key.
+- `set(key: str, value: bytes, timeout: int = HTTP_TIMEOUT)`: Store a value by key.
+- `delete(key: str, timeout: int = HTTP_TIMEOUT)`: Delete a key.
+- `keys(timeout: int = HTTP_TIMEOUT) -> list[str]`: List all stored keys.
+
+**Environment Variables Required**:
+
+- `XFARM_REMOTE_URL`: Base URL for the exploit storage API.
+- `XFARM_EXPLOIT_ID`: Unique identifier for the exploit.
+- `XFARM_LOGIN_TOKEN`: Authentication token for secure access.
+
 ### **Command-Line Interface (CLI)**
 
 The CLI is the primary way to interact with ExploitFarm for exploit and attack management.
@@ -307,6 +344,9 @@ Environment variables can simplify configuration:
 - `XFARM_HOST`: Server address.
 - `XFARM_PORT`: Server port.
 - `XFARM_INTERACTIVE`: Enable or disable interactive mode.
+- `XFARM_REMOTE_URL`: API Base URL for remote exploit storage.
+- `XFARM_EXPLOIT_ID`: Unique identifier for the exploit.
+- `XFARM_LOGIN_TOKEN`: Authentication token for secure access.
 
 ---
 

@@ -17,4 +17,8 @@ DB_PORT = os.getenv("DB_PORT", "5432")
 NTHREADS = int(os.getenv("NTHREADS", "3"))
 POSTGRES_URL = os.getenv("POSTGRES_URL", f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_HOST}:{DB_PORT}/{POSTGRES_DB}")
 
-EXPLOIT_SOURCES_DIR = "./exploit-sources"
+DATA_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), ".." if DEBUG else ".", "data")
+)
+EXPLOIT_STORES_DIR = os.path.join(DATA_DIR, "exploit-stores")
+EXPLOIT_SOURCES_DIR = os.path.join(DATA_DIR, "exploit-sources")

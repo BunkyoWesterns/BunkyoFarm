@@ -160,7 +160,7 @@ def write_compose():
                     ],
                     "extra_hosts": ["host.docker.internal:host-gateway"],
                     "ports": [f"{args.port}:5050"],
-                    "volumes": [f"{g.compose_volume_sources}:/execute/exploit-sources/"],
+                    "volumes": [f"{g.compose_volume_sources}:/execute/data/"],
                     "depends_on": ["database", "redis"]
                 },
                 "database": {
@@ -196,7 +196,7 @@ def write_volume_manager_compose():
                     "command": '["tail","-f","/dev/null"]',
                     "container_name": g.volume_manager_conatiner,
                     "volumes": [
-                        f"{g.compose_volume_sources}:/volumes/exploit-sources/",
+                        f"{g.compose_volume_sources}:/volumes/data/",
                         f"{g.compose_volume_database}:/volumes/postgresql-data/"
                     ],  
                 },

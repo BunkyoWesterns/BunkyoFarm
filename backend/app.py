@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR
+from env import DEBUG, CORS_ALLOW, JWT_ALGORITHM, EXPLOIT_SOURCES_DIR, EXPLOIT_STORES_DIR
 from fastapi.responses import FileResponse
 from utils import datetime_now, load_routers
 from typing import Dict
@@ -34,6 +34,7 @@ from sqlalchemy.exc import IntegrityError
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.makedirs(EXPLOIT_SOURCES_DIR, exist_ok=True)
+os.makedirs(EXPLOIT_STORES_DIR, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

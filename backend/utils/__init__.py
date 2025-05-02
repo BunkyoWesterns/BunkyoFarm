@@ -11,7 +11,7 @@ from fastapi import FastAPI, APIRouter
 from pydantic import BaseModel
 import re
 import logging
-from env import EXPLOIT_SOURCES_DIR
+from env import DATA_DIR
 from functools import wraps
 from pydantic import ValidationError
 from socketio import AsyncServer
@@ -26,7 +26,7 @@ ALLOWED_ANNOTATIONS = ["int", "str", "bool", "float", "any"]
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 ROUTERS_DIR_NAME = "routes"
 ROUTERS_DIR = os.path.join(ROOT_DIR, ROUTERS_DIR_NAME)
-STATS_FILE = os.path.join(EXPLOIT_SOURCES_DIR, "stats.json")
+STATS_FILE = os.path.join(DATA_DIR, "stats.json")
 
 def extract_function(fun_name:str, code: bytes) -> ast.FunctionDef|None:
     try:
