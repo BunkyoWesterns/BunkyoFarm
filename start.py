@@ -15,7 +15,7 @@ class g:
     container_name = "exploitfarm"
     compose_project_name = "exploitfarm"
     compose_volume_database = "exploitfarm_data"
-    compose_volume_sources = "exploitfarm_exploit_sources"
+    compose_volume_data = "exploitfarm_files_data"
     volume_manager_conatiner = "exploitfarm-volume-manager"
     container_repo = "ghcr.io/pwnzer0tt1/exploitfarm"
     name = "ExploitFarm"
@@ -23,7 +23,7 @@ class g:
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 db_volume_name = f"{g.container_name}_{g.compose_volume_database}"
-sources_volume_name = f"{g.container_name}_{g.compose_volume_sources}"
+sources_volume_name = f"{g.container_name}_{g.compose_volume_data}"
 
 if os.path.isfile("./Dockerfile"):
     with open("./Dockerfile", "rt") as dockerfile:
@@ -160,7 +160,7 @@ def write_compose():
                     ],
                     "extra_hosts": ["host.docker.internal:host-gateway"],
                     "ports": [f"{args.port}:5050"],
-                    "volumes": [f"{g.compose_volume_sources}:/execute/data/"],
+                    "volumes": [f"{g.compose_volume_data}:/execute/data/"],
                     "depends_on": ["database", "redis"]
                 },
                 "database": {
@@ -182,7 +182,7 @@ def write_compose():
             },
             "volumes": {
                 g.compose_volume_database:"",
-                g.compose_volume_sources:""
+                g.compose_volume_data:""
             }
         }))
 
@@ -196,14 +196,14 @@ def write_volume_manager_compose():
                     "command": '["tail","-f","/dev/null"]',
                     "container_name": g.volume_manager_conatiner,
                     "volumes": [
-                        f"{g.compose_volume_sources}:/volumes/data/",
+                        f"{g.compose_volume_data}:/volumes/data/",
                         f"{g.compose_volume_database}:/volumes/postgresql-data/"
                     ],  
                 },
             },
             "volumes": {
                 g.compose_volume_database:"",
-                g.compose_volume_sources:""
+                g.compose_volume_data:""
             }
         }))
 

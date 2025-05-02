@@ -1,6 +1,7 @@
 import struct
 import os
 from typing import Generator
+import shutil
 
 """
 Format:
@@ -97,11 +98,7 @@ class KVBinStore:
                 if k != key:
                     f.write(struct.pack('<HL', len(k), len(v)))
                     f.write(k.encode('utf-8') + v)
-        try:
-            os.remove(self.filename)
-        except FileNotFoundError:
-            pass
-        os.rename(swap_path, self.filename)
+        shutil.move(swap_path, self.filename)
     
     def delete(self, key:str):
         """
@@ -113,11 +110,7 @@ class KVBinStore:
                 if k != key:
                     f.write(struct.pack('<HL', len(k), len(v)))
                     f.write(k.encode('utf-8') + v)
-        try:
-            os.remove(self.filename)
-        except FileNotFoundError:
-            pass
-        os.rename(swap_path, self.filename)
+        shutil.move(swap_path, self.filename)
     
     def __delitem__(self, key:str):
         self.delete(key)
