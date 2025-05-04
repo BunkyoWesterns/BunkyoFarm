@@ -207,6 +207,22 @@ def write_volume_manager_compose():
             }
         }))
 
+def get_input(prompt: str, default = None, is_required: bool = False, default_prompt: str = None):
+    if is_required:
+        prompt += " (REQUIRED, no default): "
+    elif default_prompt:
+        prompt += f" (default={default_prompt}): "
+    else:
+        prompt += f" (default={default}): "
+    value = input(prompt).strip()
+    if value != "":
+        return value
+    if is_required:
+        while value == "":
+            value = input(prompt).strip()
+        return value
+    return default
+
 def volume_exists():
     return db_volume_name in cmd_check(f'docker volume ls --filter "name=^{db_volume_name}$"', get_output=True) or sources_volume_name in cmd_check(f'docker volume ls --filter "name=^{sources_volume_name}$"', get_output=True)
 
@@ -234,6 +250,10 @@ def main():
                 if not g.build:
                     puts(f"Downloading docker image from github packages 'docker pull {g.container_repo}'", color=colors.green)
                     cmd_check(f"docker pull {g.container_repo}", print_output=True)
+                if volume_exists():
+                    puts(f"Volume {db_volume_name} already exists, if you need to start a new instance of exploitfarm, you need to clear data", color=colors.red)
+                    if get_input('Do you want to clear it before starting?', 'no').lower().startswith('y'):
+                        delete_volumes()
                 puts("Running 'docker compose up -d --build'\n", color=colors.green)
                 composecmd("up -d --build", g.composefile)
             case "compose":
