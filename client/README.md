@@ -61,6 +61,7 @@ submit_flags(flags)
 #### **Store Class**
 
 The `Store` class provides a key-value storage system for exploits, allowing you to save and retrieve centralized data during execution.
+The key value store is different for each exploit id. You can use it to store some data you need to save and change for every exploit execution.
 
 ```python
 from exploitfarm import Store
