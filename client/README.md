@@ -71,7 +71,7 @@ store = Store()
 # Set a value
 store.set("example_key", {"example": "data"})
 
-# Get a value
+# Get a value (if not exists returns None)
 data = store.get("example_key")
 print(data)
 
@@ -356,4 +356,3 @@ Environment variables can simplify configuration:
 1. Use `--test` to verify exploits before running them in production.
 2. Regularly push changes to the server for version control (they are auto-pushed on attack start anyway).
 3. Collaborate using attack groups for efficient resource utilization if the attack is heavy to execute.
-

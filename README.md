@@ -9,7 +9,7 @@ You can see a demo [here](https://demo.xfarm.pwnzer0tt1.it/)
 ## What is ExploitFarm?
 
 Exploit Farm is an attack distributed platform that allows you to easly share and execute exploits in a distributed way in A/D competitions.
-The aim of this attacker is to provide an easy way to replicate attacks and submitting flags to the competition platform, collecting as many data from attacks as possible to 
+The aim of this attacker is to provide an easy way to replicate attacks and submitting flags to the competition platform, collecting as many data from attacks as possible to
 allow players to analyze and improve their exploits and have a clear view of the attack status, and where them could fails.
 
 
@@ -187,7 +187,7 @@ try_tcp_connection(
 store = Store()
 # Set a value
 store.set("example_key", {"example": "data"})
-# Get a value
+# Get a value (if not exists returns None)
 data = store.get("example_key")
 # Delete a key
 store.delete("example_key")
