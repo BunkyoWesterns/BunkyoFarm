@@ -357,7 +357,3 @@ Environment variables can simplify configuration:
 2. Regularly push changes to the server for version control (they are auto-pushed on attack start anyway).
 3. Collaborate using attack groups for efficient resource utilization if the attack is heavy to execute.
 
----
-
-For further assistance, visit the [GitHub repository](https://github.com/pwnzer0tt1/exploitfarm) or consult the community resources.
-
