@@ -182,8 +182,8 @@ try_tcp_connection(
 ) -> tuple[bool, str|None] #Try to connect to the address with a tcp connection
 
 # Store class for key-value storage centralized data
-# The key value store is the same for each exploit id, usually
-# You can use it to store some data you need to save and change for every exploit execution
+# The key value store is different for each exploit id.
+# You can use it to store some data you need to save and change for every exploit execution.
 store = Store()
 # Set a value
 store.set("example_key", {"example": "data"})
