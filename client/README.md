@@ -61,6 +61,7 @@ submit_flags(flags)
 #### **Store Class**
 
 The `Store` class provides a key-value storage system for exploits, allowing you to save and retrieve centralized data during execution.
+The key value store is different for each exploit id. You can use it to store some data you need to save and change for every exploit execution.
 
 ```python
 from exploitfarm import Store
@@ -355,8 +356,4 @@ Environment variables can simplify configuration:
 1. Use `--test` to verify exploits before running them in production.
 2. Regularly push changes to the server for version control (they are auto-pushed on attack start anyway).
 3. Collaborate using attack groups for efficient resource utilization if the attack is heavy to execute.
-
----
-
-For further assistance, visit the [GitHub repository](https://github.com/pwnzer0tt1/exploitfarm) or consult the community resources.
 
