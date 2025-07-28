@@ -3,11 +3,12 @@ import '@mantine/notifications/styles.css'
 import '@mantine/charts/styles.css'
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
+import '@mantine/code-highlight/styles.css';
 
 import { notifications, Notifications } from '@mantine/notifications';
 import { LoadingOverlay, MantineProvider, Title } from '@mantine/core';
 import { LoginProvider } from '@/components/LoginProvider';
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route, BrowserRouter } from "react-router";
 import { useGlobalStore, useTokenStore } from './utils/stores';
 import { statusQuery } from './utils/queries';
 import { HomePage } from './components/screens/HomePage';
@@ -15,7 +16,46 @@ import { MainLayout } from './components/MainLayout';
 import { useEffect } from 'react';
 import { DEBOUNCED_SOCKET_IO_CHANNELS, socket_io, SOCKET_IO_CHANNELS, sockIoChannelToQueryKeys } from './utils/net';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDebouncedCallback } from '@mantine/hooks';
+import { useDebouncedCallback } from '@mantine/hooks'
+import { CodeHighlightAdapterProvider, stripShikiCodeBlocks } from '@mantine/code-highlight';
+import { CodeHighlightAdapter } from 'node_modules/@mantine/code-highlight/lib/CodeHighlightProvider/CodeHighlightProvider';
+
+
+// Shiki requires async code to load the highlighter
+async function loadShiki() {
+  const { createHighlighter } = await import('shiki');
+  const shiki = await createHighlighter({
+    langs: ['python'],
+    themes: ['one-dark-pro', 'one-light']
+  });
+
+  return shiki;
+}
+
+// Pass this adapter to CodeHighlightAdapterProvider component
+export const customShikiAdapter: CodeHighlightAdapter = {
+  // loadContext is called on client side to load shiki highlighter
+  // It is required to be used if your library requires async initialization
+  // The value returned from loadContext is passed to createHighlighter as ctx argument
+  loadContext: loadShiki,
+
+  getHighlighter: (ctx) => {
+    if (!ctx) {
+      return ({ code }) => ({ highlightedCode: code, isHighlighted: false });
+    }
+
+    return ({ code, language, colorScheme }) => ({
+      isHighlighted: true,
+      // stripShikiCodeBlocks removes <pre> and <code> tags from highlighted code
+      highlightedCode: stripShikiCodeBlocks(
+        ctx.codeToHtml(code, {
+          lang: language,
+          theme: colorScheme === 'dark' ? 'one-dark-pro' : 'one-light',
+        })
+      ),
+    });
+  },
+};
 
 export default function App() {
 
@@ -87,17 +127,19 @@ export default function App() {
 
     return (
         <MantineProvider defaultColorScheme='dark'>
-            <Notifications />
-            <LoadingOverlay visible={loadingStatus || status.isLoading} zIndex={10} overlayProps={{ radius: "sm", blur: 2 }} />
-            <LoginProvider>
-                <BrowserRouter>
-                    <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/:page" element={<HomePage />} />
-                        <Route path="*" element={<MainLayout><Title order={1}>404 Not Found</Title></MainLayout>} />
-                    </Routes>
-                </BrowserRouter>
-            </LoginProvider>
+            <CodeHighlightAdapterProvider adapter={customShikiAdapter}>
+                <Notifications />
+                <LoadingOverlay visible={loadingStatus || status.isLoading} zIndex={10} overlayProps={{ radius: "sm", blur: 2 }} />
+                <LoginProvider>
+                    <BrowserRouter>
+                        <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/:page" element={<HomePage />} />
+                            <Route path="*" element={<MainLayout><Title order={1}>404 Not Found</Title></MainLayout>} />
+                        </Routes>
+                    </BrowserRouter>
+                </LoginProvider>
+            </CodeHighlightAdapterProvider>
         </MantineProvider>
     )
 }

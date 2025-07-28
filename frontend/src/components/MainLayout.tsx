@@ -28,7 +28,7 @@ export const MainLayout = ({ children }: { children: any }) => {
                     alignItems: "center"
                 }}>
                     <Space w="md" />
-                    <Image src="/logo.png" alt="ExploitFarm Logo" width={50} height={50} mih={50} miw={50} style={{marginLeft:5}}/>
+                    <Image src="/logo.png" alt="ExploitFarm Logo" style={{marginLeft:5, width:"50px"}}/>
                     <Space w="xs" />
                     <Title order={2}>
                         Exploit Farm

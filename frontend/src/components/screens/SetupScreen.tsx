@@ -424,7 +424,9 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
                 value={finalConfig.START_TIME?new Date(finalConfig.START_TIME):null}
                 placeholder="Starting time of the competition"
                 description={<>Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}</>}
-                onChange={(e)=>setConfigInput((draft)=>{draft.START_TIME = e?.toISOString()})}
+                onChange={(e) => setConfigInput((draft) => {
+                  draft.START_TIME = e ? new Date(e).toISOString() : undefined;
+                })}
                 style={{ width: "100%", marginRight: 10}}
                 disabled={disableInputs}
             />
@@ -444,7 +446,9 @@ export const SetupScreen = ({ editMode, onSubmit }:{ editMode?:boolean, onSubmit
                 placeholder="Ending time of the competition"
                 value={finalConfig.END_TIME?new Date(finalConfig.END_TIME):null}
                 description={<>Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}</>}
-                onChange={(e)=>setConfigInput((draft)=>{draft.END_TIME = e?.toISOString()})}
+                onChange={(e) => setConfigInput((draft) => {
+                  draft.END_TIME = e ? new Date(e).toISOString() : undefined;
+                })}
                 style={{ width: "100%", marginRight: 10}}
                 disabled={disableInputs}
             />

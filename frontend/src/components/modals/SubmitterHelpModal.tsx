@@ -4,12 +4,8 @@ import { FaSearchPlus } from "react-icons/fa";
 import { BsPatchQuestionFill } from "react-icons/bs";
 import { FaList } from "react-icons/fa";
 import { BsPersonWorkspace } from "react-icons/bs";
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { TbArrowLoopRight2 } from "react-icons/tb";
-
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
-import { srcery } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-SyntaxHighlighter.registerLanguage('python', python);
+import { CodeHighlight } from "@mantine/code-highlight";
 
 export const SubmitterHelpModal = ({ open, onClose }:{ open:boolean, onClose:()=>void}) => {
 
@@ -19,7 +15,7 @@ export const SubmitterHelpModal = ({ open, onClose }:{ open:boolean, onClose:()=
         <Title order={3}>Basic submitter requirements and rules</Title>
         <p>The submitter must be written in <u>python</u> (exploits instead can be written in the language you want to use)</p>
         <p>The system will execute the <u><b><code>submit</code></b></u> function every time a new submission is made. This function must have the following signature:</p>
-        <SyntaxHighlighter language="python" showLineNumbers style={srcery}>
+        <CodeHighlight language="python" code=
 {`from exploitfarm import FlagStatus
 import requests, pwntools
 
@@ -28,8 +24,7 @@ def submit(flags):
     return [
         ("FLAG{}", FlagStatus.ok, "The flag is correct!")
         # FLAG       STATUS     ADDITIONAL MESSAGE WITH INFO
-    ]`}
-        </SyntaxHighlighter>
+    ]`} />
         <p>
             The submit function must be defined in the global context, and the first paramether required <u>must be called flags</u>. 
             Here you will recieve a list of flags to submit (you can limit the max size of this list in the setup page, event at 1 flag at time).
@@ -46,14 +41,13 @@ def submit(flags):
         <Title order={3}>Advanced submitter (parametrized submitter)</Title>
         <p>The aim of exploitfarm is to build general submitters and allow to change only some paramether to make them work in the next A/D.</p>
         <p>For this reason (and also to make automatic scripts more easy to build and customize) submit function can accept additional paramethers totally customizable without changing the code itself:</p>
-        <SyntaxHighlighter language="python" showLineNumbers style={srcery}>
+        <CodeHighlight language="python" code=
 {`from exploitfarm import FlagStatus
 import requests
 
 def submit(flags, http_url: str = 'http://game-server/submit', token):
     # flag submission code
-    return requests.post(http_url, data={ "flags": flags, "token": token }).json()`}
-        </SyntaxHighlighter>
+    return requests.post(http_url, data={ "flags": flags, "token": token }).json()`} />
 
         <p>How are managed the additional paramether of submit function?</p>
         <p>Additional paramethers are analyzed by exploitfarm and can parametrized: under the code editor you will see that additional paramether will be showen and you will be able to customize the value set for that specific argument</p>
@@ -73,13 +67,12 @@ def submit(flags, http_url: str = 'http://game-server/submit', token):
                 <Accordion.Control icon={<BsPatchQuestionFill />}>What is 'FlagStatus' class and how statuses works?</Accordion.Control>
                 <Accordion.Panel>
                     <p>The FlagStatus class imported by exploitfarm lib can be one of the following:</p>
-                    <SyntaxHighlighter language="python" showLineNumbers style={srcery}>
+                    <CodeHighlight language="python" code=
 {`class FlagStatus:
     wait = 'wait'
     timeout = 'timeout'
     invalid = 'invalid'
-    ok = 'ok'`}
-                    </SyntaxHighlighter>
+    ok = 'ok'`} />
                     <Space h="md" />
                     <Title order={3}>Wait status</Title>
                     <p>Use wait if there was some problem with the submission and you want to try again in the next cycle</p>
@@ -129,8 +122,7 @@ def submit(flags, http_url: str = 'http://game-server/submit', token):
                 <Accordion.Control icon={<BsPersonWorkspace />}>Let me see an example</Accordion.Control>
                 <Accordion.Panel>
                     <p>Heres the submitter built for <a href="https://cyberchallenge.it" target="_blank" >CyberChallenge 2024</a>:</p>
-                    <SyntaxHighlighter language="python" showLineNumbers style={srcery}>
-{`#!/usr/bin/env python3
+                    <CodeHighlight language="python" code={`#!/usr/bin/env python3
 
 import requests
 from exploitfarm import FlagStatus
@@ -170,8 +162,7 @@ def submit(flags, token:str = None, http_timeout:int=30, url:str="http://10.10.0
                 found_status = FlagStatus.wait
 
             yield (item['flag'], found_status, response)
-`}
-                    </SyntaxHighlighter>
+`} />
                 </Accordion.Panel>
             </Accordion.Item>
         </Accordion>
