@@ -55,10 +55,14 @@ async def err_warn_event_update():
 def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict: dict):
     from io import StringIO
     import sys
+    import os 
+
+    # Fix pwnlib errors caused by no terminal
+    os.environ["PWNLIB_NOTERM"] = "1"
     
     return_dict["ok"] = False
-    return_dict["error"] = "Submitter failed (probably kille due to SUBMITTER_TIMEOUT)"
-    
+    return_dict["error"] = "Submitter failed (probably killed due to SUBMITTER_TIMEOUT)"
+
     string_io_buffer = StringIO()
     
     sys.stdout = string_io_buffer
