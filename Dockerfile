@@ -1,7 +1,7 @@
 
 # Exploitfarm Dockerfile UUID signature
 # c9ce2441-d842-44d7-9178-dd1617efb8f6
-# Needed for start.py to detect the Dockerfile
+# Needed for run.py to detect the Dockerfile
 
 FROM --platform=$BUILDPLATFORM oven/bun AS frontend
 ENV NODE_ENV=production

@@ -35,13 +35,13 @@ You can start the server with the following command:
 sh <(curl -sLf https://pwnzer0tt1.it/xfarm.sh)
 ```
 
-If you can't execute the bash script, you can clone this repository and execute the start.py command:
+If you can't execute the bash script, you can clone this repository and execute the run.py command:
 
 ```bash
-python3 start.py start --prebuilt
+python3 run.py start --prebuilt
 ```
 
-This will start the server and the database. The server will be available at `http://localhost:5050`, see `python3 start.py --help` for more options.
+This will start the server and the database. The server will be available at `http://localhost:5050`, see `python3 run.py --help` for more options.
 Here will be required the setup configuration before set the server to running state.
 
 Things that you should configure:
@@ -90,7 +90,7 @@ For submission you can use only libraries installed in the docker image, some of
 - requests
 - dateutil
 
-If you need more libraries you can add them in [server/requirments.txt](server/requirements.txt) and start your own exploitfarm image with `python3 start.py start` in the cloned repo.
+If you need more libraries you can add them in [server/requirments.txt](server/requirements.txt) and start your own exploitfarm image with `python3 run.py start` in the cloned repo.
 
 NOTES:
 

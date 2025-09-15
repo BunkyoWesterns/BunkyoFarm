@@ -107,7 +107,7 @@ def submit(flags, http_url: str = 'http://game-server/submit', token):
                         <li>Stop this execution of exploitfarm</li>
                         <li>If not already done, now you need to clone the entire repository</li>
                         <li>Go to backend/requirements.txt and add the library you want to use</li>
-                        <li>Build and start the container with <code>python3 start.py -b</code> (-b will build the container from sourcecode and not from github, all clients will give a warning about the version that when built from source will be 0.0.0, don't worry you can skipp the warning)</li>
+                        <li>Build and start the container with <code>python3 run.py -b</code> (-b will build the container from sourcecode and not from github, all clients will give a warning about the version that when built from source will be 0.0.0, don't worry you can skipp the warning)</li>
                         <li>Now the extra libraries are installed and you can use them in your new exploitfarm!</li>
                     </ol>
                 </Accordion.Panel>
