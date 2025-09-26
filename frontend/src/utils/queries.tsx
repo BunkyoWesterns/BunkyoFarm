@@ -177,7 +177,7 @@ export const useServiceMapping = () => {
         const services = status.data?.services?.map((service) => ({[service.id]: service}))
         if (services == null || services.length == 0) return {}
         return services.reduce((acc, val) => ({...acc, ...val}), {})
-    }, [status.isFetching])
+    }, [status.data])
 }
 
 export const useTeamMapping = () => {
@@ -186,7 +186,7 @@ export const useTeamMapping = () => {
         const teams = status.data?.teams?.map((team) => ({[team.id]: team}))
         if (teams == null || teams.length == 0) return {}
         return teams.reduce((acc, val) => ({...acc, ...val}), {})
-    }, [status.isFetching])
+    }, [status.data])
 }
 
 export const useExploitMapping = () => {
@@ -195,7 +195,7 @@ export const useExploitMapping = () => {
         const exp = exploits.data?.map((exploit) => ({[exploit.id]: exploit}))
         if (exp == null || exp.length == 0) return {}
         return exp.reduce((acc, val) => ({...acc, ...val}), {})
-    }, [exploits.isFetching])
+    }, [exploits.data])
 }
 
 export const useClientMapping = () => {
@@ -204,7 +204,7 @@ export const useClientMapping = () => {
         const cl = clients.data?.map((client) => ({[client.id]: client}))
         if (cl == null || cl.length == 0) return {}
         return cl.reduce((acc, val) => ({...acc, ...val}), {})
-    }, [clients.isFetching])
+    }, [clients.data])
 }
 
 export const useGroupMapping = () => {
@@ -213,7 +213,7 @@ export const useGroupMapping = () => {
         const gr = groups.data?.map((group) => ({[group.id]: group}))
         if (gr == null || gr.length == 0) return {}
         return gr.reduce((acc, val) => ({...acc, ...val}), {})
-    }, [groups.isFetching])
+    }, [groups.data])
 }
 
 export const useServiceSolver = () => {

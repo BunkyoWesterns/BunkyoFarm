@@ -29,16 +29,10 @@ Other computer can install the exploitfarm client (using xfarm command) that con
 
 First of all, you need to start the server. You don't have to change anything in the code, and the server has to be configurated during his execution, not before.
 
-You can start the server with the following command:
-
-```bash
-sh <(curl -sLf https://pwnzer0tt1.it/xfarm.sh)
-```
-
 If you can't execute the bash script, you can clone this repository and execute the run.py command:
 
 ```bash
-python3 run.py start --prebuilt
+python3 run.py start
 ```
 
 This will start the server and the database. The server will be available at `http://localhost:5050`, see `python3 run.py --help` for more options.
@@ -208,13 +202,3 @@ Made with ❤️ by Pwnzer0tt1
 Copyright (c) 2024 Pwnzer0tt1
 
 ---
-
-## Star History
-
-<a href="https://star-history.com/#pwnzer0tt1/exploitfarm&Date&secret=Z2hwXzJ3TWljWkV5SzBwd216YkJNSGo2OTd0YW1wRGRHZjIwR29jbA==">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=pwnzer0tt1/exploitfarm&type=Date&theme=dark&secret=Z2hwXzJ3TWljWkV5SzBwd216YkJNSGo2OTd0YW1wRGRHZjIwR29jbA==" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=pwnzer0tt1/exploitfarm&type=Date&secret=Z2hwXzJ3TWljWkV5SzBwd216YkJNSGo2OTd0YW1wRGRHZjIwR29jbA==" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=pwnzer0tt1/exploitfarm&type=Date&secret=Z2hwXzJ3TWljWkV5SzBwd216YkJNSGo2OTd0YW1wRGRHZjIwR29jbA==" />
- </picture>
-</a>

@@ -1,8 +1,8 @@
-import { attacksQuery, exploitsSourcesQuery, useClientSolver, useExtendedExploitSolver, useGroupSolver, useTeamSolver } from "@/utils/queries";
+import { attackRequest, exploitsSourcesQuery, useClientSolver, useExtendedExploitSolver, useGroupSolver, useTeamSolver } from "@/utils/queries";
 import { useGlobalStore } from "@/utils/stores";
 import { Alert, Box, Modal, ScrollArea, Space, Title } from "@mantine/core"
 import { showNotification } from "@mantine/notifications";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import { FaUser } from "react-icons/fa";
 import { ImTarget } from "react-icons/im";
 import { FaBomb } from "react-icons/fa";
@@ -15,13 +15,23 @@ import { FaPersonRunning } from "react-icons/fa6";
 import { calcAttackDuration } from "@/utils";
 import { BsCardText } from "react-icons/bs";
 import { ExploitSourceCard } from "../elements/ExploitSourceCard";
+import { useQuery } from "@tanstack/react-query";
 
 export const AttackExecutionDetailsModal = (props:{ opened:boolean, close:()=>void, attackId:number }) => {
-
+ 
     if (!props.opened) return null
-
-    const attackQuery = attacksQuery(1, { id: props.attackId })
-    const attack = attackQuery.data?.items[0]??null
+ 
+    // Fetch a single attack by ID with a dedicated query key to avoid cache collisions
+    const attackQuery = useQuery({
+        queryKey: ["attacks", "detail", props.attackId],
+        queryFn: async () => await attackRequest(1, 1, { id: props.attackId }),
+        enabled: props.opened && props.attackId != null,
+        staleTime: 0,
+    })
+    const attack = useMemo(() => {
+        const a = attackQuery.data?.items?.[0] ?? null
+        return a && a.id === props.attackId ? a : null
+    }, [attackQuery.data, props.attackId])
     const sourceQuery = exploitsSourcesQuery(attack?.exploit??undefined)
     const usedSource = sourceQuery.data?.find((src) => src.id == attack?.exploit_source)??null
     const isUsedSourceLatest = sourceQuery.data?.length??0 > 0 ? sourceQuery.data?.[0]?.id == usedSource?.id : false

@@ -71,7 +71,8 @@ def dict_to_yaml(data, indent_spaces:int=4, base_indent:int=0, additional_spaces
 def puts(text, *args, color=colors.white, is_bold=False, **kwargs):
     print(f'{pref}{1 if is_bold else 0};{color}' + text + reset, *args, **kwargs)
 
-def sep(): puts("-----------------------------------", is_bold=True)
+def sep():
+    puts("-----------------------------------", is_bold=True)
 
 def cmd_check(program, get_output=False, print_output=False, no_stderr=False):
     if get_output:
@@ -94,15 +95,15 @@ def check_already_running():
     return g.container_name in cmd_check(f'docker ps --filter "name=^{g.container_name}$"', get_output=True)
 
 def gen_args(args_to_parse: list[str]|None = None):                     
-    
+
     #Main parser
     parser = argparse.ArgumentParser(description=f"{g.name} Manager")
     subcommands = parser.add_subparsers(dest="command", help="Command to execute [Default start if not running]")
-    
+
     #Compose Command
     parser_compose = subcommands.add_parser('compose', help='Run docker compose command')
     parser_compose.add_argument('compose_args', nargs=argparse.REMAINDER, help='Arguments to pass to docker compose', default=[])
-    
+
     #Start Command
     parser_start = subcommands.add_parser('start', help=f'Start {g.name}')
     parser_start.add_argument('--threads', "-t", type=int, required=False, help='Number of threads started for each service/utility', default=-1)
@@ -113,30 +114,30 @@ def gen_args(args_to_parse: list[str]|None = None):
     #Stop Command
     parser_stop = subcommands.add_parser('stop', help=f'Stop {g.name}')
     parser_stop.add_argument('--clear', required=False, action="store_true", help=f'Delete docker volume associated to {g.name} resetting all the settings', default=False)
-    
+
     parser_restart = subcommands.add_parser('restart', help=f'Restart {g.name}')
     parser_restart.add_argument('--logs', required=False, action="store_true", help=f'Show {g.name} logs', default=False)
-    
+
     parser_volume = subcommands.add_parser('volume', help='Volume manager')
     parser_volume.add_argument('--save', required=False, action="store_true", help='Save current volume settings', default=None)
     parser_volume.add_argument('--load', required=False, action="store_true", help='Load saved volume settings', default=None)
     parser_volume.add_argument('--clear', required=False, action="store_true", help=f'Delete docker volume associated to {g.name} resetting all the settings', default=False)
     parser_volume.add_argument('--tar-file', '-f', required=False, help='File where save or load the volumes', default="exploitfarm-volumes.tar.gz")
-    
+
     args = parser.parse_args(args=args_to_parse)
-    
+
     if "clear" not in args:
         args.clear = False
-        
+
     if "prebuilt" in args and args.prebuilt:
         g.build = False
-    
+
     if "threads" not in args or args.threads < 1:
         args.threads = multiprocessing.cpu_count()
-    
+
     if "port" not in args or args.port < 1:
         args.port = 5050
-    
+
     if args.command is None:
         return gen_args(["start", *sys.argv[1:]])
 

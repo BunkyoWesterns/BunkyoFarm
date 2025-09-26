@@ -59,15 +59,15 @@ def raw_submit_task_execution(submitter:Submitter, flags: List[str], return_dict
 
     # Fix pwnlib errors caused by no terminal
     os.environ["PWNLIB_NOTERM"] = "1"
-    
+
     return_dict["ok"] = False
     return_dict["error"] = "Submitter failed (probably killed due to SUBMITTER_TIMEOUT)"
 
     string_io_buffer = StringIO()
-    
+
     sys.stdout = string_io_buffer
     sys.stderr = string_io_buffer
-    
+
     try:
         set_warning = False
         glob = {}
