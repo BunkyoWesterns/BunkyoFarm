@@ -3,12 +3,10 @@
 Bulk register teams to ExploitFarm via API.
 
 Features:
-- Template-based generation for host/name/short with {i}, {j}
-- Inclusive range or explicit list for indices
-- Optional skip list (e.g., your own team id)
 - Existing-host dedupe (by default)
 - Batch POST to /api/teams
 - Dry-run mode
+- Get team list from score server
 
 Default base URL: http://localhost:5050/api
 If authentication is enabled on server, pass --password to obtain a Bearer token.
