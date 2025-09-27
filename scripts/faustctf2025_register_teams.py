@@ -62,10 +62,10 @@ def build_teams(
     resp = requests.get('https://2025.faustctf.net/competition/teams.json')
     resp.raise_for_status()
     data = resp.json()
-    teams = data.get("teams", [])
-    teams.remove(OUR_ID)
+    team_ids = data.get("teams", [])
+    team_ids.remove(OUR_ID)
 
-    for i in teams:
+    for i in team_ids:
         teams.append(
             {
                 "host": f"fd66:666:{i}::2",
